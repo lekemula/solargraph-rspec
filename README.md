@@ -1,39 +1,91 @@
-# Solargraph::Rspec
+# WIP!!! Solargraph::Rspec - A Solargraph plugin for better RSpec support
 
-TODO: Delete this and the text below, and describe your gem
+RSpec is a testing framework of choice for many Ruby developers. But at the same time is highly dynamic and heavily relying on metaprogramming making it hard to provide accurate code completion and type inference. 
 
-Welcome to your new gem! In this directory, you'll find the files you need to be able to package up your Ruby library into a gem. Put your Ruby code in the file `lib/solargraph/rspec`. To experiment with that code, run `bin/console` for an interactive prompt.
+This gem aims to provide a better support for RSpec in Solargraph and it supports the following features:
+  - `describe` and `it` methods completion
+  - memoized `let` and `let!` methods completion 
+  - implicit/explicit `subject` and `subject!` methods
+  - `described_class` with appropriate type inference
+  - `RSpec::Matchers` methods completion
+  
+TODO: Add a gif showing the features in action
 
 ## Installation
 
-TODO: Replace `UPDATE_WITH_YOUR_GEM_NAME_PRIOR_TO_RELEASE_TO_RUBYGEMS_ORG` with your gem name right after releasing it to RubyGems.org. Please do not do it earlier due to security reasons. Alternatively, replace this section with instructions to install your gem from git if you don't plan to release to RubyGems.org.
+> [!IMPORTANT]
+> As this gem is a WIP and depends on [unmerged changes](https://github.com/castwide/solargraph/compare/master...lekemula:solargraph:rspec-support?expand=1) in Solargraph, at the moment you need to use the forked version from [lekemula/solargraph@rspec-support](https://github.com/lekemula/solargraph/tree/rspec-support) branch. Once merged, you can install it from the official repository.
 
-Install the gem and add to the application's Gemfile by executing:
+###  Install `solargraph` and `solargraph-rspec`
 
-    $ bundle add UPDATE_WITH_YOUR_GEM_NAME_PRIOR_TO_RELEASE_TO_RUBYGEMS_ORG
+Install the gems from the command line:
 
-If bundler is not being used to manage dependencies, install the gem by executing:
+```bash
+git clone https://github.com/lekemula/solargraph.git
+cd solargraph && git checkout rspec-support && gem build
+gem install solargraph-<current-version>.gem
 
-    $ gem install UPDATE_WITH_YOUR_GEM_NAME_PRIOR_TO_RELEASE_TO_RUBYGEMS_ORG
 
-## Usage
+git clone https://github.com/lekemula/solargraph-rspec.git
+cd solargraph-rspec && gem build
+gem install solargraph-rspec-<current-version>.gem
+```
 
-TODO: Write usage instructions here
+Or add it to your Gemfile:
+
+```ruby
+group :development do
+  gem 'solargraph', github: 'lekemula/solargraph', branch: 'rspec-support'
+  gem 'solargraph-rspec', github: 'lekemula/solargraph-rspec'
+end
+```
+
+If you add them to your Gemfile, you'll have to tell your IDE plugin to use bundler to load the right version of solargraph.
+
+Add `solargraph-rspec` to your `.solargraph.yml`
+
+(if you don't have a `.solargraph.yml` in your project root, you can run `solargraph config` to add one)
+
+```yaml
+# .solargraph.yml
+plugins:
+  - solargraph-rspec
+
+```
+### Configuration
+
+If you have your own custom `let`-like memoized methods, you can add them to your `.solargraph.yml` file like this:
+
+```yaml
+# .solargraph.yml
+# ...
+rspec:
+  let_methods:
+    - let_it_be
+```
+
+### Documenting Your Gems
+
+Run `yard gems` to generate documentation for your installed gems.
+
+Run `yard config --gem-install-yri` to generate YARD documentation automatically when you install new gems.
 
 ## Development
 
 After checking out the repo, run `bin/setup` to install dependencies. Then, run `rake spec` to run the tests. You can also run `bin/console` for an interactive prompt that will allow you to experiment.
 
-To install this gem onto your local machine, run `bundle exec rake install`. To release a new version, update the version number in `version.rb`, and then run `bundle exec rake release`, which will create a git tag for the version, push git commits and the created tag, and push the `.gem` file to [rubygems.org](https://rubygems.org).
-
 ## Contributing
 
-Bug reports and pull requests are welcome on GitHub at https://github.com/[USERNAME]/solargraph-rspec. This project is intended to be a safe, welcoming space for collaboration, and contributors are expected to adhere to the [code of conduct](https://github.com/[USERNAME]/solargraph-rspec/blob/main/CODE_OF_CONDUCT.md).
+### Bug Reports and Feature Requests
+
+[GitHub Issues](https://github.com/lekemula/solargraph-rspec/issues) are the best place to ask questions, report problems, and suggest improvements.
+
+### Development
+
+Code contributions are always appreciated. Feel free to fork the repo and submit pull requests. Check for open issues that could use help. Start new issues to discuss changes that have a major impact on the code or require large time commitments.
 
 ## License
 
 The gem is available as open source under the terms of the [MIT License](https://opensource.org/licenses/MIT).
 
-## Code of Conduct
 
-Everyone interacting in the Solargraph::Rspec project's codebases, issue trackers, chat rooms and mailing lists is expected to follow the [code of conduct](https://github.com/[USERNAME]/solargraph-rspec/blob/main/CODE_OF_CONDUCT.md).
