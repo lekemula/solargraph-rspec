@@ -9,7 +9,8 @@ This gem aims to provide a better support for RSpec in Solargraph and it support
   - `described_class` with appropriate type inference
   - `RSpec::Matchers` methods completion
   
-TODO: Add a gif showing the features in action
+  ![solargraph-rspec_smaller](https://github.com/lekemula/solargraph-rspec/assets/9197495/66f86e5b-258e-4d8c-8a64-0685d15ece00)
+
 
 ## Installation
 
