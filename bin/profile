@@ -1,0 +1,30 @@
+#!/usr/bin/env bash
+
+
+if [ ! -d "spec/fixtures/mastodon" ]; then
+  echo "Cloning Mastodon as fixture submodule repo..."
+  git submodule update --init --recursive
+fi
+
+cd spec/fixtures/mastodon && bundle install
+cd ../../../
+
+echo "Building solargraph-rspec gem..."
+gem build -o solargraph-rspec-latest-profiling.gem
+gem uninstall solargraph-rspec
+gem install --local solargraph-rspec-latest-profiling.gem
+
+echo "Scanning Mastodon without solargraph-rspec plugin..."
+cp spec/fixtures/configs/.solargraph-without-rspec.yml spec/fixtures/mastodon/.solargraph.yml
+cat spec/fixtures/mastodon/.solargraph.yml
+solargraph scan --directory spec/fixtures/mastodon
+rm spec/fixtures/mastodon/.solargraph.yml
+
+echo "Scanning Mastodon with solargraph-rspec plugin..."
+cp spec/fixtures/configs/.solargraph-with-rspec.yml spec/fixtures/mastodon/.solargraph.yml
+cat spec/fixtures/mastodon/.solargraph.yml
+solargraph scan --directory spec/fixtures/mastodon
+rm spec/fixtures/mastodon/.solargraph.yml
+
+echo "Cleaning up..."
+rm solargraph-rspec-latest-profiling.gem
