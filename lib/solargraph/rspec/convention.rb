@@ -110,6 +110,7 @@ module Solargraph
         rspec_const = ::Parser::AST::Node.new(:const, [nil, :RSpec])
         walker.on :send, [rspec_const, :describe, :any] do |ast|
           namespace_pin = closest_namespace_pin(namespace_pins, ast.loc.line)
+          next unless namespace_pin
 
           described_class_pin = rspec_described_class_method(namespace_pin, ast)
           pins << described_class_pin unless described_class_pin.nil?
@@ -118,6 +119,7 @@ module Solargraph
         config.let_methods.each do |let_method|
           walker.on :send, [nil, let_method] do |ast|
             namespace_pin = closest_namespace_pin(namespace_pins, ast.loc.line)
+            next unless namespace_pin
 
             pin = rspec_let_method(namespace_pin, ast)
             pins << pin unless pin.nil?
@@ -128,6 +130,7 @@ module Solargraph
         subject_pin = nil
         walker.on :send, [nil, :subject] do |ast|
           namespace_pin = closest_namespace_pin(namespace_pins, ast.loc.line)
+          next unless namespace_pin
 
           subject_pin = rspec_let_method(namespace_pin, ast)
           pins << subject_pin unless subject_pin.nil?
@@ -173,7 +176,7 @@ module Solargraph
 
       # @param namespace_pins [Array<Pin::Namespace>]
       # @param line [Integer]
-      # @return [Pin::Namespace]
+      # @return [Pin::Namespace, nil]
       def closest_namespace_pin(namespace_pins, line)
         namespace_pins.min_by do |namespace_pin|
           distance = line - namespace_pin.location.range.start.line
