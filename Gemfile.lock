@@ -1,7 +1,7 @@
 PATH
   remote: ../solargraph
   specs:
-    solargraph (0.50.1)
+    solargraph (0.50.0)
       backport (~> 1.2)
       benchmark
       bundler (~> 2.0)

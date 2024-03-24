@@ -184,6 +184,27 @@ RSpec.describe Solargraph::Rspec::Convention do
     expect(completion_at(filename, [10, 5])).to include('my_method')
   end
 
+  it 'completes RSpec DSL methods' do
+    filename = File.expand_path('spec/models/some_namespace/transaction_spec.rb')
+    load_string filename, <<~RUBY
+      RSpec.describe SomeNamespace::Transaction, type: :model do
+        context 'some context' do
+          desc
+          cont
+          xi
+          fex
+          fde
+        end
+      end
+    RUBY
+
+    expect(completion_at(filename, [2, 7])).to include('describe')
+    expect(completion_at(filename, [3, 7])).to include('context')
+    expect(completion_at(filename, [4, 7])).to include('xit')
+    expect(completion_at(filename, [5, 7])).to include('fexample')
+    expect(completion_at(filename, [6, 7])).to include('fdescribe')
+  end
+
   describe 'configurations' do
     describe 'let_methods' do
       before(:each) do

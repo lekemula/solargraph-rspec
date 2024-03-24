@@ -7,6 +7,11 @@ require_relative 'util'
 module Solargraph
   module Rspec
     ROOT_NAMESPACE = 'RSpec::ExampleGroups'
+    HELPER_MODULES = ['RSpec::Matchers']
+    DSL_METHODS = %w[
+      example it specify focus fexample fit fspecify xexample xit xspecify
+      skip pending example_group describe context xdescribe xcontext fdescribe fcontext it_behaves_like it_should_behave_like
+    ]
 
     # Provides completion for RSpec DSL and helper methods.
     #   - `describe` and `context` blocks
@@ -30,6 +35,32 @@ module Solargraph
       # @param yard_map [YardMap]
       # @return [Environ]
       def global(_yard_map)
+        pins = []
+        pins += include_helper_pins
+
+        root_namespace = Solargraph::Pin::Namespace.new(
+          name: ROOT_NAMESPACE
+        )
+
+        DSL_METHODS.each do |method_name|
+          pins << Util.build_public_method(
+            root_namespace,
+            method_name,
+            scope: :instance # HACK: Should be :class
+          )
+        end
+
+        if pins.any?
+          Solargraph.logger.debug(
+            "[RSpec] added global pins #{pins.map(&:inspect)}"
+          )
+        end
+
+        Environ.new(pins: pins)
+      rescue StandardError => e
+        Solargraph.logger.warn(
+          "[RSpec] Error processing global pins: #{e.message}\n#{e.backtrace.join("\n")}"
+        )
         EMPTY_ENVIRON
       end
 
@@ -39,14 +70,13 @@ module Solargraph
         Solargraph.logger.debug "[RSpec] processing #{source_map.filename}"
 
         return EMPTY_ENVIRON unless self.class.valid_filename?(source_map.filename)
+
         # @type [Array<Pin::Base>]
         pins = []
         # @type [Array<Pin::Namespace>]
         namespace_pins = []
         # @type [Array<Pin::Block>]
         block_pins = []
-
-        pins += include_helper_pins(source_map: source_map)
 
         rspec_walker = SpecWalker.new(source_map: source_map, config: config)
 
@@ -165,12 +195,11 @@ module Solargraph
       # @param helper_modules [Array<String>]
       # @param source_map [SourceMap]
       # @return [Array<Pin::Base>]
-      def include_helper_pins(source_map:, helper_modules: ['RSpec::Matchers'])
+      def include_helper_pins(helper_modules: HELPER_MODULES)
         pins = []
 
         example_group_pin = Solargraph::Pin::Namespace.new(
-          name: ROOT_NAMESPACE,
-          location: Util.dummy_location(source_map.filename)
+          name: ROOT_NAMESPACE
         )
 
         helper_modules.each do |helper_module|
