@@ -69,10 +69,14 @@ GEM
     mutex_m (0.1.2)
     nokogiri (1.16.2-arm64-darwin)
       racc (~> 1.4)
+    optparse (0.3.1)
     parallel (1.24.0)
     parser (3.3.0.5)
       ast (~> 2.4.1)
       racc
+    profile-viewer (0.0.2)
+      optparse
+      webrick
     psych (5.1.2)
       stringio
     racc (1.7.3)
@@ -121,6 +125,8 @@ GEM
     tzinfo (2.0.6)
       concurrent-ruby (~> 1.0)
     unicode-display_width (2.5.0)
+    vernier (0.5.1)
+    webrick (1.8.1)
     yard (0.9.36)
 
 PLATFORMS
@@ -129,11 +135,13 @@ PLATFORMS
 DEPENDENCIES
   bundler
   debug
+  profile-viewer
   rake
   rspec
   rubocop
   solargraph!
   solargraph-rspec!
+  vernier
 
 BUNDLED WITH
    2.4.15

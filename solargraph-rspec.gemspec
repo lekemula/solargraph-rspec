@@ -28,11 +28,13 @@ Gem::Specification.new do |spec|
   spec.executables = spec.files.grep(%r{\Aexe/}) { |f| File.basename(f) }
   spec.require_paths = ['lib']
 
-  spec.add_development_dependency 'bundler'
-  spec.add_development_dependency 'debug'
-  spec.add_development_dependency 'rake'
-  spec.add_development_dependency 'rspec'
-  spec.add_development_dependency 'rubocop'
+  spec.add_development_dependency 'bundler'        # Dependency management
+  spec.add_development_dependency 'debug'          # Debugging
+  spec.add_development_dependency 'profile-viewer' # View profile from Vernier
+  spec.add_development_dependency 'rake'           # Build
+  spec.add_development_dependency 'rspec'          # Testing
+  spec.add_development_dependency 'rubocop'        # Linting
+  spec.add_development_dependency 'vernier'        # Profiling
 
   spec.add_runtime_dependency 'activesupport'
   spec.add_runtime_dependency 'solargraph'
