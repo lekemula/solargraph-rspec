@@ -7,11 +7,30 @@ require_relative 'util'
 module Solargraph
   module Rspec
     ROOT_NAMESPACE = 'RSpec::ExampleGroups'
-    HELPER_MODULES = ['RSpec::Matchers']
+    HELPER_MODULES = ['RSpec::Matchers'].freeze
     DSL_METHODS = %w[
-      example it specify focus fexample fit fspecify xexample xit xspecify
-      skip pending example_group describe context xdescribe xcontext fdescribe fcontext it_behaves_like it_should_behave_like
-    ]
+      example
+      it
+      specify
+      focus
+      fexample
+      fit
+      fspecify
+      xexample
+      xit
+      xspecify
+      skip
+      pending
+      example_group
+      describe
+      context
+      xdescribe
+      xcontext
+      fdescribe
+      fcontext
+      it_behaves_like
+      it_should_behave_like
+    ].freeze
 
     # Provides completion for RSpec DSL and helper methods.
     #   - `describe` and `context` blocks
@@ -38,13 +57,9 @@ module Solargraph
         pins = []
         pins += include_helper_pins
 
-        root_namespace = Solargraph::Pin::Namespace.new(
-          name: ROOT_NAMESPACE
-        )
-
         DSL_METHODS.each do |method_name|
           pins << Util.build_public_method(
-            root_namespace,
+            root_example_group_namespace_pin,
             method_name,
             scope: :instance # HACK: Should be :class
           )
@@ -81,6 +96,8 @@ module Solargraph
         rspec_walker = SpecWalker.new(source_map: source_map, config: config)
 
         rspec_walker.on_each_context_block do |namespace_name, ast|
+          original_block_pin = source_map.locate_block_pin(ast.location.begin.line, ast.location.begin.column)
+          original_block_pin_index = source_map.pins.index(original_block_pin)
           location = Util.build_location(ast, source_map.filename)
 
           namespace_pin = Solargraph::Pin::Namespace.new(
@@ -94,10 +111,20 @@ module Solargraph
           #     context 'some context' do # => module RSpec::ExampleGroups::FooBar::SomeContext
           #     end
           #   end
-          block_pin = Solargraph::Pin::Block.new(
+          fixed_namespace_block_pin = Solargraph::Pin::Block.new(
             closure: namespace_pin,
-            location: location,
-            receiver: RubyVM::AbstractSyntaxTree.parse('it()').children[2]
+            location: original_block_pin.location,
+            receiver: original_block_pin.receiver,
+            scope: original_block_pin.scope
+          )
+
+          source_map.pins[original_block_pin_index] = fixed_namespace_block_pin
+
+          # Include DSL methods in the example group block
+          namespace_extend_pin = Util.build_module_extend(
+            namespace_pin,
+            root_example_group_namespace_pin.name,
+            location
           )
 
           # Include parent example groups to share let definitions
@@ -118,9 +145,26 @@ module Solargraph
           )
 
           namespace_pins << namespace_pin
-          block_pins << block_pin
           pins << it_method_with_binding
           pins << namespace_include_pin
+          pins << namespace_extend_pin
+        end
+
+        rspec_walker.on_example_block do |block_ast|
+          namespace_pin = closest_namespace_pin(namespace_pins, block_ast.loc.line)
+          next unless namespace_pin
+
+          original_block_pin = source_map.locate_block_pin(block_ast.location.begin.line,
+                                                           block_ast.location.begin.column)
+          original_block_pin_index = source_map.pins.index(original_block_pin)
+          fixed_namespace_block_pin = Solargraph::Pin::Block.new(
+            closure: namespace_pin,
+            location: original_block_pin.location,
+            receiver: original_block_pin.receiver,
+            scope: original_block_pin.scope
+          )
+
+          source_map.pins[original_block_pin_index] = fixed_namespace_block_pin
         end
 
         # @type [Pin::Method, nil]
@@ -158,7 +202,7 @@ module Solargraph
         # Implicit subject
         if !subject_pin && described_class_pin
           namespace_pin = closest_namespace_pin(namespace_pins, described_class_pin.location.range.start.line)
-          pins << implicit_subject_pin(described_class_pin, namespace_pin)
+          pins << implicit_subject_pin(described_class_pin, namespace_pin) if namespace_pin
         end
 
         if pins.any?
@@ -198,15 +242,11 @@ module Solargraph
       def include_helper_pins(helper_modules: HELPER_MODULES)
         pins = []
 
-        example_group_pin = Solargraph::Pin::Namespace.new(
-          name: ROOT_NAMESPACE
-        )
-
         helper_modules.each do |helper_module|
           pins << Util.build_module_include(
-            example_group_pin,
+            root_example_group_namespace_pin,
             helper_module,
-            example_group_pin.location
+            root_example_group_namespace_pin.location
           )
         end
 
@@ -257,6 +297,14 @@ module Solargraph
           types: ["Class<#{described_class_name}>"],
           location: Util.build_location(ast, namespace.filename),
           scope: :instance
+        )
+      end
+
+      # @return [Pin::Namespace]
+      def root_example_group_namespace_pin
+        Solargraph::Pin::Namespace.new(
+          name: ROOT_NAMESPACE,
+          location: Util.dummy_location('lib/rspec/core/example_group.rb')
         )
       end
     end
