@@ -49,19 +49,9 @@ module Solargraph
               location
             )
 
-            # RSpec executes "it" example blocks in the context of the example group.
-            # @yieldsef changes the binding of the block to correct class.
-            it_method_with_binding = Util.build_public_method(
-              namespace_pin,
-              'it',
-              comments: ["@yieldself [#{namespace_pin.path}]"],
-              scope: :class
-            )
-
             namespace_pins << namespace_pin
             if block_given?
               yield [
-                it_method_with_binding,
                 namespace_include_pin,
                 namespace_extend_pin
               ]

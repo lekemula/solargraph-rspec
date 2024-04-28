@@ -16,7 +16,9 @@ module Solargraph
           on_let_method: [],
           on_subject: [],
           on_each_context_block: [],
-          on_example_block: []
+          on_example_block: [],
+          on_hook_block: [],
+          after_walk: []
         }
       end
 
@@ -57,6 +59,18 @@ module Solargraph
         @handlers[:on_example_block] << block
       end
 
+      # @param block [Proc]
+      # @return [void]
+      def on_hook_block(&block)
+        @handlers[:on_hook_block] << block
+      end
+
+      # @param block [Proc]
+      # @return [void]
+      def after_walk(&block)
+        @handlers[:after_walk] << block
+      end
+
       # @return [void]
       def walk!
         each_context_block(@walker.ast, Rspec::ROOT_NAMESPACE) do |namespace_name, ast|
@@ -95,14 +109,30 @@ module Solargraph
 
           method_ast = block_ast.children.first
           method_name = method_ast.children[1]
-          next if method_name != :it
+          next if method_name != :it # TODO: Handle other example methods and extract into a const
 
           @handlers[:on_example_block].each do |handler|
             handler.call(block_ast)
           end
         end
 
+        walker.on :block do |block_ast|
+          next if block_ast.children.first.type != :send
+
+          method_ast = block_ast.children.first
+          method_name = method_ast.children[1]
+          next unless %i[before after around].include?(method_name) # TODO: Extract into a const
+
+          @handlers[:on_hook_block].each do |handler|
+            handler.call(block_ast)
+          end
+        end
+
         walker.walk
+
+        @handlers[:after_walk].each do |handler|
+          handler.call
+        end
       end
 
       private

@@ -3,9 +3,9 @@
 RSpec.describe Solargraph::Rspec::Convention do
   let(:api_map) { Solargraph::ApiMap.new }
   let(:library) { Solargraph::Library.new }
+  let(:filename) { File.expand_path('spec/models/some_namespace/transaction_spec.rb') }
 
   it 'generates method for described_class' do
-    filename = File.expand_path('spec/models/some_namespace/transaction_spec.rb')
     load_string filename, <<~RUBY
       RSpec.describe SomeNamespace::Transaction, type: :model do
         context 'some context' do
@@ -28,7 +28,6 @@ RSpec.describe Solargraph::Rspec::Convention do
   end
 
   it 'generates method for lets/subject definitions' do
-    filename = File.expand_path('spec/models/some_namespace/transaction_spec.rb')
     load_string filename, <<~RUBY
       RSpec.describe SomeNamespace::Transaction, type: :model do
         subject(:transaction) { described_class.new }
@@ -78,7 +77,6 @@ RSpec.describe Solargraph::Rspec::Convention do
   end
 
   it 'generates implicit subject method' do
-    filename = File.expand_path('spec/models/some_namespace/transaction_spec.rb')
     load_string filename, <<~RUBY
       RSpec.describe SomeNamespace::Transaction, type: :model do
         it 'should do something' do
@@ -93,7 +91,6 @@ RSpec.describe Solargraph::Rspec::Convention do
   end
 
   it 'generates modules for describe/context blocks' do
-    filename = File.expand_path('spec/models/some_namespace/transaction_spec.rb')
     load_string filename, <<~RUBY
       RSpec.describe SomeNamespace::Transaction, type: :model do
         describe 'describing something' do
@@ -150,7 +147,6 @@ RSpec.describe Solargraph::Rspec::Convention do
   end
 
   it 'completes RSpec::Matchers methods' do
-    filename = File.expand_path('spec/models/some_namespace/transaction_spec.rb')
     load_string filename, <<~RUBY
       RSpec.describe SomeNamespace::Transaction, type: :model do
         context 'some context' do
@@ -165,7 +161,6 @@ RSpec.describe Solargraph::Rspec::Convention do
   end
 
   it 'completes normal ruby methods' do
-    filename = File.expand_path('spec/models/some_namespace/transaction_spec.rb')
     load_string filename, <<~RUBY
       RSpec.describe SomeNamespace::Transaction, type: :model do
         def my_method
@@ -205,7 +200,6 @@ RSpec.describe Solargraph::Rspec::Convention do
   end
 
   it 'completes normal ruby class methods' do
-    filename = File.expand_path('spec/models/some_namespace/transaction_spec.rb')
     load_string filename, <<~RUBY
       RSpec.describe SomeNamespace::Transaction, type: :model do
         def self.my_class_method
@@ -225,7 +219,6 @@ RSpec.describe Solargraph::Rspec::Convention do
   end
 
   it 'completes RSpec DSL methods' do
-    filename = File.expand_path('spec/models/some_namespace/transaction_spec.rb')
     load_string filename, <<~RUBY
       RSpec.describe SomeNamespace::Transaction, type: :model do
         context 'some context' do
@@ -243,6 +236,20 @@ RSpec.describe Solargraph::Rspec::Convention do
     expect(completion_at(filename, [4, 7])).to include('xit')
     expect(completion_at(filename, [5, 7])).to include('fexample')
     expect(completion_at(filename, [6, 7])).to include('fdescribe')
+  end
+
+  it 'completes inside RSpec before/after/around hook blocks' do
+    load_string filename, <<~RUBY
+      RSpec.describe SomeNamespace::Transaction, type: :model do
+        let(:something) { 1 }
+
+        before do
+          someth
+        end
+      end
+    RUBY
+
+    expect(completion_at(filename, [4, 5])).to include('something')
   end
 
   describe 'configurations' do
@@ -274,7 +281,6 @@ RSpec.describe Solargraph::Rspec::Convention do
       end
 
       it 'generates method for additional let-like methods' do
-        filename = File.expand_path('spec/models/some_namespace/transaction_spec.rb')
         load_string filename, <<~RUBY
           RSpec.describe SomeNamespace::Transaction, type: :model do
             let_it_be(:transaction) { described_class.new }

@@ -3,7 +3,7 @@
 require_relative 'config'
 require_relative 'spec_walker'
 require_relative 'correctors/context_block_namespace_corrector'
-require_relative 'correctors/example_block_binding_corrector'
+require_relative 'correctors/example_and_hook_blocks_binding_corrector'
 require_relative 'correctors/described_class_corrector'
 require_relative 'correctors/let_methods_corrector'
 require_relative 'correctors/subject_method_corrector'
@@ -107,7 +107,7 @@ module Solargraph
           pins += pins_to_add
         end
 
-        Correctors::ExampleBlockBindingCorrector.new(
+        Correctors::ExampleAndHookBlocksBindingCorrector.new(
           namespace_pins: namespace_pins,
           rspec_walker: rspec_walker
         ).correct(source_map) do |pins_to_add|
