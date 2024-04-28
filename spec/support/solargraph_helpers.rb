@@ -64,7 +64,7 @@ module SolargraphHelpers
     map.pins.select(&:filename)
   end
 
-  def completion_at(filename, position, map = api_map)
+  def completion_pins_at(filename, position, map = api_map)
     clip = map.clip_at(filename, position)
     cursor = clip.send(:cursor)
     word = cursor.chain.links.first.word
@@ -73,12 +73,10 @@ module SolargraphHelpers
       "Complete: word=#{word}, links=#{cursor.chain.links}"
     )
 
-    clip.complete.pins.map(&:name)
+    clip.complete.pins
   end
 
-  def completions_for(map, filename, position)
-    clip = map.clip_at(filename, position)
-
-    clip.complete.pins.map { |pin| [pin.name, pin.return_type.map(&:tag)] }.to_h
+  def completion_at(filename, position, map = api_map)
+    completion_pins_at(filename, position, map).map(&:name)
   end
 end

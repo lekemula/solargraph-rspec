@@ -100,17 +100,17 @@ module Solargraph
           original_block_pin_index = source_map.pins.index(original_block_pin)
           location = Util.build_location(ast, source_map.filename)
 
-          namespace_pin = Solargraph::Pin::Namespace.new(
-            name: namespace_name,
-            location: location
-          )
-
           # Define a dynamic module for the example group block
           # Example:
           #   RSpec.describe Foo::Bar do  # => module RSpec::ExampleGroups::FooBar
           #     context 'some context' do # => module RSpec::ExampleGroups::FooBar::SomeContext
           #     end
           #   end
+          namespace_pin = Solargraph::Pin::Namespace.new(
+            name: namespace_name,
+            location: location
+          )
+
           fixed_namespace_block_pin = Solargraph::Pin::Block.new(
             closure: namespace_pin,
             location: original_block_pin.location,
@@ -198,6 +198,26 @@ module Solargraph
         rspec_walker.walk!
         pins += namespace_pins
         pins += block_pins
+
+        # Fix methods defined in the example group block to have the correct namespace
+        source_map.pins.each_with_index do |pin, index|
+          next unless pin.is_a?(Solargraph::Pin::Method)
+
+          namespace_pin = closest_namespace_pin(namespace_pins, pin.location.range.start.line)
+          next unless namespace_pin
+
+          source_map.pins[index] = Solargraph::Pin::Method.new(
+            visibility: pin.visibility,
+            parameters: pin.parameters,
+            closure: namespace_pin,
+            node: pin.node,
+            signatures: pin.signatures,
+            location: pin.location,
+            name: pin.name,
+            scope: pin.scope,
+            comments: pin.comments
+          )
+        end
 
         # Implicit subject
         if !subject_pin && described_class_pin

@@ -174,14 +174,54 @@ RSpec.describe Solargraph::Rspec::Convention do
         context 'some context' do
           it 'should do something' do
             my_me
+            my_othe
+          end
+
+          context 'nested context' do
+            def my_method # override
+            end
+
+            def my_other_method
+            end
+
+            it 'should do something else' do
+              my_me
+              my_othe
+            end
           end
         end
       end
+
       my_meth
     RUBY
 
-    # expect(completion_at(filename, [7, 11])).to include('my_method')
-    expect(completion_at(filename, [10, 5])).to include('my_method')
+    expect(completion_at(filename, [6, 11])).to include('my_method')
+    expect(completion_pins_at(filename, [6, 11]).first.location.range.start.line).to eq(1)
+    expect(completion_at(filename, [7, 11])).not_to include('my_method') # other child/adjacent contexts
+    expect(completion_at(filename, [18, 13])).to include('my_method')
+    expect(completion_pins_at(filename, [18, 13]).first.location.range.start.line).to eq(11) # nearest parent context
+    expect(completion_at(filename, [19, 13])).to include('my_other_method')
+    expect(completion_at(filename, [25, 5])).not_to include('my_method') # outside of the RSpec block
+  end
+
+  it 'completes normal ruby class methods' do
+    filename = File.expand_path('spec/models/some_namespace/transaction_spec.rb')
+    load_string filename, <<~RUBY
+      RSpec.describe SomeNamespace::Transaction, type: :model do
+        def self.my_class_method
+        end
+
+        my_clas
+
+        context 'some context' do
+          my_clas
+        end
+      end
+    RUBY
+
+    expect(completion_at(filename, [4, 9])).to include('my_class_method')
+    # TODO: Complete class methods from the parent context scope. This seems to be an issue with Solargraph itself.
+    # expect(completion_at(filename, [7, 11])).to include('my_class_method')
   end
 
   it 'completes RSpec DSL methods' do
