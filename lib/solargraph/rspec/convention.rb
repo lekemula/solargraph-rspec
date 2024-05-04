@@ -40,8 +40,12 @@ module Solargraph
       xcontext
       fdescribe
       fcontext
+      shared_examples
+      include_examples
       it_behaves_like
       it_should_behave_like
+      shared_context
+      include_context
     ].freeze
 
     # Provides completion for RSpec DSL and helper methods.
