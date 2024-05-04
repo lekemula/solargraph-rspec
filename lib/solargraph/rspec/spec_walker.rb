@@ -121,7 +121,7 @@ module Solargraph
 
           method_ast = block_ast.children.first
           method_name = method_ast.children[1]
-          next unless %i[before after around].include?(method_name) # TODO: Extract into a const
+          next unless Rspec::HOOK_METHODS.include?(method_name.to_s)
 
           @handlers[:on_hook_block].each do |handler|
             handler.call(block_ast)

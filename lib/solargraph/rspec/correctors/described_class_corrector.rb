@@ -5,8 +5,6 @@ require_relative 'walker_base'
 module Solargraph
   module Rspec
     module Correctors
-      # Sets the correct namespace binding for example group blocks (it, example, etc.)
-      # TODO: Make it work for `example`, `xit`, `fit`, etc.
       class DescribedClassCorrector < WalkerBase
         # @param source_map [Solargraph::SourceMap]
         # @return [void]
