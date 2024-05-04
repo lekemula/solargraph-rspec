@@ -19,4 +19,6 @@ RSpec.configure do |config|
   end
 
   config.exclude_pattern = 'spec/fixtures/**/*'
+
+  config.filter_run_when_matching :focus
 end

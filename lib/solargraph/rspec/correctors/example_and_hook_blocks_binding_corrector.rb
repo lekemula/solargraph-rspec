@@ -7,8 +7,15 @@ module Solargraph
     module Correctors
       # Sets the correct namespace binding for example group blocks (it, example, etc.) and
       # hook blocks (before, after, around)
-      # TODO: Make it work for `example`, `xit`, `fit`, etc.
       class ExampleAndHookBlocksBindingCorrector < WalkerBase
+        # @param namespace_pins [Array<Solargraph::Pin::Base>]
+        # @param rspec_walker [Solargraph::Rspec::SpecWalker]
+        # @param config [Solargraph::Rspec::Config]
+        def initialize(namespace_pins:, rspec_walker:, config:)
+          super(namespace_pins: namespace_pins, rspec_walker: rspec_walker)
+          @config = config
+        end
+
         # @param source_map [Solargraph::SourceMap]
         # @return [void]
         def correct(source_map)
@@ -24,6 +31,12 @@ module Solargraph
             yield [] if block_given?
           end
 
+          rspec_walker.on_let_method do |let_method_ast|
+            bind_closest_namespace(let_method_ast, source_map)
+
+            yield [] if block_given?
+          end
+
           rspec_walker.after_walk do
             yield namespace_pins.flat_map { |namespace_pin| override_block_binding(namespace_pin) } if block_given?
           end
@@ -31,14 +44,17 @@ module Solargraph
 
         private
 
+        # @return [Solargraph::Rspec::Config]
+        attr_reader :config
+
         # RSpec executes example and hook blocks (eg. it, before, after)in the context of the example group.
         # @yieldsef changes the binding of the block to correct class.
         # @return [Array<Solargraph::Pin::Method>]
         def override_block_binding(namespace_pin)
-          %w[it before after around].map do |hook|
+          rspec_context_block_methods.map do |method|
             Util.build_public_method(
               namespace_pin,
-              hook,
+              method.to_s,
               comments: ["@yieldself [#{namespace_pin.path}]"],
               scope: :class
             )
@@ -63,6 +79,11 @@ module Solargraph
           )
 
           source_map.pins[original_block_pin_index] = fixed_namespace_block_pin
+        end
+
+        # @return [Array<String>]
+        def rspec_context_block_methods
+          config.let_methods + Rspec::HOOK_METHODS + Rspec::EXAMPLE_METHODS
         end
       end
     end

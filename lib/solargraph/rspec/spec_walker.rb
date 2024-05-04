@@ -109,7 +109,7 @@ module Solargraph
 
           method_ast = block_ast.children.first
           method_name = method_ast.children[1]
-          next if method_name != :it # TODO: Handle other example methods and extract into a const
+          next unless Rspec::EXAMPLE_METHODS.include?(method_name.to_s)
 
           @handlers[:on_example_block].each do |handler|
             handler.call(block_ast)

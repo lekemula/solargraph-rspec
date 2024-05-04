@@ -252,6 +252,17 @@ RSpec.describe Solargraph::Rspec::Convention do
     expect(completion_at(filename, [4, 5])).to include('something')
   end
 
+  it 'completes inside RSpec let-like methods' do
+    load_string filename, <<~RUBY
+      RSpec.describe SomeNamespace::Transaction, type: :model do
+        let(:something) { 1 }
+        let(:other_thing) { someth }
+      end
+    RUBY
+
+    expect(completion_at(filename, [2, 25])).to include('something')
+  end
+
   describe 'configurations' do
     describe 'let_methods' do
       before(:each) do
@@ -283,7 +294,9 @@ RSpec.describe Solargraph::Rspec::Convention do
       it 'generates method for additional let-like methods' do
         load_string filename, <<~RUBY
           RSpec.describe SomeNamespace::Transaction, type: :model do
+            let(:something) { 1 }
             let_it_be(:transaction) { described_class.new }
+            let_it_be(:other_thing) { someth }
 
             it 'should do something' do
               tran
@@ -293,7 +306,8 @@ RSpec.describe Solargraph::Rspec::Convention do
 
         assert_public_instance_method(api_map, 'RSpec::ExampleGroups::SomeNamespaceTransaction#transaction',
                                       ['undefined'])
-        expect(completion_at(filename, [4, 7])).to include('transaction')
+        expect(completion_at(filename, [6, 7])).to include('transaction')
+        expect(completion_at(filename, [3, 31])).to include('something')
       end
     end
   end

@@ -17,15 +17,17 @@ module Solargraph
 
       # @return [Array<Symbol>]
       def let_methods
-        %i[let let!] + additional_let_methods
+        (Rspec::LET_METHODS + additional_let_methods).map(&:to_sym)
       end
 
       private
 
+      # @return [Hash]
       def rspec_raw_data
         @rspec_raw_data ||= raw_data['rspec'] || {}
       end
 
+      # @return [Array<Symbol>]
       def additional_let_methods
         (rspec_raw_data['let_methods'] || []).map(&:to_sym)
       end

@@ -15,7 +15,9 @@ module Solargraph
   module Rspec
     ROOT_NAMESPACE = 'RSpec::ExampleGroups'
     HELPER_MODULES = ['RSpec::Matchers'].freeze
-    DSL_METHODS = %w[
+    HOOK_METHODS = %w[before after around].freeze
+    LET_METHODS = %w[let let!].freeze
+    EXAMPLE_METHODS = %w[
       example
       it
       specify
@@ -28,6 +30,9 @@ module Solargraph
       xspecify
       skip
       pending
+    ].freeze
+
+    DSL_METHODS = EXAMPLE_METHODS + %w[
       example_group
       describe
       context
@@ -109,7 +114,8 @@ module Solargraph
 
         Correctors::ExampleAndHookBlocksBindingCorrector.new(
           namespace_pins: namespace_pins,
-          rspec_walker: rspec_walker
+          rspec_walker: rspec_walker,
+          config: config
         ).correct(source_map) do |pins_to_add|
           pins += pins_to_add
         end
