@@ -172,7 +172,7 @@ module Solargraph
           )
         end
 
-        Environ.new(pins: pins)
+        Environ.new(requires: ['rspec'], pins: pins)
       rescue StandardError => e
         Solargraph.logger.warn(
           "[RSpec] Error processing #{source_map.filename}: #{e.message}\n#{e.backtrace.join("\n")}"
