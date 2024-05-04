@@ -221,21 +221,34 @@ RSpec.describe Solargraph::Rspec::Convention do
   it 'completes RSpec DSL methods' do
     load_string filename, <<~RUBY
       RSpec.describe SomeNamespace::Transaction, type: :model do
+        desc
+        cont
+        xi
+        fex
+        fdes
+
         context 'some context' do
           desc
           cont
           xi
           fex
-          fde
+          fdes
         end
       end
     RUBY
 
-    expect(completion_at(filename, [2, 7])).to include('describe')
-    expect(completion_at(filename, [3, 7])).to include('context')
-    expect(completion_at(filename, [4, 7])).to include('xit')
-    expect(completion_at(filename, [5, 7])).to include('fexample')
-    expect(completion_at(filename, [6, 7])).to include('fdescribe')
+    expect(completion_at(filename, [1, 7])).to include('describe')
+    expect(completion_at(filename, [2, 7])).to include('context')
+    expect(completion_at(filename, [3, 7])).to include('xit')
+    expect(completion_at(filename, [4, 7])).to include('fexample')
+    expect(completion_at(filename, [5, 7])).to include('fdescribe')
+
+    # context
+    expect(completion_at(filename, [8, 7])).to include('describe')
+    expect(completion_at(filename, [9, 7])).to include('context')
+    expect(completion_at(filename, [10, 7])).to include('xit')
+    expect(completion_at(filename, [11, 7])).to include('fexample')
+    expect(completion_at(filename, [12, 7])).to include('fdescribe')
   end
 
   it 'completes inside RSpec before/after/around hook blocks' do

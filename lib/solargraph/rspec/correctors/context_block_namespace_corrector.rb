@@ -35,6 +35,7 @@ module Solargraph
             source_map.pins[original_block_pin_index] = fixed_namespace_block_pin
 
             # Include DSL methods in the example group block
+            # TOOD: This does not work on solagraph! Class methods are not included from parent class.
             namespace_extend_pin = Util.build_module_extend(
               namespace_pin,
               root_example_group_namespace_pin.name,

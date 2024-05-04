@@ -9,6 +9,7 @@ require_relative 'correctors/let_methods_corrector'
 require_relative 'correctors/subject_method_corrector'
 require_relative 'correctors/context_block_methods_corrector'
 require_relative 'correctors/implicit_subject_method_corrector'
+require_relative 'correctors/dsl_methods_corrector'
 require_relative 'util'
 
 module Solargraph
@@ -32,7 +33,7 @@ module Solargraph
       pending
     ].freeze
 
-    DSL_METHODS = EXAMPLE_METHODS + %w[
+    CONTEXT_METHODS = %w[
       example_group
       describe
       context
@@ -73,14 +74,6 @@ module Solargraph
         pins = []
         pins += include_helper_pins
 
-        DSL_METHODS.each do |method_name|
-          pins << Util.build_public_method(
-            root_example_group_namespace_pin,
-            method_name,
-            scope: :instance # HACK: Should be :class
-          )
-        end
-
         if pins.any?
           Solargraph.logger.debug(
             "[RSpec] added global pins #{pins.map(&:inspect)}"
@@ -118,8 +111,7 @@ module Solargraph
 
         Correctors::ExampleAndHookBlocksBindingCorrector.new(
           namespace_pins: namespace_pins,
-          rspec_walker: rspec_walker,
-          config: config
+          rspec_walker: rspec_walker
         ).correct(source_map) do |pins_to_add|
           pins += pins_to_add
         end
@@ -148,10 +140,25 @@ module Solargraph
           pins += pins_to_add
         end
 
+        Correctors::ContextBlockMethodsCorrector.new(
+          namespace_pins: namespace_pins,
+          rspec_walker: rspec_walker
+        ).correct(source_map) do |pins_to_add|
+          pins += pins_to_add
+        end
+
+        Correctors::DslMethodsCorrector.new(
+          namespace_pins: namespace_pins,
+          rspec_walker: rspec_walker,
+          config: config
+        ).correct(
+          source_map
+        ) do |pins_to_add|
+          pins += pins_to_add
+        end
+
         rspec_walker.walk!
         pins += namespace_pins
-
-        Correctors::ContextBlockMethodsCorrector.new(namespace_pins: namespace_pins).correct(source_map)
 
         # Implicit subject
         if !subject_pin && described_class_pin
