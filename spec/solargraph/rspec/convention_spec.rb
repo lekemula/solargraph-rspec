@@ -265,6 +265,27 @@ RSpec.describe Solargraph::Rspec::Convention do
     expect(completion_at(filename, [4, 5])).to include('something')
   end
 
+  it 'completes inside RSpec blocks in example context' do
+    load_string filename, <<~RUBY
+      RSpec.describe SomeNamespace::Transaction, type: :model do
+        let(:something) { 1 }
+
+        it 'should do something' do
+          someth
+          expect { someth }
+        end
+
+        before do
+          some_method_with_block { someth }
+        end
+      end
+    RUBY
+
+    expect(completion_at(filename, [4, 9])).to include('something')
+    expect(completion_at(filename, [5, 17])).to include('something')
+    expect(completion_at(filename, [9, 33])).to include('something')
+  end
+
   it 'completes inside RSpec let-like methods' do
     load_string filename, <<~RUBY
       RSpec.describe SomeNamespace::Transaction, type: :model do

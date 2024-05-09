@@ -18,6 +18,7 @@ module Solargraph
           on_each_context_block: [],
           on_example_block: [],
           on_hook_block: [],
+          on_blocks_in_examples: [],
           after_walk: []
         }
       end
@@ -63,6 +64,12 @@ module Solargraph
       # @return [void]
       def on_hook_block(&block)
         @handlers[:on_hook_block] << block
+      end
+
+      # @param block [Proc]
+      # @return [void]
+      def on_blocks_in_examples(&block)
+        @handlers[:on_blocks_in_examples] << block
       end
 
       # @param block [Proc]
@@ -114,6 +121,13 @@ module Solargraph
           @handlers[:on_example_block].each do |handler|
             handler.call(block_ast)
           end
+
+          # @param blocks_in_examples [Parser::AST::Node]
+          each_block(block_ast.children[2]) do |blocks_in_examples|
+            @handlers[:on_blocks_in_examples].each do |handler|
+              handler.call(blocks_in_examples)
+            end
+          end
         end
 
         walker.on :block do |block_ast|
@@ -126,6 +140,13 @@ module Solargraph
           @handlers[:on_hook_block].each do |handler|
             handler.call(block_ast)
           end
+          
+          # @param blocks_in_examples [Parser::AST::Node]
+          each_block(block_ast.children[2]) do |blocks_in_examples|
+            @handlers[:on_blocks_in_examples].each do |handler|
+              handler.call(blocks_in_examples)
+            end
+          end
         end
 
         walker.walk
@@ -137,26 +158,38 @@ module Solargraph
 
       private
 
+      # @param ast [Parser::AST::Node]
+      # @param parent_result [Object]
+      def each_block(ast, parent_result = nil, &block)
+        return unless ast.is_a?(::Parser::AST::Node)
+
+        is_a_block = ast.type == :block && ast.children[0].type == :send
+
+        if is_a_block
+          result = block&.call(ast, parent_result)
+          parent_result = result if result
+        end
+
+        ast.children.each { |child| each_block(child, parent_result, &block) }
+      end
+
       # Find all describe/context blocks in the AST.
       # @param ast [Parser::AST::Node]
       # @yield [String, Parser::AST::Node]
       def each_context_block(ast, parent_namespace = Rspec::ROOT_NAMESPACE, &block)
-        return unless ast.is_a?(::Parser::AST::Node)
+        each_block(ast, parent_namespace) do |block_ast, parent_namespace|
+          is_a_context = %i[describe context].include?(block_ast.children[0].children[1])
 
-        is_a_block = ast.type == :block && ast.children[0].type == :send
-        is_a_context = is_a_block && %i[describe context].include?(ast.children[0].children[1])
-        namespace_name = parent_namespace
+          next unless is_a_context
 
-        if is_a_context
-          description_node = ast.children[0].children[2]
+          description_node = block_ast.children[0].children[2]
           block_name = rspec_describe_class_name(description_node)
-          if block_name
-            namespace_name = "#{parent_namespace}::#{block_name}"
-            block&.call(namespace_name, ast)
-          end
-        end
+          next unless block_name
 
-        ast.children.each { |child| each_context_block(child, namespace_name, &block) }
+          parent_namespace = namespace_name = "#{parent_namespace}::#{block_name}"
+          block&.call(namespace_name, block_ast)
+          next parent_namespace
+        end
       end
 
       # @param ast [Parser::AST::Node]

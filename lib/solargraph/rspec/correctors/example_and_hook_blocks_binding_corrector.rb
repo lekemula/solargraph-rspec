@@ -28,6 +28,12 @@ module Solargraph
 
             yield [] if block_given?
           end
+
+          rspec_walker.on_blocks_in_examples do |block_ast|
+            bind_closest_namespace(block_ast, source_map, override_scope: :instance)
+
+            yield [] if block_given?
+          end
         end
 
         private
@@ -35,7 +41,7 @@ module Solargraph
         # @param block_ast [Parser::AST::Node]
         # @param source_map [Solargraph::SourceMap]
         # @return [void]
-        def bind_closest_namespace(block_ast, source_map)
+        def bind_closest_namespace(block_ast, source_map, override_scope: nil)
           namespace_pin = closest_namespace_pin(namespace_pins, block_ast.loc.line)
           return unless namespace_pin
 
@@ -43,13 +49,24 @@ module Solargraph
                                                            block_ast.location.begin.column)
           original_block_pin_index = source_map.pins.index(original_block_pin)
           fixed_namespace_block_pin = Solargraph::Pin::Block.new(
-            closure: namespace_pin,
+            closure: example_run_method(namespace_pin),
             location: original_block_pin.location,
             receiver: original_block_pin.receiver,
             scope: original_block_pin.scope
           )
 
           source_map.pins[original_block_pin_index] = fixed_namespace_block_pin
+        end
+
+        # @param namespace_pin [Solargraph::Pin::Namespace]
+        # @return [Solargraph::Pin::Method]
+        def example_run_method(namespace_pin)
+          Util.build_public_method(
+            namespace_pin,
+            'run',
+            # https://github.com/rspec/rspec-core/blob/main/lib/rspec/core/example.rb#L246
+            location: Solargraph::Location.new('lib/rspec/core/example.rb', Solargraph::Range.from_to(246, 1, 297, 1))
+          )
         end
       end
     end
