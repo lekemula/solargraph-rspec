@@ -3,6 +3,8 @@
 require 'solargraph-rspec'
 require 'debug'
 
+ENV['SOLARGRAPH_DEBUG'] ||= 'true'
+
 # Load support files
 Dir["#{File.dirname(__FILE__)}/support/**/*.rb"].sort.each { |f| require f }
 

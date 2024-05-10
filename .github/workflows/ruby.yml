@@ -4,7 +4,6 @@
 # documentation.
 # This workflow will download a prebuilt Ruby version, install dependencies and run tests with Rake
 # For more information see: https://github.com/marketplace/actions/setup-ruby-jruby-and-truffleruby
-
 name: Ruby
 
 on:
@@ -18,24 +17,54 @@ permissions:
 
 jobs:
   test:
+    name: Tests (ruby v${{ matrix.ruby-version }})
     runs-on: ubuntu-latest
     strategy:
+      fail-fast: false
       matrix:
-        ruby-version: ["2.6", "2.7", "3.0"]
+        ruby-version: ["2.6", "2.7", "3.1"]
 
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout solargraph-rspec
+        uses: actions/checkout@v4
+        with:
+          path: solargraph-rspec
+
       - name: Set up Ruby
         uses: ruby/setup-ruby@v1
         with:
           ruby-version: ${{ matrix.ruby-version }}
           bundler-cache: false
 
+      - name: Cache Ruby gems
+        uses: actions/cache@v3
+        with:
+          path: solargraph-rspec/vendor/bundle
+          key: bundle-use-ruby-${{ matrix.os }}-${{ matrix.ruby-version }}-${{ hashFiles('solargraph-rspec/Gemfile.lock') }}
+          restore-keys: |
+            bundle-use-ruby-${{ matrix.os }}-${{ matrix.ruby-version }}-
+
       - name: Install dependencies
-        run: bundle install
+        run: |
+          cd solargraph-rspec
+          bundle config path vendor/bundle
+          bundle install --jobs 4 --retry 3
 
       - name: Run Rubocop
-        run: bundle exec rubocop
+        run: cd solargraph-rspec && bundle exec rubocop
+
+      - name: Cache Yardocs
+        id: cache-yardocs
+        uses: actions/cache@v3
+        with:
+          path: solargraph-rspec/.yardoc
+          key: yardoc-${{ matrix.os }}-${{ matrix.ruby-version }}-${{ hashFiles('solargraph-rspec/Gemfile.lock') }}
+          restore-keys: |
+            yardoc-${{ matrix.os }}-${{ matrix.ruby-version }}-
+
+      - name: Set up yardocs
+        if: steps.cache-yardocs.outputs.cache-hit != 'true'
+        run: cd solargraph-rspec && bundle exec yard gems
 
       - name: Run tests
-        run: bundle exec rspec
+        run: cd solargraph-rspec && bundle exec rspec --format progress

@@ -12,6 +12,4 @@ gem 'profile-viewer' # View profile from Vernier
 gem 'rake'           # Build
 gem 'rspec'          # Testing
 gem 'rubocop'        # Linting
-gem 'vernier'        # Profiling
-# Use https://github.com/lekemula/solargraph/tree/rspec-support until merged
-# gem 'solargraph', path: '../solargraph'
+# gem 'vernier'        # Profiling only on Ruby >= 3.2.1

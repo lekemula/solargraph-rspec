@@ -82,6 +82,8 @@ module Solargraph
 
         Environ.new(pins: pins)
       rescue StandardError => e
+        raise e if ENV['SOLARGRAPH_DEBUG']
+
         Solargraph.logger.warn(
           "[RSpec] Error processing global pins: #{e.message}\n#{e.backtrace.join("\n")}"
         )
@@ -181,6 +183,8 @@ module Solargraph
 
         Environ.new(requires: ['rspec'], pins: pins)
       rescue StandardError => e
+        raise e if ENV['SOLARGRAPH_DEBUG']
+
         Solargraph.logger.warn(
           "[RSpec] Error processing #{source_map.filename}: #{e.message}\n#{e.backtrace.join("\n")}"
         )
