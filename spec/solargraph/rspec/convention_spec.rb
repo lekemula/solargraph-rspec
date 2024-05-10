@@ -71,8 +71,11 @@ RSpec.describe Solargraph::Rspec::Convention do
     assert_public_instance_method(api_map, 'RSpec::ExampleGroups::SomeNamespaceTransaction#something', ['undefined'])
     assert_public_instance_method(api_map, 'RSpec::ExampleGroups::SomeNamespaceTransaction#something_else',
                                   ['undefined'])
-    assert_public_instance_method(api_map,
-                                  'RSpec::ExampleGroups::SomeNamespaceTransaction::NestedContext#nested_something', ['undefined'])
+    assert_public_instance_method(
+      api_map,
+      'RSpec::ExampleGroups::SomeNamespaceTransaction::NestedContext#nested_something',
+      ['undefined']
+    )
     expect(completion_at(filename, [6, 8])).to include('transaction')
     expect(completion_at(filename, [7, 8])).to include('something')
     expect(completion_at(filename, [7, 8])).to include('something_else')
@@ -310,7 +313,7 @@ RSpec.describe Solargraph::Rspec::Convention do
       before(:each) do
         Solargraph::Rspec::Convention.instance_variable_set(:@config, nil)
         @global_path = File.realpath(Dir.mktmpdir)
-        @orig_env = ENV['SOLARGRAPH_GLOBAL_CONFIG']
+        @orig_env = ENV.fetch('SOLARGRAPH_GLOBAL_CONFIG', nil)
         ENV['SOLARGRAPH_GLOBAL_CONFIG'] = File.join(@global_path, '.solargraph.yml')
 
         File.open(File.join(@global_path, '.solargraph.yml'), 'w') do |file|

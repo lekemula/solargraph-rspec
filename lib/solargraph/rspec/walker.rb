@@ -36,8 +36,8 @@ module Solargraph
         # @param node [Parser::AST::Node]
         # @return [Boolean]
         def matches?(node)
-          return unless node.type == node_type
-          return unless node.children
+          return false unless node.type == node_type
+          return false unless node.children
           return true if @args.empty?
 
           a_child_matches = node.children.first.is_a?(::Parser::AST::Node) && node.children.any? do |child|

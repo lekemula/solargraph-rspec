@@ -7,7 +7,7 @@ module Solargraph
   module Rspec
     # Utility methods for building pins and references.
     module Util
-      def self.build_public_method( # rubocop:disable Metrics/MethodLength
+      def self.build_public_method(
         ns,
         name,
         types: nil,

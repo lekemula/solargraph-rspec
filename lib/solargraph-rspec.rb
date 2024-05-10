@@ -1,3 +1,4 @@
+# rubocop:disable Naming/FileName
 # frozen_string_literal: true
 
 require 'solargraph'
@@ -15,3 +16,4 @@ module Solargraph
 end
 
 Solargraph::Convention.register Solargraph::Rspec::Convention
+# rubocop:enable Naming/FileName

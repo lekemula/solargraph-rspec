@@ -30,7 +30,7 @@ module Solargraph
           end
 
           rspec_walker.on_blocks_in_examples do |block_ast|
-            bind_closest_namespace(block_ast, source_map, override_scope: :instance)
+            bind_closest_namespace(block_ast, source_map)
 
             yield [] if block_given?
           end
@@ -41,7 +41,7 @@ module Solargraph
         # @param block_ast [Parser::AST::Node]
         # @param source_map [Solargraph::SourceMap]
         # @return [void]
-        def bind_closest_namespace(block_ast, source_map, override_scope: nil)
+        def bind_closest_namespace(block_ast, source_map)
           namespace_pin = closest_namespace_pin(namespace_pins, block_ast.loc.line)
           return unless namespace_pin
 

@@ -140,7 +140,7 @@ module Solargraph
           @handlers[:on_hook_block].each do |handler|
             handler.call(block_ast)
           end
-          
+
           # @param blocks_in_examples [Parser::AST::Node]
           each_block(block_ast.children[2]) do |blocks_in_examples|
             @handlers[:on_blocks_in_examples].each do |handler|
@@ -151,9 +151,7 @@ module Solargraph
 
         walker.walk
 
-        @handlers[:after_walk].each do |handler|
-          handler.call
-        end
+        @handlers[:after_walk].each(&:call)
       end
 
       private
@@ -176,8 +174,8 @@ module Solargraph
       # Find all describe/context blocks in the AST.
       # @param ast [Parser::AST::Node]
       # @yield [String, Parser::AST::Node]
-      def each_context_block(ast, parent_namespace = Rspec::ROOT_NAMESPACE, &block)
-        each_block(ast, parent_namespace) do |block_ast, parent_namespace|
+      def each_context_block(ast, root_namespace = Rspec::ROOT_NAMESPACE, &block)
+        each_block(ast, root_namespace) do |block_ast, parent_namespace|
           is_a_context = %i[describe context].include?(block_ast.children[0].children[1])
 
           next unless is_a_context

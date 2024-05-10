@@ -193,17 +193,13 @@ module Solargraph
       # @param source_map [SourceMap]
       # @return [Array<Pin::Base>]
       def include_helper_pins(helper_modules: HELPER_MODULES)
-        pins = []
-
-        helper_modules.each do |helper_module|
-          pins << Util.build_module_include(
+        helper_modules.map do |helper_module|
+          Util.build_module_include(
             root_example_group_namespace_pin,
             helper_module,
             root_example_group_namespace_pin.location
           )
         end
-
-        pins
       end
 
       # @return [Config]

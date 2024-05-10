@@ -10,6 +10,9 @@ Style/StringLiteralsInInterpolation:
   Enabled: true
   EnforcedStyle: double_quotes
 
+Style/Documentation:
+  Enabled: false
+
 Layout/LineLength:
   Max: 120
 
@@ -17,21 +20,22 @@ Metrics/ParameterLists:
   Enabled: false
 
 Metrics/AbcSize:
-  Exclude:
-    - spec/**/*.rb
+  Enabled: false
 
 Metrics/CyclomaticComplexity:
-  Exclude:
-    - spec/**/*.rb
+  Enabled: false
 
 Metrics/PerceivedComplexity:
-  Exclude:
-    - spec/**/*.rb
+  Enabled: false
 
 Metrics/MethodLength:
-  Exclude:
-    - spec/**/*.rb
+  Enabled: false
 
 Metrics/ModuleLength:
-  Exclude:
-    - spec/**/*.rb
+  Enabled: false
+
+Metrics/BlockLength:
+  Enabled: false
+
+Metrics/ClassLength:
+  Enabled: false

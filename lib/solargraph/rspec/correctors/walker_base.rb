@@ -18,7 +18,7 @@ module Solargraph
         # @param namespace_pins [Array<Solargraph::Pin::Base>]
         # @param rspec_walker [Solargraph::Rspec::SpecWalker]
         def initialize(namespace_pins:, rspec_walker:)
-          @namespace_pins = namespace_pins
+          super(namespace_pins: namespace_pins)
           @rspec_walker = rspec_walker
         end
       end
