@@ -55,14 +55,15 @@ module Solargraph
         )
       end
 
+      # @param ast [Parser::AST::Node]
       def self.build_location(ast, path)
         Solargraph::Location.new(
           File.expand_path(path),
           Solargraph::Range.from_to(
             ast.location.first_line,
-            0,
+            ast.location.column,
             ast.location.last_line,
-            ast.location.column
+            ast.location.last_column
           )
         )
       end

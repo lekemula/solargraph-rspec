@@ -20,7 +20,7 @@ RSpec.describe Solargraph::Rspec::Convention do
                                   ['Class<SomeNamespace::Transaction>']) do |pin|
       expect(pin.location.filename).to eq(filename)
       expect(pin.location.range.to_hash).to eq(
-        { start: { line: 0, character: 0 }, end: { line: 0, character: 15 } }
+        { start: { line: 0, character: 15 }, end: { line: 0, character: 41 } }
       )
     end
 
@@ -59,7 +59,15 @@ RSpec.describe Solargraph::Rspec::Convention do
       end
     RUBY
 
-    assert_public_instance_method(api_map, 'RSpec::ExampleGroups::SomeNamespaceTransaction#transaction', ['undefined'])
+    assert_public_instance_method(
+      api_map,
+      'RSpec::ExampleGroups::SomeNamespaceTransaction#transaction',
+      ['undefined']
+    ) do |pin|
+      expect(pin.location.range.to_hash).to eq(
+        { start: { line: 1, character: 2 }, end: { line: 1, character: 23 } }
+      )
+    end
     assert_public_instance_method(api_map, 'RSpec::ExampleGroups::SomeNamespaceTransaction#something', ['undefined'])
     assert_public_instance_method(api_map, 'RSpec::ExampleGroups::SomeNamespaceTransaction#something_else',
                                   ['undefined'])
