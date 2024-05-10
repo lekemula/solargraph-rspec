@@ -6,4 +6,4 @@ source 'https://rubygems.org'
 gemspec
 
 # Use https://github.com/lekemula/solargraph/tree/rspec-support until merged
-gem 'solargraph', path: '../solargraph'
+# gem 'solargraph', path: '../solargraph'
