@@ -15,16 +15,6 @@ module SolargraphHelpers
     api_map.catalog library # api_map should be defined in the spec
   end
 
-  def assert_entry_valid(pin, data, update: false)
-    effective_type = pin.return_type.map(&:tag)
-    specified_type = data['types']
-
-    return unless effective_type != specified_type
-    raise "#{pin.path} return type is wrong. Expected #{specified_type}, got: #{effective_type}" unless update
-
-    data['types'] = effective_type
-  end
-
   def assert_public_instance_method(map, query, return_type)
     pin = find_pin(query, map)
     expect(pin).to_not be_nil
@@ -58,10 +48,6 @@ module SolargraphHelpers
 
   def find_pins(path, map = api_map)
     map.pins.select { |p| p.path == path }
-  end
-
-  def local_pins(map = api_map)
-    map.pins.select(&:filename)
   end
 
   def completion_pins_at(filename, position, map = api_map)

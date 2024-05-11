@@ -1,5 +1,6 @@
 # frozen_string_literal: true
 
+require_relative 'code_coverage' # Needs to be required first
 require 'solargraph-rspec'
 require 'debug'
 

@@ -22,6 +22,7 @@ GEM
       irb (>= 1.5.0)
       reline (>= 0.3.1)
     diff-lcs (1.5.1)
+    docile (1.4.0)
     e2mmap (0.1.0)
     i18n (1.14.5)
       concurrent-ruby (~> 1.0)
@@ -83,6 +84,15 @@ GEM
     rubocop-ast (1.30.0)
       parser (>= 3.2.1.0)
     ruby-progressbar (1.13.0)
+    simplecov (0.22.0)
+      docile (~> 1.1)
+      simplecov-html (~> 0.11)
+      simplecov_json_formatter (~> 0.1)
+    simplecov-cobertura (2.1.0)
+      rexml
+      simplecov (~> 0.19)
+    simplecov-html (0.12.3)
+    simplecov_json_formatter (0.1.4)
     solargraph (0.50.0)
       backport (~> 1.2)
       benchmark
@@ -119,6 +129,8 @@ DEPENDENCIES
   rake
   rspec
   rubocop
+  simplecov
+  simplecov-cobertura
   solargraph-rspec!
 
 BUNDLED WITH

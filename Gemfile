@@ -6,10 +6,12 @@ source 'https://rubygems.org'
 gemspec
 
 # Development Dependencies
-gem 'bundler'        # Dependency management
-gem 'debug'          # Debugging
-gem 'profile-viewer' # View profile from Vernier
-gem 'rake'           # Build
-gem 'rspec'          # Testing
-gem 'rubocop'        # Linting
+gem 'bundler'             # Dependency management
+gem 'debug'               # Debugging
+gem 'profile-viewer'      # View profile from Vernier
+gem 'rake'                # Build
+gem 'rspec'               # Testing
+gem 'rubocop'             # Linting
+gem 'simplecov'           # Code coverage
+gem 'simplecov-cobertura' # Code coverage
 # gem 'vernier'        # Profiling only on Ruby >= 3.2.1
