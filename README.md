@@ -106,6 +106,7 @@ Contributing is easy:
 4. Run `bundle exec spec` to run the tests
 5. Introduce your awesome changes
 6. Ensure they are well covered with tests
+7. Record your changes in the [CHANGELOG.md](./CHANGELOG.md)
 7. Submit a pull request :rocket:
 
 ## License
