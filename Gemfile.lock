@@ -2,8 +2,8 @@ PATH
   remote: .
   specs:
     solargraph-rspec (0.1.0)
-      activesupport
-      solargraph
+      activesupport (~> 6.0)
+      solargraph (~> 0.49, >= 0.49.0)
 
 GEM
   remote: https://rubygems.org/
