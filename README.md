@@ -1,5 +1,6 @@
 # Solargraph::Rspec - A Solargraph plugin for better RSpec support
 
+[![Gem Version](https://badge.fury.io/rb/solargraph-rspec.svg)](https://badge.fury.io/rb/solargraph-rspec)
 ![Tests](https://github.com/lekemula/solargraph-rspec/actions/workflows/ruby.yml/badge.svg)
 [![codecov](https://codecov.io/gh/lekemula/solargraph-rspec/graph/badge.svg?token=FH7ER8ZDPW)](https://codecov.io/gh/lekemula/solargraph-rspec)
 
