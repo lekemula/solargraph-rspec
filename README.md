@@ -1,4 +1,4 @@
-# Solargraph::Rspec - A Solargraph plugin for better RSpec support
+# Solargraph::Rspec - A [Solargraph](https://solargraph.org/) plugin for better [RSpec](https://rspec.info/) support
 
 [![Gem Version](https://badge.fury.io/rb/solargraph-rspec.svg)](https://badge.fury.io/rb/solargraph-rspec)
 ![Tests](https://github.com/lekemula/solargraph-rspec/actions/workflows/ruby.yml/badge.svg)
