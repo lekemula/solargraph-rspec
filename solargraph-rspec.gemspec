@@ -28,7 +28,6 @@ Gem::Specification.new do |spec|
   spec.executables = spec.files.grep(%r{\Aexe/}) { |f| File.basename(f) }
   spec.require_paths = ['lib']
 
-  spec.add_runtime_dependency 'activesupport', '~> 6.0'
   spec.add_runtime_dependency 'solargraph', '~> 0.49', '>= 0.49.0'
 
   # For more information and examples about making a new gem, check out our

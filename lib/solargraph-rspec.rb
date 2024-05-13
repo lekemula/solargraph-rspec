@@ -2,8 +2,6 @@
 # frozen_string_literal: true
 
 require 'solargraph'
-require 'active_support'
-
 require_relative 'solargraph/rspec/version'
 require_relative 'solargraph/rspec/convention'
 
