@@ -9,6 +9,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - 
 
+## [0.1.1] - 2024-05-13
+
+### Removed
+- Removed redundant `active_support` dependency ([Issue #2](https://github.com/lekemula/solargraph-rspec/issues/2))
+
+### Fixed
+- Fixed completions inside `subject` and `subject!` blocks
+
 ## [0.1.0] - 2024-05-11 (First Release 🎉)
 
 ### Added
