@@ -105,9 +105,15 @@ module Solargraph
           end
         end
 
-        walker.on :send, [nil, :subject] do |ast|
+        walker.on :block do |block_ast|
+          next if block_ast.children.first.type != :send
+
+          method_ast = block_ast.children.first
+          method_name = method_ast.children[1]
+          next unless Rspec::SUBJECT_METHODS.include?(method_name.to_s)
+
           @handlers[:on_subject].each do |handler|
-            handler.call(ast)
+            handler.call(method_ast)
           end
         end
 

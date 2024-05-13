@@ -18,6 +18,7 @@ module Solargraph
     HELPER_MODULES = ['RSpec::Matchers'].freeze
     HOOK_METHODS = %w[before after around].freeze
     LET_METHODS = %w[let let!].freeze
+    SUBJECT_METHODS = %w[subject subject!].freeze
     EXAMPLE_METHODS = %w[
       example
       it

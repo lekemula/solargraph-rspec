@@ -268,6 +268,7 @@ RSpec.describe Solargraph::Rspec::Convention do
     load_string filename, <<~RUBY
       RSpec.describe SomeNamespace::Transaction, type: :model do
         let(:something) { 1 }
+        subject(:transaction) { someth }
 
         before do
           someth
@@ -275,7 +276,8 @@ RSpec.describe Solargraph::Rspec::Convention do
       end
     RUBY
 
-    expect(completion_at(filename, [4, 5])).to include('something')
+    expect(completion_at(filename, [2, 29])).to include('something')
+    expect(completion_at(filename, [5, 5])).to include('something')
   end
 
   it 'completes inside RSpec blocks in example context' do
