@@ -113,7 +113,7 @@ module Solargraph
           next unless Rspec::SUBJECT_METHODS.include?(method_name.to_s)
 
           @handlers[:on_subject].each do |handler|
-            handler.call(method_ast)
+            handler.call(method_ast, block_ast)
           end
         end
 

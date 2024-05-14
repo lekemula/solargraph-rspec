@@ -7,7 +7,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-- 
+### Fixed
+
+- Fix subject without name block completion: `subject { ... }`
 
 ## [0.1.1] - 2024-05-13
 

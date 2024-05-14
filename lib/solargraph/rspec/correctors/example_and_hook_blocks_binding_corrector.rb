@@ -35,8 +35,8 @@ module Solargraph
             yield [] if block_given?
           end
 
-          rspec_walker.on_subject do |subject_ast|
-            bind_closest_namespace(subject_ast, source_map)
+          rspec_walker.on_subject do |_subject_ast, block_ast|
+            bind_closest_namespace(block_ast, source_map)
 
             yield [] if block_given?
           end

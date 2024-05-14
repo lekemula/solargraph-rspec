@@ -293,12 +293,17 @@ RSpec.describe Solargraph::Rspec::Convention do
         before do
           some_method_with_block { someth }
         end
+
+        context 'subject without name' do
+          subject { someth }
+        end
       end
     RUBY
 
     expect(completion_at(filename, [4, 9])).to include('something')
     expect(completion_at(filename, [5, 17])).to include('something')
     expect(completion_at(filename, [9, 33])).to include('something')
+    expect(completion_at(filename, [13, 15])).to include('something')
   end
 
   it 'completes inside RSpec let-like methods' do
