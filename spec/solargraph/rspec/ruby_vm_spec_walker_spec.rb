@@ -34,6 +34,19 @@ RSpec.describe Solargraph::Rspec::RubyVMSpecWalker do
       end
     end
 
+    describe '.a_context_block?' do
+      it 'returns true for subject block with name' do
+        node = parse('subject(:something) { }')
+        expect(Solargraph::Rspec::RubyVMSpecWalker::NodeTypes.a_subject_block?(node.children[2])).to be(true)
+      end
+
+      it 'returns true for subject block without name' do
+        node = parse('subject { }')
+
+        expect(Solargraph::Rspec::RubyVMSpecWalker::NodeTypes.a_subject_block?(node.children[2])).to be(true)
+      end
+    end
+
     describe '.context_description_node' do
       it 'returns correct node of context description' do
         node = parse('describe "something" do end')
@@ -49,6 +62,32 @@ RSpec.describe Solargraph::Rspec::RubyVMSpecWalker do
 
         desc = Solargraph::Rspec::RubyVMSpecWalker::NodeTypes.context_description_node(node.children[2])
         expect(desc.children.last).to eq(:SomeClass)
+      end
+    end
+
+    describe '.let_method_name' do
+      it 'returns correct method name for subject block' do
+        node = parse('subject(:something) { }')
+        name = Solargraph::Rspec::RubyVMSpecWalker::NodeTypes.let_method_name(node.children[2])
+        expect(name).to eq('something')
+      end
+
+      it 'returns nil for subject block without a name' do
+        node = parse('subject { }')
+        name = Solargraph::Rspec::RubyVMSpecWalker::NodeTypes.let_method_name(node.children[2])
+        expect(name).to eq(nil)
+      end
+
+      it 'returns correct method name for let block' do
+        node = parse('let(:something) { }')
+        name = Solargraph::Rspec::RubyVMSpecWalker::NodeTypes.let_method_name(node.children[2])
+        expect(name).to eq('something')
+      end
+
+      it 'returns nil for let block without a name' do
+        node = parse('let { }')
+        name = Solargraph::Rspec::RubyVMSpecWalker::NodeTypes.let_method_name(node.children[2])
+        expect(name).to eq(nil)
       end
     end
   end
@@ -108,29 +147,29 @@ RSpec.describe Solargraph::Rspec::RubyVMSpecWalker do
   #   end
   # end
 
-  # describe '#on_subject' do
-  #   it 'yields each context block' do
-  #     code = <<~RUBY
-  #       RSpec.describe SomeClass, type: :model do
-  #         subject(:test) { SomeClass.new }
+  describe '#on_subject' do
+    it 'yields each context block' do
+      code = <<~RUBY
+        RSpec.describe SomeClass, type: :model do
+          subject(:test) { SomeClass.new }
 
-  #         context 'when something' do
-  #           subject { test }
-  #         end
-  #       end
-  #     RUBY
+          context 'when something' do
+            subject { test }
+          end
+        end
+      RUBY
 
-  #     called = 0
-  #     # @param walker [Solargraph::Rspec::SpecWalker]
-  #     walk_code(code) do |walker|
-  #       walker.on_subject do |_|
-  #         called += 1
-  #       end
-  #     end
+      called = 0
+      # @param walker [Solargraph::Rspec::SpecWalker]
+      walk_code(code) do |walker|
+        walker.on_subject do |_|
+          called += 1
+        end
+      end
 
-  #     expect(called).to eq(2)
-  #   end
-  # end
+      expect(called).to eq(2)
+    end
+  end
 
   describe '#on_each_context_block' do
     it 'yields each context block' do

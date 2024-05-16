@@ -27,6 +27,19 @@ module Solargraph
           Solargraph::Rspec::CONTEXT_METHODS.include?(method_name.to_s)
         end
 
+        # @param ast [RubyVM::AbstractSyntaxTree::Node]
+        # @return [Boolean]
+        def self.a_subject_block?(block_ast)
+          return false unless a_block?(block_ast)
+
+          method_call = %i[CALL FCALL].include?(block_ast.children[0].type)
+          return false unless method_call
+
+          method_name = block_ast.children[0].children.select { |child| child.is_a?(Symbol) }.first
+
+          Solargraph::Rspec::SUBJECT_METHODS.include?(method_name.to_s)
+        end
+
         def self.a_constant?(ast)
           %i[CONST COLON2].include?(ast.type)
         end
@@ -40,6 +53,12 @@ module Solargraph
           when :FCALL # describe "something" do end
             block_ast.children[0].children[1].children[0]
           end
+        end
+
+        # @param block_ast [RubyVM::AbstractSyntaxTree::Node]
+        # @return [String]
+        def self.let_method_name(block_ast)
+          block_ast.children[0].children[1]&.children&.[](0)&.children&.[](0)&.to_s
         end
       end
 
@@ -205,17 +224,17 @@ module Solargraph
         #   end
         # end
 
-        # walker.on :SCOPE do |block_ast|
-        #   next if block_ast.children.first.type != :send
+        walker.on :ITER do |block_ast|
+          next unless NodeTypes.a_subject_block?(block_ast)
 
-        #   method_ast = block_ast.children.first
-        #   method_name = method_ast.children[1]
-        #   next unless Rspec::SUBJECT_METHODS.include?(method_name.to_s)
+          # method_ast = block_ast.children.first
+          method_name = NodeTypes.let_method_name(block_ast)
 
-        #   @handlers[:on_subject].each do |handler|
-        #     handler.call(method_ast, block_ast)
-        #   end
-        # end
+          @handlers[:on_subject].each do |handler|
+            method_ast = block_ast # TODO: Only use block_ast and reuse NodeTypes.let_method_name
+            handler.call(method_ast, block_ast)
+          end
+        end
 
         # walker.on :SCOPE do |block_ast|
         #   next if block_ast.children.first.type != :send
