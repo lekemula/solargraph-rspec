@@ -263,12 +263,12 @@ module Solargraph
             handler.call(block_ast)
           end
 
-          # # @param blocks_in_examples [Parser::AST::Node]
-          # each_block(block_ast.children[2]) do |blocks_in_examples|
-          #   @handlers[:on_blocks_in_examples].each do |handler|
-          #     handler.call(blocks_in_examples)
-          #   end
-          # end
+          # @param blocks_in_examples [RubyVM::AbstractSyntaxTree::Node]
+          each_block(block_ast.children[1]) do |blocks_in_examples|
+            @handlers[:on_blocks_in_examples].each do |handler|
+              handler.call(blocks_in_examples)
+            end
+          end
         end
 
         walker.on :ITER do |block_ast|
@@ -278,12 +278,12 @@ module Solargraph
             handler.call(block_ast)
           end
 
-          # # @param blocks_in_examples [Parser::AST::Node]
-          # each_block(block_ast.children[2]) do |blocks_in_examples|
-          #   @handlers[:on_blocks_in_examples].each do |handler|
-          #     handler.call(blocks_in_examples)
-          #   end
-          # end
+          # @param blocks_in_examples [RubyVM::AbstractSyntaxTree::Node]
+          each_block(block_ast.children[1]) do |blocks_in_examples|
+            @handlers[:on_blocks_in_examples].each do |handler|
+              handler.call(blocks_in_examples)
+            end
+          end
         end
 
         walker.walk

@@ -271,31 +271,35 @@ RSpec.describe Solargraph::Rspec::RubyVMSpecWalker do
     end
   end
 
-  # describe '#on_blocks_in_examples' do
-  #   it 'yields each context block' do
-  #     code = <<~RUBY
-  #       RSpec.describe SomeClass, type: :model do
-  #         it 'does something' do
-  #           expect { subject }.to change { SomeClass.count }.by(1)
-  #         end
+  describe '#on_blocks_in_examples' do
+    it 'yields each context block' do
+      code = <<~RUBY
+        RSpec.describe SomeClass, type: :model do
+          it 'does something' do
+            expect { subject }.to change { SomeClass.count }.by(1)
+          end
 
-  #         context 'when something' do
-  #           it 'does something' do
-  #             do_something { subject }
-  #           end
-  #         end
-  #       end
-  #     RUBY
+          context 'when something' do
+            around do
+              do_something { subject }
+            end
 
-  #     called = 0
-      # @param walker [Solargraph::Rspec::RubyVMSpecWalker]
-  #     walk_code(code) do |walker|
-  #       walker.on_blocks_in_examples do |_|
-  #         called += 1
-  #       end
-  #     end
+            it 'does something' do
+              do_something_too { subject }
+            end
+          end
+        end
+      RUBY
 
-  #     expect(called).to eq(3)
-  #   end
-  # end
+      called = 0
+      # @param walker [Solargraph::Rspec::SpecWalker]
+      walk_code(code) do |walker|
+        walker.on_blocks_in_examples do |_|
+          called += 1
+        end
+      end
+
+      expect(called).to eq(4)
+    end
+  end
 end

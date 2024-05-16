@@ -173,8 +173,12 @@ RSpec.describe Solargraph::Rspec::SpecWalker do
           end
 
           context 'when something' do
-            it 'does something' do
+            around do
               do_something { subject }
+            end
+
+            it 'does something' do
+              do_something_too { subject }
             end
           end
         end
@@ -188,7 +192,7 @@ RSpec.describe Solargraph::Rspec::SpecWalker do
         end
       end
 
-      expect(called).to eq(3)
+      expect(called).to eq(4)
     end
   end
 end
