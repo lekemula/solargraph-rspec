@@ -17,31 +17,35 @@ module Solargraph
         # @param ast [RubyVM::AbstractSyntaxTree::Node]
         # @return [Boolean]
         def self.a_context_block?(block_ast)
-          return false unless a_block?(block_ast)
-
-          method_call = %i[CALL FCALL].include?(block_ast.children[0].type)
-          return false unless method_call
-
-          method_name = block_ast.children[0].children.select { |child| child.is_a?(Symbol) }.first
-
-          Solargraph::Rspec::CONTEXT_METHODS.include?(method_name.to_s)
+          Solargraph::Rspec::CONTEXT_METHODS.include?(method_with_block_name(block_ast))
         end
 
         # @param ast [RubyVM::AbstractSyntaxTree::Node]
         # @return [Boolean]
         def self.a_subject_block?(block_ast)
-          return false unless a_block?(block_ast)
+          Solargraph::Rspec::SUBJECT_METHODS.include?(method_with_block_name(block_ast))
+        end
 
-          method_call = %i[CALL FCALL].include?(block_ast.children[0].type)
-          return false unless method_call
-
-          method_name = block_ast.children[0].children.select { |child| child.is_a?(Symbol) }.first
-
-          Solargraph::Rspec::SUBJECT_METHODS.include?(method_name.to_s)
+        # @param ast [RubyVM::AbstractSyntaxTree::Node]
+        # @param config [Config]
+        # @return [Boolean]
+        def self.a_let_block?(block_ast, config)
+          config.let_methods.map(&:to_s).include?(method_with_block_name(block_ast))
         end
 
         def self.a_constant?(ast)
           %i[CONST COLON2].include?(ast.type)
+        end
+
+        # @param block_ast [RubyVM::AbstractSyntaxTree::Node]
+        # @return [String, nil]
+        def self.method_with_block_name(block_ast)
+          return nil unless a_block?(block_ast)
+
+          method_call = %i[CALL FCALL].include?(block_ast.children[0].type)
+          return nil unless method_call
+
+          block_ast.children[0].children.select { |child| child.is_a?(Symbol) }.first&.to_s
         end
 
         # @param block_ast [RubyVM::AbstractSyntaxTree::Node]
@@ -216,13 +220,17 @@ module Solargraph
         #   end
         # end
 
-        # config.let_methods.each do |let_method|
-        #   walker.on :send, [nil, let_method] do |ast|
-        #     @handlers[:on_let_method].each do |handler|
-        #       handler.call(ast)
-        #     end
-        #   end
-        # end
+        walker.on :ITER do |block_ast|
+          next unless NodeTypes.a_let_block?(block_ast, config)
+
+          # method_ast = block_ast.children.first
+          method_name = NodeTypes.let_method_name(block_ast)
+
+          @handlers[:on_let_method].each do |handler|
+            method_ast = block_ast # TODO: We used to pass :send node and not :block
+            handler.call(method_ast)
+          end
+        end
 
         walker.on :ITER do |block_ast|
           next unless NodeTypes.a_subject_block?(block_ast)

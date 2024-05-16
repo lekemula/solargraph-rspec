@@ -123,29 +123,29 @@ RSpec.describe Solargraph::Rspec::RubyVMSpecWalker do
   #   end
   # end
 
-  # describe '#on_let_method' do
-  #   it 'yields each context block' do
-  #     code = <<~RUBY
-  #       RSpec.describe SomeClass, type: :model do
-  #         let(:test) { SomeClass.new }
+  describe '#on_let_method' do
+    it 'yields each context block' do
+      code = <<~RUBY
+        RSpec.describe SomeClass, type: :model do
+          let(:test) { SomeClass.new }
 
-  #         context 'when something' do
-  #           let(:test_2) { SomeClass.new }
-  #         end
-  #       end
-  #     RUBY
+          context 'when something' do
+            let(:test_2) { SomeClass.new }
+          end
+        end
+      RUBY
 
-  #     called = 0
-  #     # @param walker [Solargraph::Rspec::SpecWalker]
-  #     walk_code(code) do |walker|
-  #       walker.on_let_method do |_|
-  #         called += 1
-  #       end
-  #     end
+      called = 0
+      # @param walker [Solargraph::Rspec::SpecWalker]
+      walk_code(code) do |walker|
+        walker.on_let_method do |_|
+          called += 1
+        end
+      end
 
-  #     expect(called).to eq(2)
-  #   end
-  # end
+      expect(called).to eq(2)
+    end
+  end
 
   describe '#on_subject' do
     it 'yields each context block' do
