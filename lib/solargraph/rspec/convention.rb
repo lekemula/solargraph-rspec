@@ -2,6 +2,7 @@
 
 require_relative 'config'
 require_relative 'spec_walker'
+require_relative 'ruby_vm_spec_walker'
 require_relative 'correctors/context_block_namespace_corrector'
 require_relative 'correctors/example_and_hook_blocks_binding_corrector'
 require_relative 'correctors/described_class_corrector'
