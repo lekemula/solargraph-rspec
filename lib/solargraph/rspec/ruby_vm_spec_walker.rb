@@ -215,22 +215,20 @@ module Solargraph
 
       # @return [void]
       def walk!
-        each_context_block(@walker.ast, Rspec::ROOT_NAMESPACE) do |namespace_name, ast|
+        each_context_block(@walker.ast, Rspec::ROOT_NAMESPACE) do |namespace_name, block_ast|
+          desc_node = NodeTypes.context_description_node(block_ast)
+
+          if NodeTypes.a_constant?(desc_node)
+            @handlers[:on_described_class].each do |handler|
+              class_name = RspecContextNamespace.from_block_ast(block_ast)
+              handler.call(block_ast, class_name)
+            end
+          end
+
           @handlers[:on_each_context_block].each do |handler|
-            handler.call(namespace_name, ast)
+            handler.call(namespace_name, block_ast)
           end
         end
-
-        # rspec_const = ::Parser::AST::Node.new(:CONST, [nil, :RSpec])
-        # walker.on :send, [rspec_const, :describe, :any] do |ast|
-        #   @handlers[:on_described_class].each do |handler|
-        #     class_ast = ast.children[2]
-        #     next unless class_ast
-
-        #     class_name = full_constant_name(class_ast)
-        #     handler.call(class_ast, class_name)
-        #   end
-        # end
 
         walker.on :ITER do |block_ast|
           next unless NodeTypes.a_let_block?(block_ast, config)

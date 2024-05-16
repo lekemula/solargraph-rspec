@@ -14,14 +14,14 @@ RSpec.describe Solargraph::Rspec::RubyVMSpecWalker do
     describe '.a_block?' do
       it 'returns true for block nodes' do
         node = parse('describe "something" do end')
-        expect(Solargraph::Rspec::RubyVMSpecWalker::NodeTypes.a_block?(node.children[2])).to be(true)
+        expect(described_class.a_block?(node.children[2])).to be(true)
       end
     end
 
     describe '.a_context_block?' do
       it 'returns true for RSpec context block nodes' do
         node = parse('describe "something" do end')
-        expect(Solargraph::Rspec::RubyVMSpecWalker::NodeTypes.a_context_block?(node.children[2])).to be(true)
+        expect(described_class.a_context_block?(node.children[2])).to be(true)
       end
 
       it 'returns true for RSpec root context block nodes' do
@@ -30,47 +30,47 @@ RSpec.describe Solargraph::Rspec::RubyVMSpecWalker do
           end
         RUBY
 
-        expect(Solargraph::Rspec::RubyVMSpecWalker::NodeTypes.a_context_block?(node.children[2])).to be(true)
+        expect(described_class.a_context_block?(node.children[2])).to be(true)
       end
     end
 
     describe '.a_context_block?' do
       it 'returns true for subject block with name' do
         node = parse('subject(:something) { }')
-        expect(Solargraph::Rspec::RubyVMSpecWalker::NodeTypes.a_subject_block?(node.children[2])).to be(true)
+        expect(described_class.a_subject_block?(node.children[2])).to be(true)
       end
 
       it 'returns true for subject block without name' do
         node = parse('subject { }')
 
-        expect(Solargraph::Rspec::RubyVMSpecWalker::NodeTypes.a_subject_block?(node.children[2])).to be(true)
+        expect(described_class.a_subject_block?(node.children[2])).to be(true)
       end
     end
 
     describe '.a_example_block?' do
       it 'returns true for example block with name' do
         node = parse('it("does something") { }')
-        expect(Solargraph::Rspec::RubyVMSpecWalker::NodeTypes.a_example_block?(node.children[2])).to be(true)
+        expect(described_class.a_example_block?(node.children[2])).to be(true)
       end
 
       it 'returns true for example block without name' do
         node = parse('it { }')
 
-        expect(Solargraph::Rspec::RubyVMSpecWalker::NodeTypes.a_example_block?(node.children[2])).to be(true)
+        expect(described_class.a_example_block?(node.children[2])).to be(true)
       end
     end
 
     describe '.a_hook_block?' do
       it 'returns true for example block with name' do
         node = parse('before { }')
-        expect(Solargraph::Rspec::RubyVMSpecWalker::NodeTypes.a_hook_block?(node.children[2])).to be(true)
+        expect(described_class.a_hook_block?(node.children[2])).to be(true)
       end
     end
 
     describe '.context_description_node' do
       it 'returns correct node of context description' do
         node = parse('describe "something" do end')
-        desc = Solargraph::Rspec::RubyVMSpecWalker::NodeTypes.context_description_node(node.children[2])
+        desc = described_class.context_description_node(node.children[2])
         expect(desc.children.first).to eq('something')
       end
 
@@ -80,7 +80,7 @@ RSpec.describe Solargraph::Rspec::RubyVMSpecWalker do
           end
         RUBY
 
-        desc = Solargraph::Rspec::RubyVMSpecWalker::NodeTypes.context_description_node(node.children[2])
+        desc = described_class.context_description_node(node.children[2])
         expect(desc.children.last).to eq(:SomeClass)
       end
     end
@@ -88,32 +88,32 @@ RSpec.describe Solargraph::Rspec::RubyVMSpecWalker do
     describe '.let_method_name' do
       it 'returns correct method name for subject block' do
         node = parse('subject(:something) { }')
-        name = Solargraph::Rspec::RubyVMSpecWalker::NodeTypes.let_method_name(node.children[2])
+        name = described_class.let_method_name(node.children[2])
         expect(name).to eq('something')
       end
 
       it 'returns nil for subject block without a name' do
         node = parse('subject { }')
-        name = Solargraph::Rspec::RubyVMSpecWalker::NodeTypes.let_method_name(node.children[2])
+        name = described_class.let_method_name(node.children[2])
         expect(name).to eq(nil)
       end
 
       it 'returns correct method name for let block' do
         node = parse('let(:something) { }')
-        name = Solargraph::Rspec::RubyVMSpecWalker::NodeTypes.let_method_name(node.children[2])
+        name = described_class.let_method_name(node.children[2])
         expect(name).to eq('something')
       end
 
       it 'returns nil for let block without a name' do
         node = parse('let { }')
-        name = Solargraph::Rspec::RubyVMSpecWalker::NodeTypes.let_method_name(node.children[2])
+        name = described_class.let_method_name(node.children[2])
         expect(name).to eq(nil)
       end
     end
   end
 
   # @param code [String]
-  # @yieldparam [Solargraph::Rspec::SpecWalker]
+  # @yieldparam [Solargraph::Rspec::RubyVMSpecWalker]
   # @return [void]
   def walk_code(code)
     load_string filename, code
@@ -124,24 +124,24 @@ RSpec.describe Solargraph::Rspec::RubyVMSpecWalker do
     walker.walk!
   end
 
-  # describe '#on_described_class' do
-  #   it 'yields each context block' do
-  #     code = <<~RUBY
-  #       RSpec.describe SomeClass, type: :model do
-  #       end
-  #     RUBY
+  describe '#on_described_class' do
+    it 'yields each context block' do
+      code = <<~RUBY
+        RSpec.describe SomeClass, type: :model do
+        end
+      RUBY
 
-  #     called = 0
-  #     # @param walker [Solargraph::Rspec::SpecWalker]
-  #     walk_code(code) do |walker|
-  #       walker.on_described_class do |_|
-  #         called += 1
-  #       end
-  #     end
+      called = 0
+      # @param walker [Solargraph::Rspec::RubyVMSpecWalker]
+      walk_code(code) do |walker|
+        walker.on_described_class do |_|
+          called += 1
+        end
+      end
 
-  #     expect(called).to eq(1)
-  #   end
-  # end
+      expect(called).to eq(1)
+    end
+  end
 
   describe '#on_let_method' do
     it 'yields each context block' do
