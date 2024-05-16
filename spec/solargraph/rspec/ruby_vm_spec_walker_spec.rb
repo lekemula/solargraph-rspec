@@ -47,6 +47,19 @@ RSpec.describe Solargraph::Rspec::RubyVMSpecWalker do
       end
     end
 
+    describe '.a_example_block?' do
+      it 'returns true for example block with name' do
+        node = parse('it("does something") { }')
+        expect(Solargraph::Rspec::RubyVMSpecWalker::NodeTypes.a_example_block?(node.children[2])).to be(true)
+      end
+
+      it 'returns true for example block without name' do
+        node = parse('it { }')
+
+        expect(Solargraph::Rspec::RubyVMSpecWalker::NodeTypes.a_example_block?(node.children[2])).to be(true)
+      end
+    end
+
     describe '.context_description_node' do
       it 'returns correct node of context description' do
         node = parse('describe "something" do end')
@@ -196,31 +209,31 @@ RSpec.describe Solargraph::Rspec::RubyVMSpecWalker do
     end
   end
 
-  # describe '#on_example_block' do
-  #   it 'yields each context block' do
-  #     code = <<~RUBY
-  #       RSpec.describe SomeClass, type: :model do
-  #         it 'does something' do
-  #         end
+  describe '#on_example_block' do
+    it 'yields each context block' do
+      code = <<~RUBY
+        RSpec.describe SomeClass, type: :model do
+          it 'does something' do
+          end
 
-  #         context 'when something' do
-  #           it 'does something' do
-  #           end
-  #         end
-  #       end
-  #     RUBY
+          context 'when something' do
+            it 'does something' do
+            end
+          end
+        end
+      RUBY
 
-  #     called = 0
-  #     # @param walker [Solargraph::Rspec::SpecWalker]
-  #     walk_code(code) do |walker|
-  #       walker.on_example_block do |_|
-  #         called += 1
-  #       end
-  #     end
+      called = 0
+      # @param walker [Solargraph::Rspec::SpecWalker]
+      walk_code(code) do |walker|
+        walker.on_example_block do |_|
+          called += 1
+        end
+      end
 
-  #     expect(called).to eq(2)
-  #   end
-  # end
+      expect(called).to eq(2)
+    end
+  end
 
   # describe '#on_hook_block' do
   #   it 'yields each context block' do

@@ -27,6 +27,12 @@ module Solargraph
         end
 
         # @param ast [RubyVM::AbstractSyntaxTree::Node]
+        # @return [Boolean]
+        def self.a_example_block?(block_ast)
+          Solargraph::Rspec::EXAMPLE_METHODS.include?(method_with_block_name(block_ast))
+        end
+
+        # @param ast [RubyVM::AbstractSyntaxTree::Node]
         # @param config [Config]
         # @return [Boolean]
         def self.a_let_block?(block_ast, config)
@@ -244,24 +250,20 @@ module Solargraph
           end
         end
 
-        # walker.on :SCOPE do |block_ast|
-        #   next if block_ast.children.first.type != :send
+        walker.on :ITER do |block_ast|
+          next unless NodeTypes.a_example_block?(block_ast)
 
-        #   method_ast = block_ast.children.first
-        #   method_name = method_ast.children[1]
-        #   next unless Rspec::EXAMPLE_METHODS.include?(method_name.to_s)
+          @handlers[:on_example_block].each do |handler|
+            handler.call(block_ast)
+          end
 
-        #   @handlers[:on_example_block].each do |handler|
-        #     handler.call(block_ast)
-        #   end
-
-        #   # @param blocks_in_examples [Parser::AST::Node]
-        #   each_block(block_ast.children[2]) do |blocks_in_examples|
-        #     @handlers[:on_blocks_in_examples].each do |handler|
-        #       handler.call(blocks_in_examples)
-        #     end
-        #   end
-        # end
+          # # @param blocks_in_examples [Parser::AST::Node]
+          # each_block(block_ast.children[2]) do |blocks_in_examples|
+          #   @handlers[:on_blocks_in_examples].each do |handler|
+          #     handler.call(blocks_in_examples)
+          #   end
+          # end
+        end
 
         # walker.on :SCOPE do |block_ast|
         #   next if block_ast.children.first.type != :send
