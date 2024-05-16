@@ -60,6 +60,13 @@ RSpec.describe Solargraph::Rspec::RubyVMSpecWalker do
       end
     end
 
+    describe '.a_hook_block?' do
+      it 'returns true for example block with name' do
+        node = parse('before { }')
+        expect(Solargraph::Rspec::RubyVMSpecWalker::NodeTypes.a_hook_block?(node.children[2])).to be(true)
+      end
+    end
+
     describe '.context_description_node' do
       it 'returns correct node of context description' do
         node = parse('describe "something" do end')
@@ -149,7 +156,7 @@ RSpec.describe Solargraph::Rspec::RubyVMSpecWalker do
       RUBY
 
       called = 0
-      # @param walker [Solargraph::Rspec::SpecWalker]
+      # @param walker [Solargraph::Rspec::RubyVMSpecWalker]
       walk_code(code) do |walker|
         walker.on_let_method do |_|
           called += 1
@@ -173,7 +180,7 @@ RSpec.describe Solargraph::Rspec::RubyVMSpecWalker do
       RUBY
 
       called = 0
-      # @param walker [Solargraph::Rspec::SpecWalker]
+      # @param walker [Solargraph::Rspec::RubyVMSpecWalker]
       walk_code(code) do |walker|
         walker.on_subject do |_|
           called += 1
@@ -198,7 +205,7 @@ RSpec.describe Solargraph::Rspec::RubyVMSpecWalker do
       RUBY
 
       called = 0
-      # @param walker [Solargraph::Rspec::SpecWalker]
+      # @param walker [Solargraph::Rspec::RubyVMSpecWalker]
       walk_code(code) do |walker|
         walker.on_each_context_block do |_|
           called += 1
@@ -224,7 +231,7 @@ RSpec.describe Solargraph::Rspec::RubyVMSpecWalker do
       RUBY
 
       called = 0
-      # @param walker [Solargraph::Rspec::SpecWalker]
+      # @param walker [Solargraph::Rspec::RubyVMSpecWalker]
       walk_code(code) do |walker|
         walker.on_example_block do |_|
           called += 1
@@ -235,34 +242,34 @@ RSpec.describe Solargraph::Rspec::RubyVMSpecWalker do
     end
   end
 
-  # describe '#on_hook_block' do
-  #   it 'yields each context block' do
-  #     code = <<~RUBY
-  #       RSpec.describe SomeClass, type: :model do
-  #         before do
-  #         end
+  describe '#on_hook_block' do
+    it 'yields each context block' do
+      code = <<~RUBY
+        RSpec.describe SomeClass, type: :model do
+          before do
+          end
 
-  #         context 'when something' do
-  #           after do
-  #           end
+          context 'when something' do
+            after do
+            end
 
-  #           around do
-  #           end
-  #         end
-  #       end
-  #     RUBY
+            around do
+            end
+          end
+        end
+      RUBY
 
-  #     called = 0
-  #     # @param walker [Solargraph::Rspec::SpecWalker]
-  #     walk_code(code) do |walker|
-  #       walker.on_hook_block do |_|
-  #         called += 1
-  #       end
-  #     end
+      called = 0
+      # @param walker [Solargraph::Rspec::RubyVMSpecWalker]
+      walk_code(code) do |walker|
+        walker.on_hook_block do |_|
+          called += 1
+        end
+      end
 
-  #     expect(called).to eq(3)
-  #   end
-  # end
+      expect(called).to eq(3)
+    end
+  end
 
   # describe '#on_blocks_in_examples' do
   #   it 'yields each context block' do
@@ -281,7 +288,7 @@ RSpec.describe Solargraph::Rspec::RubyVMSpecWalker do
   #     RUBY
 
   #     called = 0
-  #     # @param walker [Solargraph::Rspec::SpecWalker]
+      # @param walker [Solargraph::Rspec::RubyVMSpecWalker]
   #     walk_code(code) do |walker|
   #       walker.on_blocks_in_examples do |_|
   #         called += 1
