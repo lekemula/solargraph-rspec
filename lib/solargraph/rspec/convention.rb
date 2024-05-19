@@ -125,7 +125,10 @@ module Solargraph
 
         # @type [Pin::Method, nil]
         described_class_pin = nil
-        Correctors::DescribedClassCorrector.new(namespace_pins: namespace_pins, rspec_walker: rspec_walker).correct(
+        Correctors::DescribedClassCorrector.new(
+          namespace_pins: namespace_pins,
+          rspec_walker: rvm_rspec_walker
+        ).correct(
           source_map
         ) do |pins_to_add|
           described_class_pin = pins_to_add.first

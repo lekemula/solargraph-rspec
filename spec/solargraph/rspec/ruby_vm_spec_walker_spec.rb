@@ -1,5 +1,8 @@
 # frozen_string_literal: true
 
+# TODO: Add more test cases:
+#   - Block yields
+#   - NodeTypes unhappy paths
 RSpec.describe Solargraph::Rspec::RubyVMSpecWalker do
   let(:api_map) { Solargraph::ApiMap.new }
   let(:filename) { File.expand_path('spec/models/some_namespace/transaction_spec.rb') }
@@ -127,15 +130,16 @@ RSpec.describe Solargraph::Rspec::RubyVMSpecWalker do
   describe '#on_described_class' do
     it 'yields each context block' do
       code = <<~RUBY
-        RSpec.describe SomeClass, type: :model do
+        RSpec.describe SomeNamespace::SomeClass, type: :model do
         end
       RUBY
 
       called = 0
       # @param walker [Solargraph::Rspec::RubyVMSpecWalker]
       walk_code(code) do |walker|
-        walker.on_described_class do |_|
+        walker.on_described_class do |_, class_name, _|
           called += 1
+          expect(class_name).to eq('SomeNamespace::SomeClass')
         end
       end
 

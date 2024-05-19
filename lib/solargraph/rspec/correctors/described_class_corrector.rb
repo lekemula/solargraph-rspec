@@ -9,11 +9,12 @@ module Solargraph
         # @param source_map [Solargraph::SourceMap]
         # @return [void]
         def correct(_source_map)
-          rspec_walker.on_described_class do |ast, described_class_name|
-            namespace_pin = closest_namespace_pin(namespace_pins, ast.loc.line)
+          # TODO: Remove ast
+          rspec_walker.on_described_class do |_ast, described_class_name, location_range|
+            namespace_pin = closest_namespace_pin(namespace_pins, location_range.start.line)
             next unless namespace_pin
 
-            described_class_pin = rspec_described_class_method(namespace_pin, ast, described_class_name)
+            described_class_pin = rspec_described_class_method(namespace_pin, location_range, described_class_name)
             yield [described_class_pin].compact if block_given?
           end
         end
@@ -21,15 +22,15 @@ module Solargraph
         private
 
         # @param namespace [Pin::Namespace]
-        # @param ast [Parser::AST::Node]
+        # @param location_range [Solargraph::Range]
         # @param described_class_name [String]
         # @return [Pin::Method, nil]
-        def rspec_described_class_method(namespace, ast, described_class_name)
+        def rspec_described_class_method(namespace, location_range, described_class_name)
           Util.build_public_method(
             namespace,
             'described_class',
             types: ["Class<#{described_class_name}>"],
-            location: Util.build_location(ast, namespace.filename),
+            location: PinFactory.build_location(location_range, namespace.filename),
             scope: :instance
           )
         end

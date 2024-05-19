@@ -78,9 +78,31 @@ module Solargraph
         end
       end
 
+      class FullConstantName
+        class << self
+          # @param ast [RubyVM::AbstractSyntaxTree::Node]
+          # @return [String]
+          def from_ast(ast)
+            raise 'Node is not a constant' unless NodeTypes.a_constant?(ast)
+
+            if ast.type == :CONST
+              ast.children[0].to_s
+            elsif ast.type == :COLON2
+              name = ast.children[1].to_s
+              "#{from_ast(ast.children[0])}::#{name}"
+            end
+          end
+
+          def from_context_block_ast(block_ast)
+            ast = NodeTypes.context_description_node(block_ast)
+            from_ast(ast)
+          end
+        end
+      end
+
       class RspecContextNamespace
         class << self
-          # @param block_ast [Parser::AST::Node]
+          # @param block_ast [RubyVM::AbstractSyntaxTree::Node]
           # @return [String, nil]
           def from_block_ast(block_ast)
             return unless block_ast.is_a?(RubyVM::AbstractSyntaxTree::Node)
@@ -89,7 +111,7 @@ module Solargraph
             if ast.type == :STR
               string_to_const_name(ast)
             elsif NodeTypes.a_constant?(ast)
-              full_constant_name(ast).gsub('::', '')
+              FullConstantName.from_ast(ast).gsub('::', '')
             else
               Solargraph.logger.warn "[RSpec] Unexpected AST type #{ast.type}"
               nil
@@ -97,19 +119,6 @@ module Solargraph
           end
 
           private
-
-          # @param ast [Parser::AST::Node]
-          # @return [String]
-          def full_constant_name(ast)
-            raise 'Node is not a constant' unless NodeTypes.a_constant?(ast)
-
-            if ast.type == :CONST
-              ast.children[0].to_s
-            elsif ast.type == :COLON2
-              name = ast.children[1].to_s
-              "#{full_constant_name(ast.children[0])}::#{name}"
-            end
-          end
 
           # @see https://github.com/rspec/rspec-core/blob/1eeadce5aa7137ead054783c31ff35cbfe9d07cc/lib/rspec/core/example_group.rb#L862
           # @param ast [Parser::AST::Node]
@@ -218,15 +227,16 @@ module Solargraph
         each_context_block(@walker.ast, Rspec::ROOT_NAMESPACE) do |namespace_name, block_ast|
           desc_node = NodeTypes.context_description_node(block_ast)
 
-          if NodeTypes.a_constant?(desc_node)
-            @handlers[:on_described_class].each do |handler|
-              class_name = RspecContextNamespace.from_block_ast(block_ast)
-              handler.call(block_ast, class_name)
-            end
-          end
-
           @handlers[:on_each_context_block].each do |handler|
             handler.call(namespace_name, block_ast, PinFactory.build_location_range(block_ast))
+          end
+
+          if NodeTypes.a_constant?(desc_node) # rubocop:disable Style/Next
+            @handlers[:on_described_class].each do |handler|
+              class_name_ast = NodeTypes.context_description_node(block_ast)
+              class_name = FullConstantName.from_ast(class_name_ast)
+              handler.call(block_ast, class_name, PinFactory.build_location_range(class_name_ast))
+            end
           end
         end
 
