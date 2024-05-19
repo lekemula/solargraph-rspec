@@ -1,119 +1,10 @@
 # frozen_string_literal: true
 
-# TODO: Add more test cases:
-#   - Block yields
-#   - NodeTypes unhappy paths
 RSpec.describe Solargraph::Rspec::SpecWalker do
   let(:api_map) { Solargraph::ApiMap.new }
   let(:filename) { File.expand_path('spec/models/some_namespace/transaction_spec.rb') }
   let(:config) { Solargraph::Rspec::Config.new }
   let(:source_map) { api_map.source_maps.first }
-
-  describe Solargraph::Rspec::SpecWalker::NodeTypes do
-    def parse(code)
-      RubyVM::AbstractSyntaxTree.parse(code)
-    end
-
-    describe '.a_block?' do
-      it 'returns true for block nodes' do
-        node = parse('describe "something" do end')
-        expect(described_class.a_block?(node.children[2])).to be(true)
-      end
-    end
-
-    describe '.a_context_block?' do
-      it 'returns true for RSpec context block nodes' do
-        node = parse('describe "something" do end')
-        expect(described_class.a_context_block?(node.children[2])).to be(true)
-      end
-
-      it 'returns true for RSpec root context block nodes' do
-        node = parse(<<~RUBY)
-          RSpec.describe SomeNamespace::SomeClass, type: :model do
-          end
-        RUBY
-
-        expect(described_class.a_context_block?(node.children[2])).to be(true)
-      end
-    end
-
-    describe '.a_context_block?' do
-      it 'returns true for subject block with name' do
-        node = parse('subject(:something) { }')
-        expect(described_class.a_subject_block?(node.children[2])).to be(true)
-      end
-
-      it 'returns true for subject block without name' do
-        node = parse('subject { }')
-
-        expect(described_class.a_subject_block?(node.children[2])).to be(true)
-      end
-    end
-
-    describe '.a_example_block?' do
-      it 'returns true for example block with name' do
-        node = parse('it("does something") { }')
-        expect(described_class.a_example_block?(node.children[2])).to be(true)
-      end
-
-      it 'returns true for example block without name' do
-        node = parse('it { }')
-
-        expect(described_class.a_example_block?(node.children[2])).to be(true)
-      end
-    end
-
-    describe '.a_hook_block?' do
-      it 'returns true for example block with name' do
-        node = parse('before { }')
-        expect(described_class.a_hook_block?(node.children[2])).to be(true)
-      end
-    end
-
-    describe '.context_description_node' do
-      it 'returns correct node of context description' do
-        node = parse('describe "something" do end')
-        desc = described_class.context_description_node(node.children[2])
-        expect(desc.children.first).to eq('something')
-      end
-
-      it 'returns correct node of context root description' do
-        node = parse(<<~RUBY)
-          RSpec.describe SomeNamespace::SomeClass, type: :model do
-          end
-        RUBY
-
-        desc = described_class.context_description_node(node.children[2])
-        expect(desc.children.last).to eq(:SomeClass)
-      end
-    end
-
-    describe '.let_method_name' do
-      it 'returns correct method name for subject block' do
-        node = parse('subject(:something) { }')
-        name = described_class.let_method_name(node.children[2])
-        expect(name).to eq('something')
-      end
-
-      it 'returns nil for subject block without a name' do
-        node = parse('subject { }')
-        name = described_class.let_method_name(node.children[2])
-        expect(name).to eq(nil)
-      end
-
-      it 'returns correct method name for let block' do
-        node = parse('let(:something) { }')
-        name = described_class.let_method_name(node.children[2])
-        expect(name).to eq('something')
-      end
-
-      it 'returns nil for let block without a name' do
-        node = parse('let { }')
-        name = described_class.let_method_name(node.children[2])
-        expect(name).to eq(nil)
-      end
-    end
-  end
 
   # @param code [String]
   # @yieldparam [Solargraph::Rspec::SpecWalker]
@@ -137,9 +28,10 @@ RSpec.describe Solargraph::Rspec::SpecWalker do
       called = 0
       # @param walker [Solargraph::Rspec::SpecWalker]
       walk_code(code) do |walker|
-        walker.on_described_class do |class_name, _|
+        walker.on_described_class do |class_name, location_range|
           called += 1
           expect(class_name).to eq('SomeNamespace::SomeClass')
+          expect(location_range).to eq(Solargraph::Range.from_to(0, 15, 0, 39))
         end
       end
 
@@ -159,15 +51,16 @@ RSpec.describe Solargraph::Rspec::SpecWalker do
         end
       RUBY
 
-      called = 0
+      let_names = []
       # @param walker [Solargraph::Rspec::SpecWalker]
       walk_code(code) do |walker|
-        walker.on_let_method do |_|
-          called += 1
+        walker.on_let_method do |method_name, location_range|
+          let_names << method_name
+          expect(location_range).to be_a(Solargraph::Range)
         end
       end
 
-      expect(called).to eq(2)
+      expect(let_names).to eq(%w[test test_2])
     end
   end
 
@@ -183,15 +76,16 @@ RSpec.describe Solargraph::Rspec::SpecWalker do
         end
       RUBY
 
-      called = 0
+      subject_names = []
       # @param walker [Solargraph::Rspec::SpecWalker]
       walk_code(code) do |walker|
-        walker.on_subject do |_|
-          called += 1
+        walker.on_subject do |subject_name, location_range|
+          subject_names << subject_name
+          expect(location_range).to be_a(Solargraph::Range)
         end
       end
 
-      expect(called).to eq(2)
+      expect(subject_names).to eq(['test', nil])
     end
   end
 
@@ -208,15 +102,17 @@ RSpec.describe Solargraph::Rspec::SpecWalker do
         end
       RUBY
 
-      called = 0
+      namespaces = []
       # @param walker [Solargraph::Rspec::SpecWalker]
       walk_code(code) do |walker|
-        walker.on_each_context_block do |_|
-          called += 1
+        walker.on_each_context_block do |namespace_name, location_range|
+          namespaces << namespace_name
+          expect(location_range).to be_a(Solargraph::Range)
         end
       end
 
-      expect(called).to eq(2)
+      expect(namespaces).to eq(['RSpec::ExampleGroups::SomeNamespaceSomeClass',
+                                'RSpec::ExampleGroups::SomeNamespaceSomeClass::WhenSomething'])
     end
   end
 
@@ -237,8 +133,9 @@ RSpec.describe Solargraph::Rspec::SpecWalker do
       called = 0
       # @param walker [Solargraph::Rspec::SpecWalker]
       walk_code(code) do |walker|
-        walker.on_example_block do |_|
+        walker.on_example_block do |location_range|
           called += 1
+          expect(location_range).to be_a(Solargraph::Range)
         end
       end
 
@@ -266,8 +163,9 @@ RSpec.describe Solargraph::Rspec::SpecWalker do
       called = 0
       # @param walker [Solargraph::Rspec::SpecWalker]
       walk_code(code) do |walker|
-        walker.on_hook_block do |_|
+        walker.on_hook_block do |location_range|
           called += 1
+          expect(location_range).to be_a(Solargraph::Range)
         end
       end
 
@@ -298,8 +196,9 @@ RSpec.describe Solargraph::Rspec::SpecWalker do
       called = 0
       # @param walker [Solargraph::Rspec::SpecWalker]
       walk_code(code) do |walker|
-        walker.on_blocks_in_examples do |_|
+        walker.on_blocks_in_examples do |location_range|
           called += 1
+          expect(location_range).to be_a(Solargraph::Range)
         end
       end
 

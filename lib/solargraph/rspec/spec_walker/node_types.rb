@@ -61,6 +61,8 @@ module Solargraph
         # @param block_ast [RubyVM::AbstractSyntaxTree::Node]
         # @return [RubyVM::AbstractSyntaxTree::Node]
         def self.context_description_node(block_ast)
+          return nil unless a_context_block?(block_ast)
+
           case block_ast.children[0].type
           when :CALL # RSpec.describe "something" do end
             block_ast.children[0].children[2].children[0]
