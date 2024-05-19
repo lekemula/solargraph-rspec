@@ -228,14 +228,14 @@ module Solargraph
           desc_node = NodeTypes.context_description_node(block_ast)
 
           @handlers[:on_each_context_block].each do |handler|
-            handler.call(namespace_name, block_ast, PinFactory.build_location_range(block_ast))
+            handler.call(namespace_name, PinFactory.build_location_range(block_ast))
           end
 
           if NodeTypes.a_constant?(desc_node) # rubocop:disable Style/Next
             @handlers[:on_described_class].each do |handler|
               class_name_ast = NodeTypes.context_description_node(block_ast)
               class_name = FullConstantName.from_ast(class_name_ast)
-              handler.call(block_ast, class_name, PinFactory.build_location_range(class_name_ast))
+              handler.call(class_name, PinFactory.build_location_range(class_name_ast))
             end
           end
         end
@@ -247,7 +247,7 @@ module Solargraph
           next unless method_name
 
           @handlers[:on_let_method].each do |handler|
-            handler.call(block_ast, method_name, PinFactory.build_location_range(block_ast.children[0]))
+            handler.call(method_name, PinFactory.build_location_range(block_ast.children[0]))
           end
         end
 
@@ -257,7 +257,7 @@ module Solargraph
           method_name = NodeTypes.let_method_name(block_ast)
 
           @handlers[:on_subject].each do |handler|
-            handler.call(block_ast, method_name, PinFactory.build_location_range(block_ast.children[0]))
+            handler.call(method_name, PinFactory.build_location_range(block_ast.children[0]))
           end
         end
 
@@ -265,13 +265,13 @@ module Solargraph
           next unless NodeTypes.a_example_block?(block_ast)
 
           @handlers[:on_example_block].each do |handler|
-            handler.call(block_ast, PinFactory.build_location_range(block_ast))
+            handler.call(PinFactory.build_location_range(block_ast))
           end
 
           # @param blocks_in_examples [RubyVM::AbstractSyntaxTree::Node]
           each_block(block_ast.children[1]) do |blocks_in_examples|
             @handlers[:on_blocks_in_examples].each do |handler|
-              handler.call(blocks_in_examples, PinFactory.build_location_range(blocks_in_examples))
+              handler.call(PinFactory.build_location_range(blocks_in_examples))
             end
           end
         end
@@ -280,13 +280,13 @@ module Solargraph
           next unless NodeTypes.a_hook_block?(block_ast)
 
           @handlers[:on_hook_block].each do |handler|
-            handler.call(block_ast, PinFactory.build_location_range(block_ast))
+            handler.call(PinFactory.build_location_range(block_ast))
           end
 
           # @param blocks_in_examples [RubyVM::AbstractSyntaxTree::Node]
           each_block(block_ast.children[1]) do |blocks_in_examples|
             @handlers[:on_blocks_in_examples].each do |handler|
-              handler.call(blocks_in_examples, PinFactory.build_location_range(blocks_in_examples))
+              handler.call(PinFactory.build_location_range(blocks_in_examples))
             end
           end
         end

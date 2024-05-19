@@ -10,8 +10,7 @@ module Solargraph
         # @param source_map [Solargraph::SourceMap]
         # @return [void]
         def correct(_source_map)
-          # TODO: Remove _block_ast
-          rspec_walker.on_let_method do |_block_ast, let_name, location_range|
+          rspec_walker.on_let_method do |let_name, location_range|
             namespace_pin = closest_namespace_pin(namespace_pins, location_range.start.line)
             next unless namespace_pin
 

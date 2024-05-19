@@ -137,7 +137,7 @@ RSpec.describe Solargraph::Rspec::RubyVMSpecWalker do
       called = 0
       # @param walker [Solargraph::Rspec::RubyVMSpecWalker]
       walk_code(code) do |walker|
-        walker.on_described_class do |_, class_name, _|
+        walker.on_described_class do |class_name, _|
           called += 1
           expect(class_name).to eq('SomeNamespace::SomeClass')
         end

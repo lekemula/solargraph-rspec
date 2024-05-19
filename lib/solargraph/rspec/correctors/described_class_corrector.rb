@@ -9,8 +9,7 @@ module Solargraph
         # @param source_map [Solargraph::SourceMap]
         # @return [void]
         def correct(_source_map)
-          # TODO: Remove ast
-          rspec_walker.on_described_class do |_ast, described_class_name, location_range|
+          rspec_walker.on_described_class do |described_class_name, location_range|
             namespace_pin = closest_namespace_pin(namespace_pins, location_range.start.line)
             next unless namespace_pin
 

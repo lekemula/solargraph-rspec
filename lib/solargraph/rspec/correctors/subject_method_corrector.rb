@@ -7,11 +7,10 @@ module Solargraph
     module Correctors
       # Defines let-like methods in the example group block
       class SubjectMethodCorrector < LetMethodsCorrector
-        # TODO: Remove ast
         # @param source_map [Solargraph::SourceMap]
         # @return [void]
         def correct(_source_map)
-          rspec_walker.on_subject do |ast, subject_name, location_range|
+          rspec_walker.on_subject do |subject_name, location_range|
             next unless subject_name
 
             namespace_pin = closest_namespace_pin(namespace_pins, location_range.start.line)

@@ -11,32 +11,31 @@ module Solargraph
         # @param source_map [Solargraph::SourceMap]
         # @return [void]
         def correct(source_map)
-          # TODO: Remove unused block params
-          rspec_walker.on_example_block do |_block_ast, location_range|
+          rspec_walker.on_example_block do |location_range|
             bind_closest_namespace(location_range, source_map)
 
             yield [] if block_given?
           end
 
-          rspec_walker.on_hook_block do |_block_ast, location_range|
+          rspec_walker.on_hook_block do |location_range|
             bind_closest_namespace(location_range, source_map)
 
             yield [] if block_given?
           end
 
-          rspec_walker.on_let_method do |_let_method_ast, _method_name, location_range|
+          rspec_walker.on_let_method do |_method_name, location_range|
             bind_closest_namespace(location_range, source_map)
 
             yield [] if block_given?
           end
 
-          rspec_walker.on_blocks_in_examples do |_block_ast, location_range|
+          rspec_walker.on_blocks_in_examples do |location_range|
             bind_closest_namespace(location_range, source_map)
 
             yield [] if block_given?
           end
 
-          rspec_walker.on_subject do |_subject_ast, _method_name, location_range|
+          rspec_walker.on_subject do |_method_name, location_range|
             bind_closest_namespace(location_range, source_map)
 
             yield [] if block_given?
