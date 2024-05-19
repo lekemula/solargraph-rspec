@@ -226,7 +226,7 @@ module Solargraph
           end
 
           @handlers[:on_each_context_block].each do |handler|
-            handler.call(namespace_name, block_ast)
+            handler.call(namespace_name, block_ast, PinFactory.build_location_range(block_ast))
           end
         end
 
