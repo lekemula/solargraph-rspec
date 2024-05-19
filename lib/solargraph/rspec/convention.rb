@@ -1,7 +1,6 @@
 # frozen_string_literal: true
 
 require_relative 'config'
-require_relative 'spec_walker'
 require_relative 'ruby_vm_spec_walker'
 require_relative 'correctors/context_block_namespace_corrector'
 require_relative 'correctors/example_and_hook_blocks_binding_corrector'
@@ -105,20 +104,18 @@ module Solargraph
         # @type [Array<Pin::Namespace>]
         namespace_pins = []
 
-        # TODO: Remove rspec_walker
-        rspec_walker = SpecWalker.new(source_map: source_map, config: config)
-        rvm_rspec_walker = RubyVMSpecWalker.new(source_map: source_map, config: config)
+        rspec_walker = RubyVMSpecWalker.new(source_map: source_map, config: config)
 
         Correctors::ContextBlockNamespaceCorrector.new(
           namespace_pins: namespace_pins,
-          rspec_walker: rvm_rspec_walker
+          rspec_walker: rspec_walker
         ).correct(source_map) do |pins_to_add|
           pins += pins_to_add
         end
 
         Correctors::ExampleAndHookBlocksBindingCorrector.new(
           namespace_pins: namespace_pins,
-          rspec_walker: rvm_rspec_walker
+          rspec_walker: rspec_walker
         ).correct(source_map) do |pins_to_add|
           pins += pins_to_add
         end
@@ -127,7 +124,7 @@ module Solargraph
         described_class_pin = nil
         Correctors::DescribedClassCorrector.new(
           namespace_pins: namespace_pins,
-          rspec_walker: rvm_rspec_walker
+          rspec_walker: rspec_walker
         ).correct(
           source_map
         ) do |pins_to_add|
@@ -137,7 +134,7 @@ module Solargraph
 
         Correctors::LetMethodsCorrector.new(
           namespace_pins: namespace_pins,
-          rspec_walker: rvm_rspec_walker
+          rspec_walker: rspec_walker
         ).correct(
           source_map
         ) do |pins_to_add|
@@ -148,7 +145,7 @@ module Solargraph
         subject_pin = nil
         Correctors::SubjectMethodCorrector.new(
           namespace_pins: namespace_pins,
-          rspec_walker: rvm_rspec_walker
+          rspec_walker: rspec_walker
         ).correct(
           source_map
         ) do |pins_to_add|
@@ -173,7 +170,6 @@ module Solargraph
           pins += pins_to_add
         end
 
-        rvm_rspec_walker.walk!
         rspec_walker.walk!
         pins += namespace_pins
 
