@@ -25,7 +25,7 @@ module Solargraph
         # @param described_class_name [String]
         # @return [Pin::Method, nil]
         def rspec_described_class_method(namespace, location_range, described_class_name)
-          Util.build_public_method(
+          PinFactory.build_public_method(
             namespace,
             'described_class',
             types: ["Class<#{described_class_name}>"],

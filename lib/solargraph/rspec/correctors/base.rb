@@ -27,7 +27,7 @@ module Solargraph
         def root_example_group_namespace_pin
           Solargraph::Pin::Namespace.new(
             name: ROOT_NAMESPACE,
-            location: Util.dummy_location('lib/rspec/core/example_group.rb')
+            location: PinFactory.dummy_location('lib/rspec/core/example_group.rb')
           )
         end
 

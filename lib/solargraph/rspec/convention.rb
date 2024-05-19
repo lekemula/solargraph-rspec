@@ -10,7 +10,6 @@ require_relative 'correctors/subject_method_corrector'
 require_relative 'correctors/context_block_methods_corrector'
 require_relative 'correctors/implicit_subject_method_corrector'
 require_relative 'correctors/dsl_methods_corrector'
-require_relative 'util'
 require_relative 'pin_factory'
 
 module Solargraph
@@ -209,7 +208,7 @@ module Solargraph
       # @return [Array<Pin::Base>]
       def include_helper_pins(helper_modules: HELPER_MODULES)
         helper_modules.map do |helper_module|
-          Util.build_module_include(
+          PinFactory.build_module_include(
             root_example_group_namespace_pin,
             helper_module,
             root_example_group_namespace_pin.location
@@ -226,7 +225,7 @@ module Solargraph
       def root_example_group_namespace_pin
         Solargraph::Pin::Namespace.new(
           name: ROOT_NAMESPACE,
-          location: Util.dummy_location('lib/rspec/core/example_group.rb')
+          location: PinFactory.dummy_location('lib/rspec/core/example_group.rb')
         )
       end
     end

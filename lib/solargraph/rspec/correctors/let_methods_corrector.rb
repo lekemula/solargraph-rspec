@@ -26,7 +26,7 @@ module Solargraph
         # @param types [Array<String>, nil]
         # @return [Pin::Method, nil]
         def rspec_let_method(namespace, method_name, location_range, types: nil)
-          Util.build_public_method(
+          PinFactory.build_public_method(
             namespace,
             method_name,
             types: types,

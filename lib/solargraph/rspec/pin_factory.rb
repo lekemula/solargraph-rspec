@@ -6,56 +6,75 @@ module Solargraph
   module Rspec
     # Factory class for building pins and references.
     module PinFactory
-      # def self.build_public_method(
-      #   ns,
-      #   name,
-      #   types: nil,
-      #   location: nil,
-      #   comments: [],
-      #   attribute: false,
-      #   scope: :instance
-      # )
-      #   opts = {
-      #     name: name,
-      #     location: location,
-      #     closure: ns,
-      #     scope: scope,
-      #     attribute: attribute,
-      #     comments: []
-      #   }
+      # @param namespace [Solargraph::Pin::Namespace]
+      # @param name [String]
+      # @param types [Array<String>]
+      # @param location [Solargraph::Location]
+      # @param comments [Array<String>]
+      # @param attribute [Boolean]
+      # @param scope [:instance, :class]
+      # @return [Solargraph::Pin::Method]
+      def self.build_public_method(
+        namespace,
+        name,
+        types: nil,
+        location: nil,
+        comments: [],
+        attribute: false,
+        scope: :instance
+      )
+        opts = {
+          name: name,
+          location: location,
+          closure: namespace,
+          scope: scope,
+          attribute: attribute,
+          comments: []
+        }
 
-      #   comments << "@return [#{types.join(",")}]" if types
+        comments << "@return [#{types.join(",")}]" if types
 
-      #   opts[:comments] = comments.join("\n")
+        opts[:comments] = comments.join("\n")
 
-      #   Solargraph::Pin::Method.new(**opts)
-      # end
+        Solargraph::Pin::Method.new(**opts)
+      end
 
-      # def self.build_module_include(ns, module_name, location)
-      #   Solargraph::Pin::Reference::Include.new(
-      #     closure: ns,
-      #     name: module_name,
-      #     location: location
-      #   )
-      # end
+      # @param namespace [Solargraph::Pin::Namespace]
+      # @param name [String]
+      # @param location [Solargraph::Location]
+      # @return [Solargraph::Pin::Reference::Include]
+      def self.build_module_include(namespace, module_name, location)
+        Solargraph::Pin::Reference::Include.new(
+          closure: namespace,
+          name: module_name,
+          location: location
+        )
+      end
 
-      # def self.build_module_extend(ns, module_name, location)
-      #   Solargraph::Pin::Reference::Extend.new(
-      #     closure: ns,
-      #     name: module_name,
-      #     location: location
-      #   )
-      # end
+      # @param namespace [Solargraph::Pin::Namespace]
+      # @param module_name [String]
+      # @param location [Solargraph::Location]
+      # @return [Solargraph::Pin::Reference::Extend]
+      def self.build_module_extend(namespace, module_name, location)
+        Solargraph::Pin::Reference::Extend.new(
+          closure: namespace,
+          name: module_name,
+          location: location
+        )
+      end
 
-      # def self.dummy_location(path)
-      #   Solargraph::Location.new(
-      #     File.expand_path(path),
-      #     Solargraph::Range.from_to(0, 0, 0, 0)
-      #   )
-      # end
+      # @param path [String]
+      # @return [Solargraph::Location]
+      def self.dummy_location(path)
+        Solargraph::Location.new(
+          File.expand_path(path),
+          Solargraph::Range.from_to(0, 0, 0, 0)
+        )
+      end
 
       # @param ast [RubyVM::AbstractSyntaxTree::Node]
       # @see [RubyVM::AbstractSyntaxTree::NodeWrapper] - for why we need -1 for lineno
+      # @return [Solargraph::Range]
       def self.build_location_range(ast)
         Solargraph::Range.from_to(
           ast.first_lineno - 1,
@@ -67,16 +86,13 @@ module Solargraph
 
       # @param location_range [Solargraph::Range]
       # @param path [String]
+      # @return [Solargraph::Location]
       def self.build_location(location_range, path)
         Solargraph::Location.new(
           File.expand_path(path),
           location_range
         )
       end
-
-      # def self.method_return(path, type)
-      #   Solargraph::Pin::Reference::Override.method_return(path, type)
-      # end
     end
   end
 end

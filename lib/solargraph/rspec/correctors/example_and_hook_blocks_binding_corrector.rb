@@ -67,7 +67,7 @@ module Solargraph
         # @param namespace_pin [Solargraph::Pin::Namespace]
         # @return [Solargraph::Pin::Method]
         def example_run_method(namespace_pin)
-          Util.build_public_method(
+          PinFactory.build_public_method(
             namespace_pin,
             'run',
             # https://github.com/rspec/rspec-core/blob/main/lib/rspec/core/example.rb#L246

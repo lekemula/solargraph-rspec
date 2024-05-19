@@ -37,7 +37,7 @@ module Solargraph
 
             # Include DSL methods in the example group block
             # TOOD: This does not work on solagraph! Class methods are not included from parent class.
-            namespace_extend_pin = Util.build_module_extend(
+            namespace_extend_pin = PinFactory.build_module_extend(
               namespace_pin,
               root_example_group_namespace_pin.name,
               location
@@ -45,7 +45,7 @@ module Solargraph
 
             # Include parent example groups to share let definitions
             parent_namespace_name = namespace_name.split('::')[0..-2].join('::')
-            namespace_include_pin = Util.build_module_include(
+            namespace_include_pin = PinFactory.build_module_include(
               namespace_pin,
               parent_namespace_name,
               location
