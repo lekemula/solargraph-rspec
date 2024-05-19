@@ -243,19 +243,17 @@ module Solargraph
         walker.on :ITER do |block_ast|
           next unless NodeTypes.a_let_block?(block_ast, config)
 
-          # method_ast = block_ast.children.first
           method_name = NodeTypes.let_method_name(block_ast)
+          next unless method_name
 
           @handlers[:on_let_method].each do |handler|
-            method_ast = block_ast # TODO: We used to pass :send node and not :block
-            handler.call(method_ast)
+            handler.call(block_ast, method_name, PinFactory.build_location_range(block_ast))
           end
         end
 
         walker.on :ITER do |block_ast|
           next unless NodeTypes.a_subject_block?(block_ast)
 
-          # method_ast = block_ast.children.first
           method_name = NodeTypes.let_method_name(block_ast)
 
           @handlers[:on_subject].each do |handler|

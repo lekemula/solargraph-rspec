@@ -135,7 +135,10 @@ module Solargraph
           pins += pins_to_add
         end
 
-        Correctors::LetMethodsCorrector.new(namespace_pins: namespace_pins, rspec_walker: rspec_walker).correct(
+        Correctors::LetMethodsCorrector.new(
+          namespace_pins: namespace_pins,
+          rspec_walker: rvm_rspec_walker
+        ).correct(
           source_map
         ) do |pins_to_add|
           pins += pins_to_add
