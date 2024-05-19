@@ -146,7 +146,10 @@ module Solargraph
 
         # @type [Pin::Method, nil]
         subject_pin = nil
-        Correctors::SubjectMethodCorrector.new(namespace_pins: namespace_pins, rspec_walker: rspec_walker).correct(
+        Correctors::SubjectMethodCorrector.new(
+          namespace_pins: namespace_pins,
+          rspec_walker: rvm_rspec_walker
+        ).correct(
           source_map
         ) do |pins_to_add|
           subject_pin = pins_to_add.first

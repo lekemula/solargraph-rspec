@@ -2,7 +2,6 @@
 
 # Credits: This file is a copy of the file from the solargraph-rspec gem
 
-# rubocop:disable Naming/MethodParameterName
 module Solargraph
   module Rspec
     # Factory class for building pins and references.
@@ -56,11 +55,12 @@ module Solargraph
       # end
 
       # @param ast [RubyVM::AbstractSyntaxTree::Node]
+      # @see [RubyVM::AbstractSyntaxTree::NodeWrapper] - for why we need -1 for lineno
       def self.build_location_range(ast)
         Solargraph::Range.from_to(
-          ast.first_lineno,
+          ast.first_lineno - 1,
           ast.first_column,
-          ast.last_lineno,
+          ast.last_lineno - 1,
           ast.last_column
         )
       end
@@ -80,4 +80,3 @@ module Solargraph
     end
   end
 end
-# rubocop:enable Naming/MethodParameterName

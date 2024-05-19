@@ -15,7 +15,7 @@ module Solargraph
             namespace_pin = closest_namespace_pin(namespace_pins, location_range.start.line)
             next unless namespace_pin
 
-            pin = ruby_vm_rspec_let_method(namespace_pin, let_name, location_range)
+            pin = rspec_let_method(namespace_pin, let_name, location_range)
             yield [pin] if block_given?
           end
         end
@@ -26,31 +26,12 @@ module Solargraph
         # @param method_name [String]
         # @param types [Array<String>, nil]
         # @return [Pin::Method, nil]
-        def ruby_vm_rspec_let_method(namespace, method_name, location_range, types: nil)
+        def rspec_let_method(namespace, method_name, location_range, types: nil)
           Util.build_public_method(
             namespace,
             method_name,
             types: types,
             location: PinFactory.build_location(location_range, namespace.filename),
-            scope: :instance
-          )
-        end
-
-        # TODO: Remove me
-        # @param namespace [Pin::Namespace]
-        # @param ast [Parser::AST::Node]
-        # @param types [Array<String>, nil]
-        # @return [Pin::Method, nil]
-        def rspec_let_method(namespace, ast, types: nil)
-          return unless ast.children
-          return unless ast.children[2]&.children
-
-          method_name = ast.children[2].children[0]&.to_s or return
-          Util.build_public_method(
-            namespace,
-            method_name,
-            types: types,
-            location: Util.build_location(ast, namespace.filename),
             scope: :instance
           )
         end

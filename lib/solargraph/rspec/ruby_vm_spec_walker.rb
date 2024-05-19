@@ -247,7 +247,7 @@ module Solargraph
           next unless method_name
 
           @handlers[:on_let_method].each do |handler|
-            handler.call(block_ast, method_name, PinFactory.build_location_range(block_ast))
+            handler.call(block_ast, method_name, PinFactory.build_location_range(block_ast.children[0]))
           end
         end
 
@@ -257,8 +257,7 @@ module Solargraph
           method_name = NodeTypes.let_method_name(block_ast)
 
           @handlers[:on_subject].each do |handler|
-            method_ast = block_ast # TODO: Only use block_ast and reuse NodeTypes.let_method_name
-            handler.call(method_ast, block_ast)
+            handler.call(block_ast, method_name, PinFactory.build_location_range(block_ast.children[0]))
           end
         end
 
