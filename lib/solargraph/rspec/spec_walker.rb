@@ -1,10 +1,10 @@
 # frozen_string_literal: true
 
-require_relative 'ruby_vm_walker'
+require_relative 'walker'
 
 module Solargraph
   module Rspec
-    class RubyVMSpecWalker
+    class SpecWalker
       class NodeTypes
         # @param ast [RubyVM::AbstractSyntaxTree::Node]
         # @return [Boolean]
@@ -154,7 +154,7 @@ module Solargraph
       def initialize(source_map:, config:)
         @source_map = source_map
         @config = config
-        @walker = Rspec::RubyVMWalker.from_source(source_map.source)
+        @walker = Rspec::Walker.from_source(source_map.source)
         @handlers = {
           on_described_class: [],
           on_let_method: [],
@@ -167,7 +167,7 @@ module Solargraph
         }
       end
 
-      # @return [RubyVMWalker]
+      # @return [Walker]
       attr_reader :walker
 
       # @return [Config]

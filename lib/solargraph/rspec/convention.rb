@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
 require_relative 'config'
-require_relative 'ruby_vm_spec_walker'
+require_relative 'spec_walker'
 require_relative 'correctors/context_block_namespace_corrector'
 require_relative 'correctors/example_and_hook_blocks_binding_corrector'
 require_relative 'correctors/described_class_corrector'
@@ -103,7 +103,7 @@ module Solargraph
         # @type [Array<Pin::Namespace>]
         namespace_pins = []
 
-        rspec_walker = RubyVMSpecWalker.new(source_map: source_map, config: config)
+        rspec_walker = SpecWalker.new(source_map: source_map, config: config)
 
         Correctors::ContextBlockNamespaceCorrector.new(
           namespace_pins: namespace_pins,

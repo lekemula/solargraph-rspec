@@ -3,7 +3,7 @@
 
 module Solargraph
   module Rspec
-    class RubyVMWalker
+    class Walker
       class Hook
         attr_reader :node_type
 

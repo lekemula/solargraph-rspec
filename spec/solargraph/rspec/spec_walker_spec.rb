@@ -3,13 +3,13 @@
 # TODO: Add more test cases:
 #   - Block yields
 #   - NodeTypes unhappy paths
-RSpec.describe Solargraph::Rspec::RubyVMSpecWalker do
+RSpec.describe Solargraph::Rspec::SpecWalker do
   let(:api_map) { Solargraph::ApiMap.new }
   let(:filename) { File.expand_path('spec/models/some_namespace/transaction_spec.rb') }
   let(:config) { Solargraph::Rspec::Config.new }
   let(:source_map) { api_map.source_maps.first }
 
-  describe Solargraph::Rspec::RubyVMSpecWalker::NodeTypes do
+  describe Solargraph::Rspec::SpecWalker::NodeTypes do
     def parse(code)
       RubyVM::AbstractSyntaxTree.parse(code)
     end
@@ -116,11 +116,11 @@ RSpec.describe Solargraph::Rspec::RubyVMSpecWalker do
   end
 
   # @param code [String]
-  # @yieldparam [Solargraph::Rspec::RubyVMSpecWalker]
+  # @yieldparam [Solargraph::Rspec::SpecWalker]
   # @return [void]
   def walk_code(code)
     load_string filename, code
-    walker = Solargraph::Rspec::RubyVMSpecWalker.new(source_map: source_map, config: config)
+    walker = described_class.new(source_map: source_map, config: config)
 
     yield walker
 
@@ -135,7 +135,7 @@ RSpec.describe Solargraph::Rspec::RubyVMSpecWalker do
       RUBY
 
       called = 0
-      # @param walker [Solargraph::Rspec::RubyVMSpecWalker]
+      # @param walker [Solargraph::Rspec::SpecWalker]
       walk_code(code) do |walker|
         walker.on_described_class do |class_name, _|
           called += 1
@@ -160,7 +160,7 @@ RSpec.describe Solargraph::Rspec::RubyVMSpecWalker do
       RUBY
 
       called = 0
-      # @param walker [Solargraph::Rspec::RubyVMSpecWalker]
+      # @param walker [Solargraph::Rspec::SpecWalker]
       walk_code(code) do |walker|
         walker.on_let_method do |_|
           called += 1
@@ -184,7 +184,7 @@ RSpec.describe Solargraph::Rspec::RubyVMSpecWalker do
       RUBY
 
       called = 0
-      # @param walker [Solargraph::Rspec::RubyVMSpecWalker]
+      # @param walker [Solargraph::Rspec::SpecWalker]
       walk_code(code) do |walker|
         walker.on_subject do |_|
           called += 1
@@ -209,7 +209,7 @@ RSpec.describe Solargraph::Rspec::RubyVMSpecWalker do
       RUBY
 
       called = 0
-      # @param walker [Solargraph::Rspec::RubyVMSpecWalker]
+      # @param walker [Solargraph::Rspec::SpecWalker]
       walk_code(code) do |walker|
         walker.on_each_context_block do |_|
           called += 1
@@ -235,7 +235,7 @@ RSpec.describe Solargraph::Rspec::RubyVMSpecWalker do
       RUBY
 
       called = 0
-      # @param walker [Solargraph::Rspec::RubyVMSpecWalker]
+      # @param walker [Solargraph::Rspec::SpecWalker]
       walk_code(code) do |walker|
         walker.on_example_block do |_|
           called += 1
@@ -264,7 +264,7 @@ RSpec.describe Solargraph::Rspec::RubyVMSpecWalker do
       RUBY
 
       called = 0
-      # @param walker [Solargraph::Rspec::RubyVMSpecWalker]
+      # @param walker [Solargraph::Rspec::SpecWalker]
       walk_code(code) do |walker|
         walker.on_hook_block do |_|
           called += 1
