@@ -13,7 +13,7 @@ module Solargraph
       def initialize(source_map:, config:)
         @source_map = source_map
         @config = config
-        @walker = Rspec::Walker.from_source(source_map.source)
+        @walker = Rspec::Walker.new(source_map.source.node)
         @handlers = {
           on_described_class: [],
           on_let_method: [],

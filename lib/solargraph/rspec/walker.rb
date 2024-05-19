@@ -64,18 +64,10 @@ module Solargraph
         end
       end
 
-      def self.normalize_ast(source)
-        RubyVM::AbstractSyntaxTree.parse(source.code)
-      rescue SyntaxError => e
-        raise ParsingError, e.message
-      end
-
-      def self.from_source(source)
-        new(normalize_ast(source))
-      end
-
       attr_reader :ast, :comments
 
+      # @param ast [RubyVM::AbstractSyntaxTree::Node]
+      # @param comments [Hash]
       def initialize(ast, comments = {})
         @comments = comments
         @ast = ast

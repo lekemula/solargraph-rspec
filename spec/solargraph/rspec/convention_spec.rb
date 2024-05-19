@@ -378,6 +378,9 @@ RSpec.describe Solargraph::Rspec::Convention do
     context 'not in debug mode' do
       before do
         allow(Solargraph.logger).to receive(:warn).and_return(true)
+        allow_any_instance_of(
+          Solargraph::Rspec::Correctors::ContextBlockNamespaceCorrector
+        ).to receive(:correct).and_raise(StandardError)
       end
 
       around do |example|
