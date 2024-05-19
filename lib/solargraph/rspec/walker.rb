@@ -1,9 +1,10 @@
-
 # frozen_string_literal: true
 
 module Solargraph
   module Rspec
     class Walker
+      class ParsingError < StandardError; end
+
       class Hook
         attr_reader :node_type
 
@@ -64,18 +65,16 @@ module Solargraph
       end
 
       def self.normalize_ast(source)
-        ast = RubyVM::AbstractSyntaxTree.parse(source.code)
-        raise "Parsing error" unless ast
-
-        ast
+        RubyVM::AbstractSyntaxTree.parse(source.code)
+      rescue SyntaxError => e
+        raise ParsingError, e.message
       end
 
       def self.from_source(source)
         new(normalize_ast(source))
       end
 
-      attr_reader :ast
-      attr_reader :comments
+      attr_reader :ast, :comments
 
       def initialize(ast, comments = {})
         @comments = comments

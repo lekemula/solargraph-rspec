@@ -373,4 +373,37 @@ RSpec.describe Solargraph::Rspec::Convention do
       end
     end
   end
+
+  describe 'error handling' do
+    context 'not in debug mode' do
+      before do
+        allow(Solargraph.logger).to receive(:warn).and_return(true)
+      end
+
+      around do |example|
+        ENV['SOLARGRAPH_DEBUG'] = nil
+        example.run
+        ENV['SOLARGRAPH_DEBUG'] = 'true'
+      end
+
+      it 'does not raise an exception' do
+        filename = File.expand_path('spec/models/some_namespace/transaction_spec.rb')
+        file = load_string filename, <<~RUBY
+          0-1i23981
+        RUBY
+
+        expect do
+          load_sources(file)
+        end.not_to raise_error
+      end
+
+      it 'logs via solargraph logger' do
+        filename = File.expand_path('spec/models/some_namespace/transaction_spec.rb')
+        load_string filename, <<~RUBY
+          0-1i23981
+        RUBY
+        expect(Solargraph.logger).to have_received(:warn).with(/\[RSpec\] Error processing/).at_least(:once)
+      end
+    end
+  end
 end
