@@ -40,52 +40,167 @@ RSpec.describe Solargraph::Rspec::SpecWalker do
   end
 
   describe '#on_let_method' do
-    it 'yields each context block' do
+    let(:fake_let_with_block) do
+      RubyVM::AbstractSyntaxTree.parse(<<~RUBY).children[2]
+        def fake_test_with_block
+          create(
+            :some_model,
+            some_attribute: 1
+          ) do |model|
+            model.some_attribute = 2
+            model.save!
+          end
+        end
+      RUBY
+    end
+
+    let(:fake_let_with_curly_block) do
+      RubyVM::AbstractSyntaxTree.parse(<<~RUBY).children[2]
+        def fake_test_with_curly_block
+          create(
+            :some_model,
+            some_attribute: 1
+          ) do |model|
+            model.some_attribute = 2
+            model.save!
+          end
+        end
+      RUBY
+    end
+
+    it 'yields each let_block' do
       code = <<~RUBY
         RSpec.describe SomeClass, type: :model do
-          let(:test) { SomeClass.new }
+          let(:fake_test_with_block) do
+            create(
+              :some_model,
+              some_attribute: 1
+            ) do |model|
+              model.some_attribute = 2
+              model.save!
+            end
+          end
 
           context 'when something' do
-            let(:test_2) { SomeClass.new }
+            let(:fake_test_with_curly_block) {
+              create(
+                :some_model,
+                some_attribute: 1
+              ) do |model|
+                model.some_attribute = 2
+                model.save!
+              end
+            }
           end
         end
       RUBY
 
       let_names = []
+      method_asts = []
       # @param walker [Solargraph::Rspec::SpecWalker]
       walk_code(code) do |walker|
-        walker.on_let_method do |method_name, location_range|
+        walker.on_let_method do |method_name, location_range, method_ast|
           let_names << method_name
+          method_asts << method_ast
           expect(location_range).to be_a(Solargraph::Range)
         end
       end
 
-      expect(let_names).to eq(%w[test test_2])
+      expect(let_names).to eq(%w[fake_test_with_block fake_test_with_curly_block])
+      expect(method_asts).to eq(
+        [
+          fake_let_with_block,
+          fake_let_with_curly_block
+        ]
+      )
     end
   end
 
   describe '#on_subject' do
+    let(:fake_subject_with_block) do
+      RubyVM::AbstractSyntaxTree.parse(<<~RUBY).children[2]
+        def subject_with_block
+          create(
+            :some_model,
+            some_attribute: 1
+          ) do |model|
+            model.some_attribute = 2
+            model.save!
+          end
+        end
+      RUBY
+    end
+
+    let(:fake_subject_with_curly_block) do
+      RubyVM::AbstractSyntaxTree.parse(<<~RUBY).children[2]
+        def subject_with_curly_block
+          create(
+            :some_model,
+            some_attribute: 1
+          ) do |model|
+            model.some_attribute = 2
+            model.save!
+          end
+        end
+      RUBY
+    end
+
+    let(:fake_subject_without_name) do
+      RubyVM::AbstractSyntaxTree.parse(<<~RUBY).children[2]
+        def subject
+          create(:some_model)
+        end
+      RUBY
+    end
+
     it 'yields each context block' do
       code = <<~RUBY
         RSpec.describe SomeClass, type: :model do
-          subject(:test) { SomeClass.new }
+          subject(:subject_with_block) do
+            create(
+              :some_model,
+              some_attribute: 1
+            ) do |model|
+              model.some_attribute = 2
+              model.save!
+            end
+          end
 
           context 'when something' do
-            subject { test }
+            subject(:subject_with_curly_block) {
+              create(
+                :some_model,
+                some_attribute: 1
+              ) do |model|
+                model.some_attribute = 2
+                model.save!
+              end
+            }
+
+            subject { create(:some_model) } # without a name
           end
         end
       RUBY
 
       subject_names = []
+      method_asts = []
       # @param walker [Solargraph::Rspec::SpecWalker]
       walk_code(code) do |walker|
-        walker.on_subject do |subject_name, location_range|
+        walker.on_subject do |subject_name, location_range, method_ast|
           subject_names << subject_name
+          method_asts << method_ast
           expect(location_range).to be_a(Solargraph::Range)
         end
       end
 
-      expect(subject_names).to eq(['test', nil])
+      expect(subject_names).to eq(['subject_with_block', 'subject_with_curly_block', nil])
+      expect(method_asts).to eq(
+        [
+          fake_subject_with_block,
+          fake_subject_with_curly_block,
+          fake_subject_without_name
+        ]
+      )
     end
   end
 
