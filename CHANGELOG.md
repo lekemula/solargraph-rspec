@@ -18,6 +18,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Fixed
 
 - Fix subject without name block completion: `subject { ... }`
+- Fix subject return class overlap with `Rspec::ExampleGroups::` when class has no namespace
 
 ## [0.1.1] - 2024-05-13
 

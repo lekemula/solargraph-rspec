@@ -28,7 +28,7 @@ module Solargraph
           PinFactory.build_public_method(
             namespace,
             'described_class',
-            types: ["Class<#{described_class_name}>"],
+            types: ["Class<::#{described_class_name}>"],
             location: PinFactory.build_location(location_range, namespace.filename),
             scope: :instance
           )
