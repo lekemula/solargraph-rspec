@@ -7,6 +7,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- `let` and `subject` type inference 🚀 (Resolves: [Issue #1](https://github.com/lekemula/solargraph-rspec/issues/1))
+
+### Changed
+
+- Migrate from `parser` gem to using ruby's built-in RubyVM::AbstractSyntaxTree ([see why](https://github.com/castwide/solargraph/issues/522#issuecomment-993016664))
+
 ### Fixed
 
 - Fix subject without name block completion: `subject { ... }`
