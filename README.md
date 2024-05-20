@@ -7,15 +7,16 @@
 
 RSpec is a testing framework of choice for many Ruby developers. But at the same time is highly dynamic and heavily relying on metaprogramming making it hard to provide accurate code completion and type inference. 
 
-This gem aims to provide a better support for RSpec in Solargraph and it supports the following features:
+This gem aims to provide better support for RSpec in Solargraph and it supports the following features:
   - `describe` and `it` methods completion
   - memoized `let` and `let!` methods completion 
   - implicit and explicit `subject` methods
   - `described_class` with appropriate type inference
   - `RSpec::Matchers` methods completion
+  - type inference 🚀
   - and more to come...
 
-  ![solargraph-rspec_smaller](https://github.com/lekemula/solargraph-rspec/assets/9197495/66f86e5b-258e-4d8c-8a64-0685d15ece00)
+![solargraph-rspec-with-types](https://github.com/lekemula/solargraph-rspec/assets/9197495/077e74f8-a800-4e90-8922-fa5351adcda3)
 
 ## Installation
 
