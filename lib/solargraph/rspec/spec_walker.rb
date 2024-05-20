@@ -4,6 +4,7 @@ require_relative 'walker'
 require_relative 'spec_walker/node_types'
 require_relative 'spec_walker/full_constant_name'
 require_relative 'spec_walker/rspec_context_namespace'
+require_relative 'spec_walker/fake_let_method'
 
 module Solargraph
   module Rspec
@@ -33,24 +34,34 @@ module Solargraph
       attr_reader :config
 
       # @param block [Proc]
+      # @yieldparam class_name [String]
+      # @yieldparam location_range [Solargraph::Range]
       # @return [void]
       def on_described_class(&block)
         @handlers[:on_described_class] << block
       end
 
       # @param block [Proc]
+      # @yieldparam method_name [String]
+      # @yieldparam location_range [Solargraph::Range]
+      # @yieldparam fake_method_ast [RubyVM::AbstractSyntaxTree::Node]
       # @return [void]
       def on_let_method(&block)
         @handlers[:on_let_method] << block
       end
 
       # @param block [Proc]
+      # @yieldparam method_name [String]
+      # @yieldparam location_range [Solargraph::Range]
+      # @yieldparam fake_method_ast [RubyVM::AbstractSyntaxTree::Node]
       # @return [void]
       def on_subject(&block)
         @handlers[:on_subject] << block
       end
 
       # @param block [Proc]
+      # @yieldparam namespace_name [String]
+      # @yieldparam location_range [Solargraph::Range]
       # @return [void]
       def on_each_context_block(&block)
         @handlers[:on_each_context_block] << block
@@ -58,18 +69,21 @@ module Solargraph
 
       #
       # @param block [Proc]
+      # @yieldparam location_range [Solargraph::Range]
       # @return [void]
       def on_example_block(&block)
         @handlers[:on_example_block] << block
       end
 
       # @param block [Proc]
+      # @yieldparam location_range [Solargraph::Range]
       # @return [void]
       def on_hook_block(&block)
         @handlers[:on_hook_block] << block
       end
 
       # @param block [Proc]
+      # @yieldparam location_range [Solargraph::Range]
       # @return [void]
       def on_blocks_in_examples(&block)
         @handlers[:on_blocks_in_examples] << block
@@ -105,8 +119,10 @@ module Solargraph
           method_name = NodeTypes.let_method_name(block_ast)
           next unless method_name
 
+          fake_method_ast = FakeLetMethod.transform_block(block_ast, @source_map.source.code)
+
           @handlers[:on_let_method].each do |handler|
-            handler.call(method_name, PinFactory.build_location_range(block_ast.children[0]))
+            handler.call(method_name, PinFactory.build_location_range(block_ast.children[0]), fake_method_ast)
           end
         end
 
@@ -114,9 +130,10 @@ module Solargraph
           next unless NodeTypes.a_subject_block?(block_ast)
 
           method_name = NodeTypes.let_method_name(block_ast)
+          fake_method_ast = FakeLetMethod.transform_block(block_ast, @source_map.source.code, method_name || 'subject')
 
           @handlers[:on_subject].each do |handler|
-            handler.call(method_name, PinFactory.build_location_range(block_ast.children[0]))
+            handler.call(method_name, PinFactory.build_location_range(block_ast.children[0]), fake_method_ast)
           end
         end
 

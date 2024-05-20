@@ -15,3 +15,7 @@ gem 'rubocop'             # Linting
 gem 'simplecov'           # Code coverage
 gem 'simplecov-cobertura' # Code coverage
 # gem 'vernier'        # Profiling only on Ruby >= 3.2.1
+
+# Debugging
+# Use local solargraph repo for ease of debugging
+# gem 'solargraph', path: '../solargraph'

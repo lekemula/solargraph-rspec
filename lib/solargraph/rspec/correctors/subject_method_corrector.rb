@@ -10,13 +10,13 @@ module Solargraph
         # @param source_map [Solargraph::SourceMap]
         # @return [void]
         def correct(_source_map)
-          rspec_walker.on_subject do |subject_name, location_range|
+          rspec_walker.on_subject do |subject_name, location_range, fake_method_ast|
             next unless subject_name
 
             namespace_pin = closest_namespace_pin(namespace_pins, location_range.start.line)
             next unless namespace_pin
 
-            subject_pin = rspec_let_method(namespace_pin, subject_name, location_range)
+            subject_pin = rspec_let_method(namespace_pin, subject_name, location_range, fake_method_ast)
             yield [subject_pin].compact if block_given?
           end
         end

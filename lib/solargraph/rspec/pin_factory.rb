@@ -21,7 +21,8 @@ module Solargraph
         location: nil,
         comments: [],
         attribute: false,
-        scope: :instance
+        scope: :instance,
+        node: nil
       )
         opts = {
           name: name,
@@ -29,7 +30,8 @@ module Solargraph
           closure: namespace,
           scope: scope,
           attribute: attribute,
-          comments: []
+          comments: [],
+          node: node
         }
 
         comments << "@return [#{types.join(",")}]" if types

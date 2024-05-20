@@ -325,6 +325,185 @@ RSpec.describe Solargraph::Rspec::Convention do
     expect(completion_at(filename, [2, 25])).to include('something')
   end
 
+  describe 'type inference' do
+    def load_and_assert_type(let_declaration, let_name, expected_type)
+      load_string filename, <<~RUBY
+        RSpec.describe SomeNamespace::Transaction, type: :model do
+          #{let_declaration}
+        end
+      RUBY
+
+      assert_public_instance_method_inferred_type(
+        api_map,
+        "RSpec::ExampleGroups::SomeNamespaceTransaction##{let_name}",
+        expected_type
+      )
+    end
+
+    it 'infers type for described_class.new' do
+      skip 'FIXME: Why it doesn\'t work for `described_class.new`?'
+      load_and_assert_type('let(:transaction) { described_class.new }', 'transaction', 'SomeNamespace::Transaction')
+    end
+
+    it 'infers type for subject' do
+      load_and_assert_type('subject(:transaction) { 1 }', 'transaction', 'Integer')
+    end
+
+    it 'infers type for some_integer' do
+      load_and_assert_type('let(:some_integer) { 1 }', 'some_integer', 'Integer')
+    end
+
+    it 'infers type for indirect_integer' do
+      load_and_assert_type(<<-RUBY, 'indirect_integer', 'Integer')
+        let(:some_integer) { 1 }
+        let(:indirect_integer) { some_integer }
+      RUBY
+    end
+
+    it 'infers type for some_string' do
+      load_and_assert_type("let(:some_string) { 'string' }", 'some_string', 'String')
+    end
+
+    it 'infers type for some_array' do
+      load_and_assert_type('let(:some_array) { [1, 2, 3] }', 'some_array', 'Array')
+    end
+
+    it 'infers type for some_hash' do
+      load_and_assert_type("let(:some_hash) { { key: 'value' } }", 'some_hash', 'Hash')
+    end
+
+    it 'infers type for some_boolean' do
+      load_and_assert_type('let(:some_boolean) { true }', 'some_boolean', 'Boolean')
+    end
+
+    it 'infers type for some_nil' do
+      load_and_assert_type('let(:some_nil) { nil }', 'some_nil', 'nil')
+    end
+
+    it 'infers type for some_float' do
+      load_and_assert_type('let(:some_float) { 1.0 }', 'some_float', 'Float')
+    end
+
+    it 'infers type for some_symbol' do
+      load_and_assert_type('let(:some_symbol) { :symbol }', 'some_symbol', 'Symbol')
+    end
+
+    it 'infers type for some_object' do
+      load_and_assert_type(<<~RUBY, 'some_object', 'MyClass')
+        class MyClass; end
+        let(:some_object) { MyClass.new }
+      RUBY
+    end
+
+    it 'infers type for some_class' do
+      load_and_assert_type('let(:some_class) { Class.new }', 'some_class', 'Class<BasicObject>')
+    end
+
+    it 'infers type for some_module' do
+      load_and_assert_type('let(:some_module) { Module.new }', 'some_module', 'Module')
+    end
+
+    it 'infers types for let methods' do
+      load_string filename, <<~RUBY
+        RSpec.describe SomeNamespace::Transaction, type: :model do
+          let(:transaction) { described_class.new }
+          let(:some_integer) { 1 }
+          let(:indirect_integer) { some_integer }
+          let(:some_string) { 'string' }
+          let(:some_array) { [1, 2, 3] }
+          let(:some_hash) { { key: 'value' } }
+          let(:some_boolean) { true }
+          let(:some_nil) { nil }
+          let(:some_float) { 1.0 }
+          let(:some_symbol) { :symbol }
+          let(:some_object) { MyClass.new }
+          let(:some_class) { Class.new }
+          let(:some_module) { Module.new }
+
+          it 'should do something' do
+            trans
+            some_int
+            indirec
+            some_str
+            some_arr
+            some_has
+            some_bool
+            some_ni
+            some_flo
+            some_sym
+            some_obj
+            some_cla
+            some_mod
+          end
+        end
+
+        class MyClass; end
+      RUBY
+
+      # FIXME: Why it doesn't work for `describe_class.new`?
+      # assert_public_instance_method_inferred_type(
+      #   api_map,
+      #   'RSpec::ExampleGroups::SomeNamespaceTransaction#transaction',
+      #   'SomeNamespace::Transaction'
+      # )
+      assert_public_instance_method_inferred_type(
+        api_map,
+        'RSpec::ExampleGroups::SomeNamespaceTransaction#some_integer',
+        'Integer'
+      )
+      assert_public_instance_method_inferred_type(
+        api_map,
+        'RSpec::ExampleGroups::SomeNamespaceTransaction#indirect_integer',
+        'Integer'
+      )
+      assert_public_instance_method_inferred_type(
+        api_map,
+        'RSpec::ExampleGroups::SomeNamespaceTransaction#some_string',
+        'String'
+      )
+      assert_public_instance_method_inferred_type(
+        api_map,
+        'RSpec::ExampleGroups::SomeNamespaceTransaction#some_array',
+        'Array'
+      )
+      assert_public_instance_method_inferred_type(
+        api_map,
+        'RSpec::ExampleGroups::SomeNamespaceTransaction#some_hash',
+        'Hash'
+      )
+      assert_public_instance_method_inferred_type(
+        api_map,
+        'RSpec::ExampleGroups::SomeNamespaceTransaction#some_boolean',
+        'Boolean'
+      )
+      assert_public_instance_method_inferred_type(
+        api_map,
+        'RSpec::ExampleGroups::SomeNamespaceTransaction#some_nil',
+        'nil'
+      )
+      assert_public_instance_method_inferred_type(
+        api_map,
+        'RSpec::ExampleGroups::SomeNamespaceTransaction#some_float',
+        'Float'
+      )
+      assert_public_instance_method_inferred_type(
+        api_map,
+        'RSpec::ExampleGroups::SomeNamespaceTransaction#some_symbol',
+        'Symbol'
+      )
+      assert_public_instance_method_inferred_type(
+        api_map,
+        'RSpec::ExampleGroups::SomeNamespaceTransaction#some_object',
+        'MyClass'
+      )
+      assert_public_instance_method_inferred_type(
+        api_map,
+        'RSpec::ExampleGroups::SomeNamespaceTransaction#some_class',
+        'Class<BasicObject>'
+      )
+    end
+  end
+
   describe 'configurations' do
     describe 'let_methods' do
       before(:each) do

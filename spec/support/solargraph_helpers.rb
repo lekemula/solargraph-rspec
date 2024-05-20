@@ -24,6 +24,17 @@ module SolargraphHelpers
     yield pin if block_given?
   end
 
+  def assert_public_instance_method_inferred_type(map, query, return_type)
+    pin = find_pin(query, map)
+    expect(pin).to_not be_nil
+    expect(pin.scope).to eq(:instance)
+    inferred_return_type = pin.probe(api_map).tag
+
+    expect(inferred_return_type).to eq(return_type)
+
+    yield pin if block_given?
+  end
+
   def assert_class_method(map, query, return_type)
     pin = find_pin(query, map)
     expect(pin).to_not be_nil
