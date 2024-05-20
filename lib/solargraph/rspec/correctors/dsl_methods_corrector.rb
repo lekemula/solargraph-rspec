@@ -35,7 +35,7 @@ module Solargraph
         # @return [Array<Solargraph::Pin::Method>]
         def add_methods_with_example_binding(namespace_pin)
           rspec_context_block_methods.map do |method|
-            Util.build_public_method(
+            PinFactory.build_public_method(
               namespace_pin,
               method.to_s,
               comments: ["@yieldself [#{namespace_pin.path}]"], # Fixes the binding of the block to the correct class
@@ -50,7 +50,7 @@ module Solargraph
         # @return [Array<Solargraph::Pin::Base>]
         def add_context_dsl_methods(namespace_pin)
           Rspec::CONTEXT_METHODS.map do |method|
-            Util.build_public_method(
+            PinFactory.build_public_method(
               namespace_pin,
               method.to_s,
               scope: :class

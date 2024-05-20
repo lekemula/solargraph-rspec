@@ -34,7 +34,7 @@ module Solargraph
         def implicit_subject_pin(described_class_pin, namespace_pin)
           described_class = described_class_pin.return_type.first.subtypes.first.name
 
-          Util.build_public_method(
+          PinFactory.build_public_method(
             namespace_pin,
             'subject',
             types: [described_class],

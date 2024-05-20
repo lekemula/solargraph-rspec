@@ -10,7 +10,7 @@ require_relative 'correctors/subject_method_corrector'
 require_relative 'correctors/context_block_methods_corrector'
 require_relative 'correctors/implicit_subject_method_corrector'
 require_relative 'correctors/dsl_methods_corrector'
-require_relative 'util'
+require_relative 'pin_factory'
 
 module Solargraph
   module Rspec
@@ -121,14 +121,20 @@ module Solargraph
 
         # @type [Pin::Method, nil]
         described_class_pin = nil
-        Correctors::DescribedClassCorrector.new(namespace_pins: namespace_pins, rspec_walker: rspec_walker).correct(
+        Correctors::DescribedClassCorrector.new(
+          namespace_pins: namespace_pins,
+          rspec_walker: rspec_walker
+        ).correct(
           source_map
         ) do |pins_to_add|
           described_class_pin = pins_to_add.first
           pins += pins_to_add
         end
 
-        Correctors::LetMethodsCorrector.new(namespace_pins: namespace_pins, rspec_walker: rspec_walker).correct(
+        Correctors::LetMethodsCorrector.new(
+          namespace_pins: namespace_pins,
+          rspec_walker: rspec_walker
+        ).correct(
           source_map
         ) do |pins_to_add|
           pins += pins_to_add
@@ -136,7 +142,10 @@ module Solargraph
 
         # @type [Pin::Method, nil]
         subject_pin = nil
-        Correctors::SubjectMethodCorrector.new(namespace_pins: namespace_pins, rspec_walker: rspec_walker).correct(
+        Correctors::SubjectMethodCorrector.new(
+          namespace_pins: namespace_pins,
+          rspec_walker: rspec_walker
+        ).correct(
           source_map
         ) do |pins_to_add|
           subject_pin = pins_to_add.first
@@ -199,7 +208,7 @@ module Solargraph
       # @return [Array<Pin::Base>]
       def include_helper_pins(helper_modules: HELPER_MODULES)
         helper_modules.map do |helper_module|
-          Util.build_module_include(
+          PinFactory.build_module_include(
             root_example_group_namespace_pin,
             helper_module,
             root_example_group_namespace_pin.location
@@ -216,7 +225,7 @@ module Solargraph
       def root_example_group_namespace_pin
         Solargraph::Pin::Namespace.new(
           name: ROOT_NAMESPACE,
-          location: Util.dummy_location('lib/rspec/core/example_group.rb')
+          location: PinFactory.dummy_location('lib/rspec/core/example_group.rb')
         )
       end
     end

@@ -2,7 +2,7 @@
 
 require_relative 'code_coverage' # Needs to be required first
 require 'solargraph-rspec'
-require 'debug'
+require 'debug' unless ENV['NO_DEBUG'] # Useful for: `fswatch lib spec | NO_DEBUG=1 xargs -n1 -I{} rspec`
 
 ENV['SOLARGRAPH_DEBUG'] ||= 'true'
 

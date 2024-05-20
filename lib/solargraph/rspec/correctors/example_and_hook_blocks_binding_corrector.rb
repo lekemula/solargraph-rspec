@@ -11,32 +11,32 @@ module Solargraph
         # @param source_map [Solargraph::SourceMap]
         # @return [void]
         def correct(source_map)
-          rspec_walker.on_example_block do |block_ast|
-            bind_closest_namespace(block_ast, source_map)
+          rspec_walker.on_example_block do |location_range|
+            bind_closest_namespace(location_range, source_map)
 
             yield [] if block_given?
           end
 
-          rspec_walker.on_hook_block do |block_ast|
-            bind_closest_namespace(block_ast, source_map)
+          rspec_walker.on_hook_block do |location_range|
+            bind_closest_namespace(location_range, source_map)
 
             yield [] if block_given?
           end
 
-          rspec_walker.on_let_method do |let_method_ast|
-            bind_closest_namespace(let_method_ast, source_map)
+          rspec_walker.on_let_method do |_method_name, location_range|
+            bind_closest_namespace(location_range, source_map)
 
             yield [] if block_given?
           end
 
-          rspec_walker.on_blocks_in_examples do |block_ast|
-            bind_closest_namespace(block_ast, source_map)
+          rspec_walker.on_blocks_in_examples do |location_range|
+            bind_closest_namespace(location_range, source_map)
 
             yield [] if block_given?
           end
 
-          rspec_walker.on_subject do |_subject_ast, block_ast|
-            bind_closest_namespace(block_ast, source_map)
+          rspec_walker.on_subject do |_method_name, location_range|
+            bind_closest_namespace(location_range, source_map)
 
             yield [] if block_given?
           end
@@ -44,15 +44,15 @@ module Solargraph
 
         private
 
-        # @param block_ast [Parser::AST::Node]
+        # @param location_range [Solargraph::Range]
         # @param source_map [Solargraph::SourceMap]
         # @return [void]
-        def bind_closest_namespace(block_ast, source_map)
-          namespace_pin = closest_namespace_pin(namespace_pins, block_ast.loc.line)
+        def bind_closest_namespace(location_range, source_map)
+          namespace_pin = closest_namespace_pin(namespace_pins, location_range.start.line)
           return unless namespace_pin
 
-          original_block_pin = source_map.locate_block_pin(block_ast.location.begin.line,
-                                                           block_ast.location.begin.column)
+          original_block_pin = source_map.locate_block_pin(location_range.start.line,
+                                                           location_range.start.column)
           original_block_pin_index = source_map.pins.index(original_block_pin)
           fixed_namespace_block_pin = Solargraph::Pin::Block.new(
             closure: example_run_method(namespace_pin),
@@ -67,7 +67,7 @@ module Solargraph
         # @param namespace_pin [Solargraph::Pin::Namespace]
         # @return [Solargraph::Pin::Method]
         def example_run_method(namespace_pin)
-          Util.build_public_method(
+          PinFactory.build_public_method(
             namespace_pin,
             'run',
             # https://github.com/rspec/rspec-core/blob/main/lib/rspec/core/example.rb#L246

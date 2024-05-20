@@ -9,10 +9,11 @@ module Solargraph
       class ContextBlockNamespaceCorrector < WalkerBase
         # @param source_map [Solargraph::SourceMap]
         def correct(source_map)
-          rspec_walker.on_each_context_block do |namespace_name, ast|
-            original_block_pin = source_map.locate_block_pin(ast.location.begin.line, ast.location.begin.column)
+          # @param location_range [Solargraph::Range]
+          rspec_walker.on_each_context_block do |namespace_name, location_range|
+            original_block_pin = source_map.locate_block_pin(location_range.start.line, location_range.start.column)
             original_block_pin_index = source_map.pins.index(original_block_pin)
-            location = Util.build_location(ast, source_map.filename)
+            location = PinFactory.build_location(location_range, source_map.filename)
 
             # Define a dynamic module for the example group block
             # Example:
@@ -36,7 +37,7 @@ module Solargraph
 
             # Include DSL methods in the example group block
             # TOOD: This does not work on solagraph! Class methods are not included from parent class.
-            namespace_extend_pin = Util.build_module_extend(
+            namespace_extend_pin = PinFactory.build_module_extend(
               namespace_pin,
               root_example_group_namespace_pin.name,
               location
@@ -44,7 +45,7 @@ module Solargraph
 
             # Include parent example groups to share let definitions
             parent_namespace_name = namespace_name.split('::')[0..-2].join('::')
-            namespace_include_pin = Util.build_module_include(
+            namespace_include_pin = PinFactory.build_module_include(
               namespace_pin,
               parent_namespace_name,
               location

@@ -68,7 +68,15 @@ RSpec.describe Solargraph::Rspec::Convention do
         { start: { line: 1, character: 2 }, end: { line: 1, character: 23 } }
       )
     end
-    assert_public_instance_method(api_map, 'RSpec::ExampleGroups::SomeNamespaceTransaction#something', ['undefined'])
+    assert_public_instance_method(
+      api_map,
+      'RSpec::ExampleGroups::SomeNamespaceTransaction#something',
+      ['undefined']
+    ) do |pin|
+      expect(pin.location.range.to_hash).to eq(
+        { start: { line: 2, character: 2 }, end: { line: 2, character: 17 } }
+      )
+    end
     assert_public_instance_method(api_map, 'RSpec::ExampleGroups::SomeNamespaceTransaction#something_else',
                                   ['undefined'])
     assert_public_instance_method(
@@ -362,6 +370,42 @@ RSpec.describe Solargraph::Rspec::Convention do
                                       ['undefined'])
         expect(completion_at(filename, [6, 7])).to include('transaction')
         expect(completion_at(filename, [3, 31])).to include('something')
+      end
+    end
+  end
+
+  describe 'error handling' do
+    context 'not in debug mode' do
+      before do
+        allow(Solargraph.logger).to receive(:warn).and_return(true)
+        allow_any_instance_of(
+          Solargraph::Rspec::Correctors::ContextBlockNamespaceCorrector
+        ).to receive(:correct).and_raise(StandardError)
+      end
+
+      around do |example|
+        ENV['SOLARGRAPH_DEBUG'] = nil
+        example.run
+        ENV['SOLARGRAPH_DEBUG'] = 'true'
+      end
+
+      it 'does not raise an exception' do
+        filename = File.expand_path('spec/models/some_namespace/transaction_spec.rb')
+        file = load_string filename, <<~RUBY
+          0-1i23981
+        RUBY
+
+        expect do
+          load_sources(file)
+        end.not_to raise_error
+      end
+
+      it 'logs via solargraph logger' do
+        filename = File.expand_path('spec/models/some_namespace/transaction_spec.rb')
+        load_string filename, <<~RUBY
+          0-1i23981
+        RUBY
+        expect(Solargraph.logger).to have_received(:warn).with(/\[RSpec\] Error processing/).at_least(:once)
       end
     end
   end
