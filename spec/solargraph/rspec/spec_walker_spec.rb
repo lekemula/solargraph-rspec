@@ -226,8 +226,8 @@ RSpec.describe Solargraph::Rspec::SpecWalker do
         end
       end
 
-      expect(namespaces).to eq(['RSpec::ExampleGroups::SomeNamespaceSomeClass',
-                                'RSpec::ExampleGroups::SomeNamespaceSomeClass::WhenSomething'])
+      expect(namespaces).to eq(['RSpec::ExampleGroups::TestSomeNamespaceSomeClass',
+                                'RSpec::ExampleGroups::TestSomeNamespaceSomeClass::WhenSomething'])
     end
   end
 

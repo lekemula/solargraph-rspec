@@ -10,6 +10,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Fixed
 
 - Fix nameless `subject` method completion inside nested `context` blocks
+- (Hack-ish) Fix `described_class` type collision when `RSpec.describe SomeClassWithoutNamespace`
 
 ## [0.2.0] - 2024-05-20
 

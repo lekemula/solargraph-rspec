@@ -201,6 +201,10 @@ module Solargraph
           block_name = RspecContextNamespace.from_block_ast(block_ast)
           next unless block_name
 
+          # @HACK: When we describe `SomeClass` without a namespace, Solargraph confuses described_class with the
+          # `RSpec::ExampleGroups::SomeClass` constant. To avoid this, we append the root namespace with "Test"
+          block_name = "Test#{block_name}" if parent_namespace == Rspec::ROOT_NAMESPACE
+
           parent_namespace = namespace_name = "#{parent_namespace}::#{block_name}"
           block&.call(namespace_name, block_ast)
           next parent_namespace
