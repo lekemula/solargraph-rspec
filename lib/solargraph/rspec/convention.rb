@@ -49,6 +49,17 @@ module Solargraph
       include_context
     ].freeze
 
+    # @type [Array<Class<Correctors::Base>>]
+    CORRECTOR_CLASSES = [
+      Correctors::ContextBlockMethodsCorrector,
+      Correctors::ContextBlockNamespaceCorrector,
+      Correctors::DescribedClassCorrector,
+      Correctors::DslMethodsCorrector,
+      Correctors::ExampleAndHookBlocksBindingCorrector,
+      Correctors::LetMethodsCorrector,
+      Correctors::SubjectMethodCorrector
+    ].freeze
+
     # Provides completion for RSpec DSL and helper methods.
     #   - `describe` and `context` blocks
     #   - `let` and `let!` methods
@@ -104,63 +115,12 @@ module Solargraph
 
         rspec_walker = SpecWalker.new(source_map: source_map, config: config)
 
-        Correctors::ContextBlockNamespaceCorrector.new(
-          namespace_pins: namespace_pins,
-          rspec_walker: rspec_walker
-        ).correct(source_map) do |pins_to_add|
-          pins_to_add.each { |pin| pins << pin }
-        end
-
-        Correctors::ExampleAndHookBlocksBindingCorrector.new(
-          namespace_pins: namespace_pins,
-          rspec_walker: rspec_walker
-        ).correct(source_map) do |pins_to_add|
-          pins_to_add.each { |pin| pins << pin }
-        end
-
-        Correctors::DescribedClassCorrector.new(
-          namespace_pins: namespace_pins,
-          rspec_walker: rspec_walker
-        ).correct(
-          source_map
-        ) do |pins_to_add|
-          pins_to_add.each { |pin| pins << pin }
-        end
-
-        Correctors::LetMethodsCorrector.new(
-          namespace_pins: namespace_pins,
-          rspec_walker: rspec_walker
-        ).correct(
-          source_map
-        ) do |pins_to_add|
-          pins_to_add.each { |pin| pins << pin }
-        end
-
-        Correctors::SubjectMethodCorrector.new(
-          namespace_pins: namespace_pins,
-          rspec_walker: rspec_walker,
-          added_pins: pins
-        ).correct(
-          source_map
-        ) do |pins_to_add|
-          pins_to_add.each { |pin| pins << pin }
-        end
-
-        Correctors::ContextBlockMethodsCorrector.new(
-          namespace_pins: namespace_pins,
-          rspec_walker: rspec_walker
-        ).correct(source_map) do |pins_to_add|
-          pins_to_add.each { |pin| pins << pin }
-        end
-
-        Correctors::DslMethodsCorrector.new(
-          namespace_pins: namespace_pins,
-          rspec_walker: rspec_walker,
-          config: config
-        ).correct(
-          source_map
-        ) do |pins_to_add|
-          pins_to_add.each { |pin| pins << pin }
+        CORRECTOR_CLASSES.each do |corrector_class|
+          corrector_class.new(
+            namespace_pins: namespace_pins,
+            rspec_walker: rspec_walker,
+            added_pins: pins
+          ).correct(source_map)
         end
 
         rspec_walker.walk!

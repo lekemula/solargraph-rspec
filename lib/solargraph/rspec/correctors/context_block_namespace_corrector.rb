@@ -1,12 +1,12 @@
 # frozen_string_literal: true
 
-require_relative 'walker_base'
+require_relative 'base'
 
 module Solargraph
   module Rspec
     module Correctors
-      # A corrector of RSpec parsed pins by Solargraph
-      class ContextBlockNamespaceCorrector < WalkerBase
+      # RSpec generates a namespace class for each context block. This corrector add the pins for those namespaces.
+      class ContextBlockNamespaceCorrector < Base
         # @param source_map [Solargraph::SourceMap]
         def correct(source_map)
           # @param location_range [Solargraph::Range]
@@ -52,12 +52,8 @@ module Solargraph
             )
 
             namespace_pins << namespace_pin
-            if block_given?
-              yield [
-                namespace_include_pin,
-                namespace_extend_pin
-              ]
-            end
+
+            add_pins(namespace_extend_pin, namespace_include_pin)
           end
         end
       end

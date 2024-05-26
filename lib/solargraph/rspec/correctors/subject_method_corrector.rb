@@ -7,18 +7,6 @@ module Solargraph
     module Correctors
       # Defines let-like methods in the example group block
       class SubjectMethodCorrector < LetMethodsCorrector
-        # @return [Array<Pin::Base>]
-        attr_reader :added_pins
-
-        # @param namespace_pins [Array<Pin::Namespace>]
-        # @param added_pins [Array<Pin::Base>]
-        # @param rspec_walker [Solargraph::Rspec::SpecWalker]
-        def initialize(namespace_pins:, rspec_walker:, added_pins:)
-          super(namespace_pins: namespace_pins, rspec_walker: rspec_walker)
-
-          @added_pins = added_pins
-        end
-
         # @param source_map [Solargraph::SourceMap]
         # @return [void]
         def correct(_source_map)
@@ -27,7 +15,7 @@ module Solargraph
             next unless namespace_pin
 
             subject_pin = rspec_subject_method(namespace_pin, subject_name, location_range, fake_method_ast)
-            yield [subject_pin].compact if block_given?
+            add_pin(subject_pin)
           end
 
           rspec_walker.after_walk do
@@ -35,7 +23,7 @@ module Solargraph
 
             namespace_pin = closest_namespace_pin(namespace_pins, described_class_pin.location.range.start.line)
 
-            yield [implicit_subject_pin(described_class_pin, namespace_pin)] if block_given? && namespace_pin
+            add_pin(implicit_subject_pin(described_class_pin, namespace_pin)) if namespace_pin
           end
         end
 

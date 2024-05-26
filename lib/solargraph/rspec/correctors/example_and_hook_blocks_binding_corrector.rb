@@ -1,44 +1,34 @@
 # frozen_string_literal: true
 
-require_relative 'walker_base'
+require_relative 'base'
 
 module Solargraph
   module Rspec
     module Correctors
-      # Sets the correct namespace binding for example group blocks (it, example, etc.) and
-      # hook blocks (before, after, around)
-      class ExampleAndHookBlocksBindingCorrector < WalkerBase
+      # RSpec executes example and hook blocks in the context of the example group (ie. describe blocks).
+      # This correctors sets the right bindings to those blocks.
+      class ExampleAndHookBlocksBindingCorrector < Base
         # @param source_map [Solargraph::SourceMap]
         # @return [void]
         def correct(source_map)
           rspec_walker.on_example_block do |location_range|
             bind_closest_namespace(location_range, source_map)
-
-            yield [] if block_given?
           end
 
           rspec_walker.on_hook_block do |location_range|
             bind_closest_namespace(location_range, source_map)
-
-            yield [] if block_given?
           end
 
           rspec_walker.on_let_method do |_method_name, location_range|
             bind_closest_namespace(location_range, source_map)
-
-            yield [] if block_given?
           end
 
           rspec_walker.on_blocks_in_examples do |location_range|
             bind_closest_namespace(location_range, source_map)
-
-            yield [] if block_given?
           end
 
           rspec_walker.on_subject do |_method_name, location_range|
             bind_closest_namespace(location_range, source_map)
-
-            yield [] if block_given?
           end
         end
 

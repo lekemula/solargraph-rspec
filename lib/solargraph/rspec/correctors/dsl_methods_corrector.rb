@@ -1,39 +1,29 @@
 # frozen_string_literal: true
 
-require_relative 'walker_base'
+require_relative 'base'
 
 module Solargraph
   module Rspec
     module Correctors
-      class DslMethodsCorrector < WalkerBase
-        # @param namespace_pins [Array<Solargraph::Pin::Base>]
-        # @param rspec_walker [Solargraph::Rspec::SpecWalker]
-        # @param config [Solargraph::Rspec::Config]
-        def initialize(namespace_pins:, rspec_walker:, config:)
-          super(namespace_pins: namespace_pins, rspec_walker: rspec_walker)
-          @config = config
-        end
-
+      # Includes DSL method helpers in the example group block for completion (ie. it, before, let, subject, etc.)
+      class DslMethodsCorrector < Base
         # @param source_map [Solargraph::SourceMap]
         # @return [void]
         def correct(_source_map)
           rspec_walker.after_walk do
-            if block_given?
-              yield namespace_pins.flat_map { |namespace_pin| add_context_dsl_methods(namespace_pin) }
-              yield namespace_pins.flat_map { |namespace_pin| add_methods_with_example_binding(namespace_pin) }
+            namespace_pins.each do |namespace_pin|
+              add_pins(context_dsl_methods(namespace_pin))
+              add_pins(methods_with_example_binding(namespace_pin))
             end
           end
         end
 
         private
 
-        # @return [Solargraph::Rspec::Config]
-        attr_reader :config
-
         # RSpec executes example and hook blocks (eg. it, before, after)in the context of the example group.
         # @yieldsef changes the binding of the block to correct class.
         # @return [Array<Solargraph::Pin::Method>]
-        def add_methods_with_example_binding(namespace_pin)
+        def methods_with_example_binding(namespace_pin)
           rspec_context_block_methods.map do |method|
             PinFactory.build_public_method(
               namespace_pin,
@@ -48,7 +38,7 @@ module Solargraph
         #   Fix this once Solargraph supports extending class methods.
         # @param namespace_pin [Solargraph::Pin::Base]
         # @return [Array<Solargraph::Pin::Base>]
-        def add_context_dsl_methods(namespace_pin)
+        def context_dsl_methods(namespace_pin)
           Rspec::CONTEXT_METHODS.map do |method|
             PinFactory.build_public_method(
               namespace_pin,
@@ -61,6 +51,11 @@ module Solargraph
         # @return [Array<String>]
         def rspec_context_block_methods
           config.let_methods + Rspec::HOOK_METHODS + Rspec::EXAMPLE_METHODS
+        end
+
+        # @return [Solargraph::Rspec::Config]
+        def config
+          Solargraph::Rspec::Convention.config
         end
       end
     end

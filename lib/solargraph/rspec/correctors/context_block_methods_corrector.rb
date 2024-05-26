@@ -6,7 +6,7 @@ module Solargraph
   module Rspec
     module Correctors
       # A corrector that corrects pure ruby method blocks namespace defined inside describe/context blocks.
-      class ContextBlockMethodsCorrector < WalkerBase
+      class ContextBlockMethodsCorrector < Base
         # @param source_map [Solargraph::SourceMap]
         def correct(source_map)
           rspec_walker.after_walk do
@@ -28,8 +28,6 @@ module Solargraph
                 comments: pin.comments
               )
             end
-
-            yield [] if block_given?
           end
         end
       end

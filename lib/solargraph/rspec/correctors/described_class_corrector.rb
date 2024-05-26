@@ -1,11 +1,12 @@
 # frozen_string_literal: true
 
-require_relative 'walker_base'
+require_relative 'base'
 
 module Solargraph
   module Rspec
     module Correctors
-      class DescribedClassCorrector < WalkerBase
+      # Defines `described_class` method in the example group block
+      class DescribedClassCorrector < Base
         # @param source_map [Solargraph::SourceMap]
         # @return [void]
         def correct(_source_map)
@@ -14,7 +15,7 @@ module Solargraph
             next unless namespace_pin
 
             described_class_pin = rspec_described_class_method(namespace_pin, location_range, described_class_name)
-            yield [described_class_pin].compact if block_given?
+            add_pin(described_class_pin)
           end
         end
 

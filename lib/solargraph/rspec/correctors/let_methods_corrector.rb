@@ -1,12 +1,12 @@
 # frozen_string_literal: true
 
-require_relative 'walker_base'
+require_relative 'base'
 
 module Solargraph
   module Rspec
     module Correctors
       # Defines let-like methods in the example group block
-      class LetMethodsCorrector < WalkerBase
+      class LetMethodsCorrector < Base
         # @param source_map [Solargraph::SourceMap]
         # @return [void]
         def correct(_source_map)
@@ -15,7 +15,7 @@ module Solargraph
             next unless namespace_pin
 
             pin = rspec_let_method(namespace_pin, let_name, location_range, fake_method_ast)
-            yield [pin] if block_given?
+            add_pin(pin)
           end
         end
 
