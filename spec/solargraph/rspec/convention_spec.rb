@@ -16,7 +16,7 @@ RSpec.describe Solargraph::Rspec::Convention do
       end
     RUBY
 
-    assert_public_instance_method(api_map, 'RSpec::ExampleGroups::SomeNamespaceTransaction#described_class',
+    assert_public_instance_method(api_map, 'RSpec::ExampleGroups::TestSomeNamespaceTransaction#described_class',
                                   ['Class<::SomeNamespace::Transaction>']) do |pin|
       expect(pin.location.filename).to eq(filename)
       expect(pin.location.range.to_hash).to eq(
@@ -61,7 +61,7 @@ RSpec.describe Solargraph::Rspec::Convention do
 
     assert_public_instance_method(
       api_map,
-      'RSpec::ExampleGroups::SomeNamespaceTransaction#transaction',
+      'RSpec::ExampleGroups::TestSomeNamespaceTransaction#transaction',
       ['undefined']
     ) do |pin|
       expect(pin.location.range.to_hash).to eq(
@@ -70,18 +70,18 @@ RSpec.describe Solargraph::Rspec::Convention do
     end
     assert_public_instance_method(
       api_map,
-      'RSpec::ExampleGroups::SomeNamespaceTransaction#something',
+      'RSpec::ExampleGroups::TestSomeNamespaceTransaction#something',
       ['undefined']
     ) do |pin|
       expect(pin.location.range.to_hash).to eq(
         { start: { line: 2, character: 2 }, end: { line: 2, character: 17 } }
       )
     end
-    assert_public_instance_method(api_map, 'RSpec::ExampleGroups::SomeNamespaceTransaction#something_else',
+    assert_public_instance_method(api_map, 'RSpec::ExampleGroups::TestSomeNamespaceTransaction#something_else',
                                   ['undefined'])
     assert_public_instance_method(
       api_map,
-      'RSpec::ExampleGroups::SomeNamespaceTransaction::NestedContext#nested_something',
+      'RSpec::ExampleGroups::TestSomeNamespaceTransaction::NestedContext#nested_something',
       ['undefined']
     )
     expect(completion_at(filename, [6, 8])).to include('transaction')
@@ -112,12 +112,12 @@ RSpec.describe Solargraph::Rspec::Convention do
       end
     RUBY
 
-    assert_public_instance_method(api_map, 'RSpec::ExampleGroups::SomeNamespaceTransaction#subject',
+    assert_public_instance_method(api_map, 'RSpec::ExampleGroups::TestSomeNamespaceTransaction#subject',
                                   ['SomeNamespace::Transaction'])
     expect(completion_at(filename, [2, 6])).to include('subject')
     assert_public_instance_method_inferred_type(
       api_map,
-      'RSpec::ExampleGroups::SomeNamespaceTransaction::NestedContextWithNamelessSubject#subject',
+      'RSpec::ExampleGroups::TestSomeNamespaceTransaction::NestedContextWithNamelessSubject#subject',
       'Integer'
     )
     expect(completion_at(filename, [9, 9])).to include('subject')
@@ -144,10 +144,10 @@ RSpec.describe Solargraph::Rspec::Convention do
       end
     RUBY
 
-    assert_namespace(api_map, 'RSpec::ExampleGroups::SomeNamespaceTransaction')
-    assert_namespace(api_map, 'RSpec::ExampleGroups::SomeNamespaceTransaction::DescribingSomething')
-    assert_namespace(api_map, 'RSpec::ExampleGroups::SomeNamespaceTransaction::DescribingSomething::WhenSomeContext')
-    assert_namespace(api_map, 'RSpec::ExampleGroups::SomeNamespaceTransaction::DescribingSomething::TESTSomeSymbols')
+    assert_namespace(api_map, 'RSpec::ExampleGroups::TestSomeNamespaceTransaction')
+    assert_namespace(api_map, 'RSpec::ExampleGroups::TestSomeNamespaceTransaction::DescribingSomething')
+    assert_namespace(api_map, 'RSpec::ExampleGroups::TestSomeNamespaceTransaction::DescribingSomething::WhenSomeContext')
+    assert_namespace(api_map, 'RSpec::ExampleGroups::TestSomeNamespaceTransaction::DescribingSomething::TESTSomeSymbols')
   end
 
   it 'shouldn\'t complete for rspec definitions from other spec files' do
@@ -271,7 +271,7 @@ RSpec.describe Solargraph::Rspec::Convention do
       end
     RUBY
 
-    assert_class_method(api_map, 'RSpec::ExampleGroups::SomeNamespaceTransaction.it', ['undefined'])
+    assert_class_method(api_map, 'RSpec::ExampleGroups::TestSomeNamespaceTransaction.it', ['undefined'])
     expect(completion_at(filename, [1, 7])).to include('describe')
     expect(completion_at(filename, [2, 7])).to include('context')
     expect(completion_at(filename, [3, 7])).to include('xit')
@@ -349,7 +349,7 @@ RSpec.describe Solargraph::Rspec::Convention do
 
       assert_public_instance_method_inferred_type(
         api_map,
-        "RSpec::ExampleGroups::SomeNamespaceTransaction##{let_name}",
+        "RSpec::ExampleGroups::TestSomeNamespaceTransaction##{let_name}",
         expected_type
       )
     end
@@ -457,62 +457,62 @@ RSpec.describe Solargraph::Rspec::Convention do
       # FIXME: Why it doesn't work for `describe_class.new`?
       # assert_public_instance_method_inferred_type(
       #   api_map,
-      #   'RSpec::ExampleGroups::SomeNamespaceTransaction#transaction',
+      #   'RSpec::ExampleGroups::TestSomeNamespaceTransaction#transaction',
       #   'SomeNamespace::Transaction'
       # )
       assert_public_instance_method_inferred_type(
         api_map,
-        'RSpec::ExampleGroups::SomeNamespaceTransaction#some_integer',
+        'RSpec::ExampleGroups::TestSomeNamespaceTransaction#some_integer',
         'Integer'
       )
       assert_public_instance_method_inferred_type(
         api_map,
-        'RSpec::ExampleGroups::SomeNamespaceTransaction#indirect_integer',
+        'RSpec::ExampleGroups::TestSomeNamespaceTransaction#indirect_integer',
         'Integer'
       )
       assert_public_instance_method_inferred_type(
         api_map,
-        'RSpec::ExampleGroups::SomeNamespaceTransaction#some_string',
+        'RSpec::ExampleGroups::TestSomeNamespaceTransaction#some_string',
         'String'
       )
       assert_public_instance_method_inferred_type(
         api_map,
-        'RSpec::ExampleGroups::SomeNamespaceTransaction#some_array',
+        'RSpec::ExampleGroups::TestSomeNamespaceTransaction#some_array',
         'Array'
       )
       assert_public_instance_method_inferred_type(
         api_map,
-        'RSpec::ExampleGroups::SomeNamespaceTransaction#some_hash',
+        'RSpec::ExampleGroups::TestSomeNamespaceTransaction#some_hash',
         'Hash'
       )
       assert_public_instance_method_inferred_type(
         api_map,
-        'RSpec::ExampleGroups::SomeNamespaceTransaction#some_boolean',
+        'RSpec::ExampleGroups::TestSomeNamespaceTransaction#some_boolean',
         'Boolean'
       )
       assert_public_instance_method_inferred_type(
         api_map,
-        'RSpec::ExampleGroups::SomeNamespaceTransaction#some_nil',
+        'RSpec::ExampleGroups::TestSomeNamespaceTransaction#some_nil',
         'nil'
       )
       assert_public_instance_method_inferred_type(
         api_map,
-        'RSpec::ExampleGroups::SomeNamespaceTransaction#some_float',
+        'RSpec::ExampleGroups::TestSomeNamespaceTransaction#some_float',
         'Float'
       )
       assert_public_instance_method_inferred_type(
         api_map,
-        'RSpec::ExampleGroups::SomeNamespaceTransaction#some_symbol',
+        'RSpec::ExampleGroups::TestSomeNamespaceTransaction#some_symbol',
         'Symbol'
       )
       assert_public_instance_method_inferred_type(
         api_map,
-        'RSpec::ExampleGroups::SomeNamespaceTransaction#some_object',
+        'RSpec::ExampleGroups::TestSomeNamespaceTransaction#some_object',
         'MyClass'
       )
       assert_public_instance_method_inferred_type(
         api_map,
-        'RSpec::ExampleGroups::SomeNamespaceTransaction#some_class',
+        'RSpec::ExampleGroups::TestSomeNamespaceTransaction#some_class',
         'Class<BasicObject>'
       )
     end
@@ -559,7 +559,7 @@ RSpec.describe Solargraph::Rspec::Convention do
           end
         RUBY
 
-        assert_public_instance_method(api_map, 'RSpec::ExampleGroups::SomeNamespaceTransaction#transaction',
+        assert_public_instance_method(api_map, 'RSpec::ExampleGroups::TestSomeNamespaceTransaction#transaction',
                                       ['undefined'])
         expect(completion_at(filename, [6, 7])).to include('transaction')
         expect(completion_at(filename, [3, 31])).to include('something')
