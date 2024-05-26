@@ -8,7 +8,6 @@ require_relative 'correctors/described_class_corrector'
 require_relative 'correctors/let_methods_corrector'
 require_relative 'correctors/subject_method_corrector'
 require_relative 'correctors/context_block_methods_corrector'
-require_relative 'correctors/implicit_subject_method_corrector'
 require_relative 'correctors/dsl_methods_corrector'
 require_relative 'pin_factory'
 
@@ -109,26 +108,23 @@ module Solargraph
           namespace_pins: namespace_pins,
           rspec_walker: rspec_walker
         ).correct(source_map) do |pins_to_add|
-          pins += pins_to_add
+          pins_to_add.each { |pin| pins << pin }
         end
 
         Correctors::ExampleAndHookBlocksBindingCorrector.new(
           namespace_pins: namespace_pins,
           rspec_walker: rspec_walker
         ).correct(source_map) do |pins_to_add|
-          pins += pins_to_add
+          pins_to_add.each { |pin| pins << pin }
         end
 
-        # @type [Pin::Method, nil]
-        described_class_pin = nil
         Correctors::DescribedClassCorrector.new(
           namespace_pins: namespace_pins,
           rspec_walker: rspec_walker
         ).correct(
           source_map
         ) do |pins_to_add|
-          described_class_pin = pins_to_add.first
-          pins += pins_to_add
+          pins_to_add.each { |pin| pins << pin }
         end
 
         Correctors::LetMethodsCorrector.new(
@@ -137,26 +133,24 @@ module Solargraph
         ).correct(
           source_map
         ) do |pins_to_add|
-          pins += pins_to_add
+          pins_to_add.each { |pin| pins << pin }
         end
 
-        # @type [Pin::Method, nil]
-        subject_pin = nil
         Correctors::SubjectMethodCorrector.new(
           namespace_pins: namespace_pins,
-          rspec_walker: rspec_walker
+          rspec_walker: rspec_walker,
+          added_pins: pins
         ).correct(
           source_map
         ) do |pins_to_add|
-          subject_pin = pins_to_add.first
-          pins += pins_to_add
+          pins_to_add.each { |pin| pins << pin }
         end
 
         Correctors::ContextBlockMethodsCorrector.new(
           namespace_pins: namespace_pins,
           rspec_walker: rspec_walker
         ).correct(source_map) do |pins_to_add|
-          pins += pins_to_add
+          pins_to_add.each { |pin| pins << pin }
         end
 
         Correctors::DslMethodsCorrector.new(
@@ -166,24 +160,11 @@ module Solargraph
         ).correct(
           source_map
         ) do |pins_to_add|
-          pins += pins_to_add
+          pins_to_add.each { |pin| pins << pin }
         end
 
         rspec_walker.walk!
         pins += namespace_pins
-
-        # Implicit subject
-        if !subject_pin && described_class_pin
-          Correctors::ImplicitSubjectMethodCorrector.new(
-            namespace_pins: namespace_pins,
-            described_class_pin: described_class_pin
-          ).correct(
-            source_map
-          ) do |pins_to_add|
-            subject_pin = pins_to_add.first
-            pins += pins_to_add
-          end
-        end
 
         if pins.any?
           Solargraph.logger.debug(

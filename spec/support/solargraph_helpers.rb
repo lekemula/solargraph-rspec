@@ -17,7 +17,7 @@ module SolargraphHelpers
 
   def assert_public_instance_method(map, query, return_type)
     pin = find_pin(query, map)
-    expect(pin).to_not be_nil
+    expect(pin).to_not be_nil, "Method #{query} not found"
     expect(pin.scope).to eq(:instance)
     expect(pin.return_type.map(&:tag)).to eq(return_type)
 
@@ -26,7 +26,7 @@ module SolargraphHelpers
 
   def assert_public_instance_method_inferred_type(map, query, return_type)
     pin = find_pin(query, map)
-    expect(pin).to_not be_nil
+    expect(pin).to_not be_nil, "Method #{query} not found"
     expect(pin.scope).to eq(:instance)
     inferred_return_type = pin.probe(api_map).tag
 

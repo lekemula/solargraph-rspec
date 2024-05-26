@@ -101,12 +101,26 @@ RSpec.describe Solargraph::Rspec::Convention do
         it 'should do something' do
           sub
         end
+
+        context 'nested context with nameless subject' do
+          subject { 1 }
+
+          it 'overrides the implicit subject' do
+            sub
+          end
+        end
       end
     RUBY
 
     assert_public_instance_method(api_map, 'RSpec::ExampleGroups::SomeNamespaceTransaction#subject',
                                   ['SomeNamespace::Transaction'])
     expect(completion_at(filename, [2, 6])).to include('subject')
+    assert_public_instance_method_inferred_type(
+      api_map,
+      'RSpec::ExampleGroups::SomeNamespaceTransaction::NestedContextWithNamelessSubject#subject',
+      'Integer'
+    )
+    expect(completion_at(filename, [9, 9])).to include('subject')
   end
 
   it 'generates modules for describe/context blocks' do
