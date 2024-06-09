@@ -7,6 +7,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+
+## [0.2.1] - 2024-06-09
+
+### Added
+
+- Documentation for `RSpec::ExampleGroups` DSL methods like `it`, `fit`, `example` etc.
+
 ### Fixed
 
 - Fix nameless `subject` method completion inside nested `context` blocks
