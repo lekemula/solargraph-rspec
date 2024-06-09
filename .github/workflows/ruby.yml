@@ -64,7 +64,12 @@ jobs:
 
       - name: Set up yardocs
         if: steps.cache-yardocs.outputs.cache-hit != 'true'
-        run: cd solargraph-rspec && bundle exec yard gems
+        run: cd solargraph-rspec && bundle exec yard gems --verbose
+
+      - name: List all Yardoc constants and methods
+        run: |
+            cd solargraph-rspec
+            bundle exec yard list
 
       - name: Run tests
         run: cd solargraph-rspec && bundle exec rspec --format progress

@@ -273,7 +273,7 @@ RSpec.describe Solargraph::Rspec::Convention do
       end
     RUBY
 
-    assert_class_method(api_map, 'RSpec::ExampleGroups::TestSomeNamespaceTransaction.it', ['undefined'])
+    assert_class_method(api_map, 'RSpec::ExampleGroups::TestSomeNamespaceTransaction.it', [''])
     expect(completion_at(filename, [1, 7])).to include('describe')
     expect(completion_at(filename, [2, 7])).to include('context')
     expect(completion_at(filename, [3, 7])).to include('xit')
