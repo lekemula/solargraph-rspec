@@ -24,8 +24,10 @@ module Solargraph
           RUBY
 
           ast.children[2]
-        rescue SyntaxError
-          raise "Failed to build fake let method: #{block_ast.inspect}, message: #{e.message}"
+        rescue SyntaxError => e
+          Solargraph.logger.warn "[RSpec] Failed to build fake let method: #{e.message}, \
+            method_body: #{method_body}, \
+            ast: #{block_ast.inspect}"
         ensure
           nil
         end
