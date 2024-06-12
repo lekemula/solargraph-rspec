@@ -95,6 +95,42 @@ RSpec.describe Solargraph::Rspec::Convention do
     expect(completion_at(filename, [22, 8])).to include('nested_something')
   end
 
+  it 'generates let methods with do/end block' do
+    load_string filename, <<~RUBY
+      RSpec.describe SomeNamespace::Transaction, type: :model do
+        let(:something) do
+          "something"
+        end
+
+        let!(:other_thing) do
+          2
+        end
+
+        let(:todo) do # "do" keyword overlap
+          {
+            'todo' => 'end' # "end" keyword overlap
+          }
+        end
+      end
+    RUBY
+
+    assert_public_instance_method_inferred_type(
+      api_map,
+      'RSpec::ExampleGroups::TestSomeNamespaceTransaction#something',
+      'String'
+    )
+    assert_public_instance_method_inferred_type(
+      api_map,
+      'RSpec::ExampleGroups::TestSomeNamespaceTransaction#other_thing',
+      'Integer'
+    )
+    assert_public_instance_method_inferred_type(
+      api_map,
+      'RSpec::ExampleGroups::TestSomeNamespaceTransaction#todo',
+      'Hash'
+    )
+  end
+
   it 'generates implicit subject method' do
     load_string filename, <<~RUBY
       RSpec.describe SomeNamespace::Transaction, type: :model do

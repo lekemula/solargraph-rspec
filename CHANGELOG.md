@@ -9,6 +9,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- Fix `let` definitions when do/end keywords overlap with body definition
+  ```ruby
+    let(:todo) do # "do" keyword overlap
+      {
+        'todo' => 'end' # "end" keyword overlap
+      }
+    end
+  ```
 - Error handling in SpecWalker::FakeLetMethod
 
 ## [0.2.1] - 2024-06-09
