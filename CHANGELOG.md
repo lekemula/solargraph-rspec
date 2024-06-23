@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+Add here...
+
+## v0.2.2 - 2024-06-23
+
 ### Fixed
 
 - Suggest keeping `spec/**/*` in the `exclude` section of `.solargraph.yml` to avoid performance issues (see [commit](https://github.com/lekemula/solargraph-rspec/commit/3f0fc39e59e99bf9430e55c52ecb88650e49315e))
