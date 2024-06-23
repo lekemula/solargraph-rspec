@@ -41,7 +41,12 @@ end
 
 If you add them to your Gemfile, you'll have to tell your IDE plugin to use bundler to load the right version of solargraph.
 
-Add `solargraph-rspec` to your `.solargraph.yml` and remove the `spec` directory from the `exclude` list.
+Add `solargraph-rspec` to your `.solargraph.yml` as a plugin.
+
+> [!CAUTION]
+> To avoid **performance issues**, please keep the `spec/**/*` directory in **exclude** list in the Solargraph configuration.
+> That does not actually *exclude* the specs, but rather avoids pre-indexing the specs when Solargraph boots up, and only parses
+> the specs on demand when opened in the editor, which is what we usually want.
 
 (if you don't have a `.solargraph.yml` in your project root, you can run `solargraph config` to add one)
 
@@ -50,7 +55,7 @@ Add `solargraph-rspec` to your `.solargraph.yml` and remove the `spec` directory
  include:
  - "**/*.rb"
  exclude:
--- spec/**/*
++- spec/**/*
  - test/**/*
  - vendor/**/*
  - ".bundle/**/*"
