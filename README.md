@@ -34,8 +34,8 @@ Or add it to your Gemfile:
 
 ```ruby
 group :development do
-  gem 'solargraph' 
-  gem 'solargraph-rspec'
+  gem 'solargraph', require: false
+  gem 'solargraph-rspec', require: false
 end
 ```
 

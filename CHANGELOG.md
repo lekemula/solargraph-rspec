@@ -9,6 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- Suggest keeping `spec/**/*` in the `exclude` section of `.solargraph.yml` to avoid performance issues (see [commit](https://github.com/lekemula/solargraph-rspec/commit/3f0fc39e59e99bf9430e55c52ecb88650e49315e))
 - Fix `let` definitions when do/end keywords overlap with body definition
   ```ruby
     let(:todo) do # "do" keyword overlap
