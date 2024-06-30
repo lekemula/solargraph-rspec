@@ -19,6 +19,7 @@ module Solargraph
       'Shoulda::Matchers::ActiveModel',
       'Shoulda::Matchers::ActiveRecord',
       'Shoulda::Matchers::ActionController',
+      'RSpec::Mocks::ExampleMethods',
       'Shoulda::Matchers::Routing'
     ].freeze
     HOOK_METHODS = %w[before after around].freeze
@@ -140,6 +141,7 @@ module Solargraph
 
         requires = %w[rspec shoulda-matchers shoulda/matchers]
         Solargraph.logger.debug "[RSpec] added requires #{requires}"
+
         Environ.new(requires: requires, pins: pins)
       rescue StandardError => e
         raise e if ENV['SOLARGRAPH_DEBUG']
