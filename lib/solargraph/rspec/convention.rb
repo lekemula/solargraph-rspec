@@ -14,7 +14,13 @@ require_relative 'pin_factory'
 module Solargraph
   module Rspec
     ROOT_NAMESPACE = 'RSpec::ExampleGroups'
-    HELPER_MODULES = ['RSpec::Matchers'].freeze
+    HELPER_MODULES = [
+      'RSpec::Matchers',
+      'Shoulda::Matchers::ActiveModel',
+      'Shoulda::Matchers::ActiveRecord',
+      'Shoulda::Matchers::ActionController',
+      'Shoulda::Matchers::Routing'
+    ].freeze
     HOOK_METHODS = %w[before after around].freeze
     LET_METHODS = %w[let let!].freeze
     SUBJECT_METHODS = %w[subject subject!].freeze
@@ -132,7 +138,9 @@ module Solargraph
           )
         end
 
-        Environ.new(requires: ['rspec'], pins: pins)
+        requires = %w[rspec shoulda-matchers shoulda/matchers]
+        Solargraph.logger.debug "[RSpec] added requires #{requires}"
+        Environ.new(requires: requires, pins: pins)
       rescue StandardError => e
         raise e if ENV['SOLARGRAPH_DEBUG']
 
@@ -148,6 +156,7 @@ module Solargraph
       # @param source_map [SourceMap]
       # @return [Array<Pin::Base>]
       def include_helper_pins(helper_modules: HELPER_MODULES)
+        Solargraph.logger.debug "[RSpec] adding helper modules #{helper_modules}"
         helper_modules.map do |helper_module|
           PinFactory.build_module_include(
             root_example_group_namespace_pin,
