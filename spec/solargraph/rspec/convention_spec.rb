@@ -684,4 +684,120 @@ RSpec.describe Solargraph::Rspec::Convention do
       end
     end
   end
+
+  describe 'helpers' do
+    describe 'shoulda-matchers' do
+      it 'completes active-model matchers' do
+        load_string filename, <<~RUBY
+          RSpec.describe SomeNamespace::Transaction, type: :model do
+            it 'completes active-model matchers' do
+              allow_valu
+              have_secur
+              validate_a
+              validate_a
+              validate_c
+              validate_e
+              validate_i
+              validate_l
+              validate_n
+              validate_p
+            end
+          end
+        RUBY
+
+        expect(completion_at(filename, [2, 15])).to include('allow_value')
+        expect(completion_at(filename, [3, 15])).to include('have_secure_password')
+        expect(completion_at(filename, [4, 15])).to include('validate_absence_of')
+        expect(completion_at(filename, [5, 15])).to include('validate_acceptance_of')
+        expect(completion_at(filename, [6, 15])).to include('validate_confirmation_of')
+        expect(completion_at(filename, [7, 15])).to include('validate_exclusion_of')
+        expect(completion_at(filename, [8, 15])).to include('validate_inclusion_of')
+        expect(completion_at(filename, [9, 15])).to include('validate_length_of')
+        expect(completion_at(filename, [10, 15])).to include('validate_numericality_of')
+        expect(completion_at(filename, [11, 15])).to include('validate_presence_of')
+      end
+
+      it 'completes active-record matchers' do
+        load_string filename, <<~RUBY
+          RSpec.describe SomeNamespace::Transaction, type: :model do
+            it 'completes controller matchers' do
+              accept_nested_attributes
+              belon
+              define_enum
+              have_and_belong_to_
+              have_delegated_
+              have_db_co
+              have_db_i
+              have_implicit_order_co
+              have_
+              have_many_atta
+              have
+              have_one_atta
+              have_readonly_attri
+              have_rich_
+              seria
+              validate_uniquenes
+              norma
+              enc
+            end
+          end
+        RUBY
+
+        expect(completion_at(filename, [2, 5])).to include('accept_nested_attributes_for')
+        expect(completion_at(filename, [3, 5])).to include('belong_to')
+        expect(completion_at(filename, [4, 5])).to include('define_enum_for')
+        expect(completion_at(filename, [5, 5])).to include('have_and_belong_to_many')
+        # expect(completion_at(filename, [6, 5])).to include('have_delegated_type')
+        expect(completion_at(filename, [7, 5])).to include('have_db_column')
+        expect(completion_at(filename, [8, 5])).to include('have_db_index')
+        expect(completion_at(filename, [9, 5])).to include('have_implicit_order_column')
+        expect(completion_at(filename, [10, 5])).to include('have_many')
+        expect(completion_at(filename, [11, 5])).to include('have_many_attached')
+        expect(completion_at(filename, [12, 5])).to include('have_one')
+        expect(completion_at(filename, [13, 5])).to include('have_one_attached')
+        expect(completion_at(filename, [14, 5])).to include('have_readonly_attribute')
+        expect(completion_at(filename, [15, 5])).to include('have_rich_text')
+        expect(completion_at(filename, [16, 5])).to include('serialize')
+        expect(completion_at(filename, [17, 5])).to include('validate_uniqueness_of')
+        # expect(completion_at(filename, [18, 5])).to include('normalize')
+        # expect(completion_at(filename, [19, 5])).to include('encrypt')
+      end
+
+      it 'completes controller matchers' do
+        load_string filename, <<~RUBY
+          RSpec.describe SomeNamespace::Transaction, type: :model do
+            it 'completes controller matchers' do
+              filter_pa
+              per
+              redirect
+              render_templ
+              render_with_lay
+              rescue_f
+              respond_w
+              ro
+              set_sess
+              set_fl
+              use_after_act
+              use_around_act
+              use_before_act
+            end
+          end
+        RUBY
+
+        expect(completion_at(filename, [2, 5])).to include('filter_param')
+        expect(completion_at(filename, [3, 5])).to include('permit')
+        expect(completion_at(filename, [4, 5])).to include('redirect_to')
+        expect(completion_at(filename, [5, 5])).to include('render_template')
+        expect(completion_at(filename, [6, 5])).to include('render_with_layout')
+        expect(completion_at(filename, [7, 5])).to include('rescue_from')
+        expect(completion_at(filename, [8, 5])).to include('respond_with')
+        expect(completion_at(filename, [9, 5])).to include('route')
+        expect(completion_at(filename, [10, 5])).to include('set_session')
+        expect(completion_at(filename, [11, 5])).to include('set_flash')
+        expect(completion_at(filename, [12, 5])).to include('use_after_action')
+        expect(completion_at(filename, [13, 5])).to include('use_around_action')
+        expect(completion_at(filename, [14, 5])).to include('use_before_action')
+      end
+    end
+  end
 end
