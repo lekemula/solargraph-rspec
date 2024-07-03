@@ -138,7 +138,7 @@ module Solargraph
         end
 
         walker.on :ITER do |block_ast|
-          next unless NodeTypes.a_example_block?(block_ast)
+          next unless NodeTypes.a_example_block?(block_ast, config)
 
           @handlers[:on_example_block].each do |handler|
             handler.call(PinFactory.build_location_range(block_ast))

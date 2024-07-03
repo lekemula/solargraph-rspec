@@ -57,20 +57,21 @@ RSpec.describe Solargraph::Rspec::SpecWalker::NodeTypes do
   end
 
   describe '.a_example_block?' do
+    let(:config) { Solargraph::Rspec::Config.new }
+
     it 'returns true for example block with name' do
       node = parse('it("does something") { }')
-      expect(described_class.a_example_block?(node.children[2])).to be(true)
+      expect(described_class.a_example_block?(node.children[2], config)).to be(true)
     end
 
     it 'returns true for example block without name' do
       node = parse('it { }')
-
-      expect(described_class.a_example_block?(node.children[2])).to be(true)
+      expect(described_class.a_example_block?(node.children[2], config)).to be(true)
     end
 
     it 'returns false for non-example block' do
       node = parse('non_example { }')
-      expect(described_class.a_example_block?(node.children[2])).to be(false)
+      expect(described_class.a_example_block?(node.children[2], config)).to be(false)
     end
   end
 

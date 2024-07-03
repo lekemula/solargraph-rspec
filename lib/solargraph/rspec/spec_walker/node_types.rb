@@ -25,9 +25,10 @@ module Solargraph
         end
 
         # @param ast [RubyVM::AbstractSyntaxTree::Node]
+        # @param config [Config]
         # @return [Boolean]
-        def self.a_example_block?(block_ast)
-          Solargraph::Rspec::EXAMPLE_METHODS.include?(method_with_block_name(block_ast))
+        def self.a_example_block?(block_ast, config)
+          config.example_methods.map(&:to_s).include?(method_with_block_name(block_ast))
         end
 
         # @param ast [RubyVM::AbstractSyntaxTree::Node]
