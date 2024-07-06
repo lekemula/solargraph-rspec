@@ -90,6 +90,9 @@ rspec:
     - my_it
 ```
 
+This is useful if you use gems like [rspec-given](https://github.com/rspec-given/rspec-given) which introduces its own `let` and `example` methods.
+
+
 ### Gem completions
 
 Solargraph utilizes the YARD documentation to provide code completion. If you want to have completion for gems in your project, you can generate YARD documentation for them ([Read more](https://solargraph.org/guides/yard)).
