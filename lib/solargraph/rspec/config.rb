@@ -20,6 +20,11 @@ module Solargraph
         (Rspec::LET_METHODS + additional_let_methods).map(&:to_sym)
       end
 
+      # @return [Array<Symbol>]
+      def example_methods
+        (Rspec::EXAMPLE_METHODS + additional_example_methods).map(&:to_sym)
+      end
+
       private
 
       # @return [Hash]
@@ -30,6 +35,11 @@ module Solargraph
       # @return [Array<Symbol>]
       def additional_let_methods
         (rspec_raw_data['let_methods'] || []).map(&:to_sym)
+      end
+
+      # @return [Array<Symbol>]
+      def additional_example_methods
+        (rspec_raw_data['example_methods'] || []).map(&:to_sym)
       end
 
       # @return [Hash]

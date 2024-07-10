@@ -80,6 +80,19 @@ rspec:
     - let_it_be
 ```
 
+If you have your own custom `example`-like methods like `it`, you can add them to your `.solargraph.yml` file like this:
+
+```yaml
+# .solargraph.yml
+# ...
+rspec:
+  example_methods:
+    - my_it
+```
+
+This is useful if you use gems like [rspec-given](https://github.com/rspec-given/rspec-given) which introduces its own `let` and `example` methods.
+
+
 ### Gem completions
 
 Solargraph utilizes the YARD documentation to provide code completion. If you want to have completion for gems in your project, you can generate YARD documentation for them ([Read more](https://solargraph.org/guides/yard)).

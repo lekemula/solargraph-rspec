@@ -603,6 +603,50 @@ RSpec.describe Solargraph::Rspec::Convention do
         expect(completion_at(filename, [3, 31])).to include('something')
       end
     end
+
+    describe 'example_methods' do
+      before(:each) do
+        Solargraph::Rspec::Convention.instance_variable_set(:@config, nil)
+        @global_path = File.realpath(Dir.mktmpdir)
+        @orig_env = ENV.fetch('SOLARGRAPH_GLOBAL_CONFIG', nil)
+        ENV['SOLARGRAPH_GLOBAL_CONFIG'] = File.join(@global_path, '.solargraph.yml')
+
+        File.open(File.join(@global_path, '.solargraph.yml'), 'w') do |file|
+          configuration.each_line do |line|
+            file.puts line
+          end
+        end
+      end
+
+      after(:each) do
+        ENV['SOLARGRAPH_GLOBAL_CONFIG'] = @orig_env
+        FileUtils.remove_entry(@global_path)
+      end
+
+      let(:configuration) do
+        <<~YAML
+          rspec:
+            example_methods:
+              - my_example
+        YAML
+      end
+
+      it 'generates method for additional example-like methods' do
+        load_string filename, <<~RUBY
+          RSpec.describe SomeNamespace::Transaction, type: :model do
+            let(:transaction) { described_class.new }
+
+            my_example 'should do something' do
+              transaction
+            end
+          end
+        RUBY
+
+        assert_public_instance_method(api_map, 'RSpec::ExampleGroups::TestSomeNamespaceTransaction#transaction',
+                                      ['undefined'])
+        expect(completion_at(filename, [4, 7])).to include('transaction')
+      end
+    end
   end
 
   describe 'error handling' do
