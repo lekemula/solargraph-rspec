@@ -7,9 +7,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-- Added `example_methods` as a configuration option to add your own example methods
-
 Add here...
+
+## v0.3.0 - 2024-07-10
+
+### Added
+
+- Added `example_methods` as a configuration option to add your own example methods. (thanks to [@mskog](https://github.com/mskog) - first code contributor 🎉)
 
 ## v0.2.2 - 2024-06-23
 
