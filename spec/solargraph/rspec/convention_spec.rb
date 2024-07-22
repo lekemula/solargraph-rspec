@@ -799,5 +799,27 @@ RSpec.describe Solargraph::Rspec::Convention do
         expect(completion_at(filename, [14, 5])).to include('use_before_action')
       end
     end
+
+    describe 'rspec-mocks' do
+      it 'completes methods from rspec-mocks' do
+        load_string filename, <<~RUBY
+          RSpec.describe SomeNamespace::Transaction, type: :model do
+            let(:something) { double }
+
+            it 'should do something' do
+              allow(something).to rec
+              allow(double).to receive_me
+              my_double = doub
+              my_double = inst
+            end
+          end
+        RUBY
+
+        expect(completion_at(filename, [4, 26])).to include('receive')
+        expect(completion_at(filename, [5, 30])).to include('receive_message_chain')
+        expect(completion_at(filename, [6, 18])).to include('double')
+        expect(completion_at(filename, [7, 18])).to include('instance_double')
+      end
+    end
   end
 end
