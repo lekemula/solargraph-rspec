@@ -2,6 +2,7 @@
 
 require_relative 'config'
 require_relative 'spec_walker'
+require_relative 'annotations'
 require_relative 'correctors/context_block_namespace_corrector'
 require_relative 'correctors/example_and_hook_blocks_binding_corrector'
 require_relative 'correctors/described_class_corrector'
@@ -17,6 +18,19 @@ module Solargraph
     HELPER_MODULES = [
       'RSpec::Matchers',
       'RSpec::Mocks::ExampleMethods', # https://github.com/rspec/rspec-mocks
+      # TODO: Rspec-rails add a separate convetion and include conditionally based on spec type
+      'RSpec::Rails::Matchers', # https://github.com/rspec/rspec-rails#helpful-rails-matchers
+      # @see https://github.com/rspec/rspec-rails#what-tests-should-i-write
+      'ActionController::TestCase::Behavior',
+      'ActionMailer::TestCase::Behavior',
+      'ActiveSupport::Testing::Assertions',
+      'ActiveSupport::Testing::TimeHelpers',
+      'ActiveSupport::Testing::FileFixtures',
+      'ActiveRecord::TestFixtures',
+      'ActionDispatch::Integration::Runner',
+      'ActionDispatch::Routing::UrlFor',
+      'ActionController::TemplateAssertions',
+      # @see https://matchers.shoulda.io/docs/v6.2.0/#matchers
       'Shoulda::Matchers::ActiveModel',
       'Shoulda::Matchers::ActiveRecord',
       'Shoulda::Matchers::ActionController',
@@ -98,7 +112,7 @@ module Solargraph
           )
         end
 
-        Environ.new(pins: pins)
+        Environ.new(pins: pins + annotation_pins)
       rescue StandardError => e
         raise e if ENV['SOLARGRAPH_DEBUG']
 
@@ -138,8 +152,8 @@ module Solargraph
             "[RSpec] added #{pins.map(&:inspect)} to #{source_map.filename}"
           )
         end
-
-        requires = %w[rspec shoulda-matchers shoulda/matchers]
+# rspec/rails rspec/rails/matchers
+        requires = %w[rspec shoulda-matchers shoulda/matchers rspec-rails actionmailer activesupport]
         Solargraph.logger.debug "[RSpec] added requires #{requires}"
 
         Environ.new(requires: requires, pins: pins)
@@ -179,6 +193,14 @@ module Solargraph
           name: ROOT_NAMESPACE,
           location: PinFactory.dummy_location('lib/rspec/core/example_group.rb')
         )
+      end
+
+      # @return [Array<Pin::Base>]
+      def annotation_pins
+        ann = File.read(File.dirname(__FILE__) + '/annotations.rb')
+        source = Solargraph::Source.load_string(ann, 'rspec-annotations.rb')
+        map = Solargraph::SourceMap.map(source)
+        map.pins
       end
     end
   end
