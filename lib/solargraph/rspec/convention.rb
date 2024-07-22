@@ -38,6 +38,7 @@ module Solargraph
       'RSpec::Sidekiq::Matchers',
       'WebMock::API',
       'WebMock::Matchers',
+      'Airborne'
     ].freeze
     HOOK_METHODS = %w[before after around].freeze
     LET_METHODS = %w[let let!].freeze
@@ -165,6 +166,7 @@ module Solargraph
           activesupport
           rspec-sidekiq
           webmock
+          airborne
         ]
         Solargraph.logger.debug "[RSpec] added requires #{requires}"
 
