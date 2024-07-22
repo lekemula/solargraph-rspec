@@ -20,6 +20,7 @@ group :third_party_plugin_tests do
   gem 'rspec-rails'
   gem 'actionmailer'
   gem 'shoulda-matchers'
+  gem 'rspec-sidekiq'
 end
 
 # Debugging
