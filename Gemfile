@@ -17,6 +17,8 @@ gem 'simplecov-cobertura' # Code coverage
 # gem 'vernier'        # Profiling only on Ruby >= 3.2.1
 
 group :third_party_plugin_tests do
+  gem 'rspec-rails'
+  gem 'actionmailer'
   gem 'shoulda-matchers'
 end
 

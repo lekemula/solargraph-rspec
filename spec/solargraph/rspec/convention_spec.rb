@@ -821,5 +821,184 @@ RSpec.describe Solargraph::Rspec::Convention do
         expect(completion_at(filename, [7, 18])).to include('instance_double')
       end
     end
+
+    describe 'rspec-rails' do
+      # A model spec is a thin wrapper for an ActiveSupport::TestCase
+      # See: https://api.rubyonrails.org/v5.2.8.1/classes/ActiveSupport/Testing/Assertions.html
+      it 'completes model methods' do
+        load_string filename, <<~RUBY
+          RSpec.describe SomeNamespace::Transaction, type: :model do
+            it 'should do something' do
+              assert_ch
+              assert_di
+              assert_no
+              assert_no
+              assert_no
+              assert_no
+            end
+          end
+        RUBY
+
+        expect(completion_at(filename, [2, 5])).to include('assert_changes')
+        expect(completion_at(filename, [3, 5])).to include('assert_difference')
+        expect(completion_at(filename, [4, 5])).to include('assert_no_changes')
+        expect(completion_at(filename, [5, 5])).to include('assert_no_difference')
+        expect(completion_at(filename, [6, 5])).to include('assert_not')
+        expect(completion_at(filename, [7, 5])).to include('assert_nothing_raised')
+      end
+
+      # @see [ActionController::TestCase::Behavior]
+      it 'completes controller methods' do
+        load_string filename, <<~RUBY
+          RSpec.describe SomeNamespace::Transaction, type: :controller do
+            it 'should do something' do
+              build_re
+              controll
+              delet
+              generate
+              ge
+              hea
+              patc
+              pos
+              proces
+              pu
+              query_pa
+              setup_co
+              requ
+              request.ho
+              respo
+              response.bo
+            end
+          end
+        RUBY
+
+        expect(completion_at(filename, [2, 5])).to include('build_response')
+        expect(completion_at(filename, [3, 5])).to include('controller_class_name')
+        expect(completion_at(filename, [4, 5])).to include('delete')
+        expect(completion_at(filename, [5, 5])).to include('generated_path')
+        expect(completion_at(filename, [6, 5])).to include('get')
+        expect(completion_at(filename, [7, 5])).to include('head')
+        expect(completion_at(filename, [8, 5])).to include('patch')
+        expect(completion_at(filename, [9, 5])).to include('post')
+        expect(completion_at(filename, [10, 5])).to include('process')
+        expect(completion_at(filename, [11, 5])).to include('put')
+        expect(completion_at(filename, [12, 5])).to include('query_parameter_names')
+        expect(completion_at(filename, [13, 5])).to include('setup_controller_request_and_response')
+        expect(completion_at(filename, [14, 5])).to include('request')
+        expect(completion_at(filename, [15, 13])).to include('host') # request.host
+        expect(completion_at(filename, [16, 5])).to include('response')
+        expect(completion_at(filename, [17, 14])).to include('body') # response.body
+      end
+
+      it 'completes ActiveSupport assertions' do
+        load_string filename, <<~RUBY
+          RSpec.describe SomeNamespace::Transaction, type: :model do
+            it 'should do something' do
+              assert_cha
+              assert_dif
+              assert_no_
+              assert_no_
+              assert_no
+              assert_not
+              assert_rai
+              assert_rai
+              assert_tem
+            end
+          end
+        RUBY
+
+        expect(completion_at(filename, [2, 5])).to include('assert_changes')
+        expect(completion_at(filename, [3, 5])).to include('assert_difference')
+        expect(completion_at(filename, [4, 5])).to include('assert_no_changes')
+        expect(completion_at(filename, [5, 5])).to include('assert_no_difference')
+        expect(completion_at(filename, [6, 5])).to include('assert_not')
+        expect(completion_at(filename, [7, 5])).to include('assert_nothing_raised')
+        # expect(completion_at(filename, [8, 5])).to include('assert_raise')
+        expect(completion_at(filename, [9, 5])).to include('assert_raises')
+        expect(completion_at(filename, [10, 5])).to include('assert_template')
+      end
+
+      it 'completes ActiveSupport helpers' do
+        load_string filename, <<~RUBY
+          RSpec.describe SomeNamespace::Transaction, type: :model do
+            it 'should do something' do
+              after_teardo
+              freeze_ti
+              trav
+              travel_ba
+              travel_
+              file_fix
+            end
+          end
+        RUBY
+
+        expect(completion_at(filename, [2, 5])).to include('after_teardown')
+        expect(completion_at(filename, [3, 5])).to include('freeze_time')
+        expect(completion_at(filename, [4, 5])).to include('travel')
+        expect(completion_at(filename, [5, 5])).to include('travel_back')
+        expect(completion_at(filename, [6, 5])).to include('travel_to')
+        expect(completion_at(filename, [7, 5])).to include('file_fixture')
+      end
+
+      it 'completes routing helpers' do
+        load_string filename, <<~RUBY
+          RSpec.describe SomeNamespace::Transaction, type: :model do
+            it 'should do something' do
+              after_teardo
+              freeze_ti
+              trav
+              travel_ba
+              travel_
+            end
+          end
+        RUBY
+      end
+
+      it 'completes mailer methods' do
+        load_string filename, <<~RUBY
+          RSpec.describe SomeNamespace::Transaction, type: :mailer do
+            it 'should do something' do
+              assert_emai
+              assert_enqu
+              assert_no_e
+              assert_no_e
+            end
+          end
+        RUBY
+
+        expect(completion_at(filename, [2, 5])).to include('assert_emails')
+        expect(completion_at(filename, [3, 5])).to include('assert_enqueued_emails')
+        expect(completion_at(filename, [4, 5])).to include('assert_no_emails')
+        expect(completion_at(filename, [5, 5])).to include('assert_no_enqueued_emails')
+      end
+
+      it 'completes matchers from rspec-rails' do
+        load_string filename, <<~RUBY
+          RSpec.describe SomeNamespace::Transaction, type: :model do
+            it 'should do something' do
+              be_a_
+              render_templ
+              redirect
+              route
+              be_routa
+              have_http_sta
+              match_ar
+              have_been_enque
+              have_enqueued_
+            end
+          end
+        RUBY
+
+        expect(completion_at(filename, [2, 5])).to include('be_a_new')
+        expect(completion_at(filename, [3, 5])).to include('render_template')
+        expect(completion_at(filename, [4, 5])).to include('redirect_to')
+        # expect(completion_at(filename, [5, 5])).to include('route_to')
+        # expect(completion_at(filename, [6, 5])).to include('be_routable')
+        expect(completion_at(filename, [7, 5])).to include('have_http_status')
+        expect(completion_at(filename, [8, 5])).to include('match_array')
+        expect(completion_at(filename, [9, 5])).to include('have_been_enqueued')
+        expect(completion_at(filename, [10, 5])).to include('have_enqueued_job')
+      end
+    end
   end
 end
