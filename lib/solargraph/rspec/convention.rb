@@ -16,10 +16,10 @@ module Solargraph
     ROOT_NAMESPACE = 'RSpec::ExampleGroups'
     HELPER_MODULES = [
       'RSpec::Matchers',
+      'RSpec::Mocks::ExampleMethods', # https://github.com/rspec/rspec-mocks
       'Shoulda::Matchers::ActiveModel',
       'Shoulda::Matchers::ActiveRecord',
       'Shoulda::Matchers::ActionController',
-      'RSpec::Mocks::ExampleMethods',
       'Shoulda::Matchers::Routing'
     ].freeze
     HOOK_METHODS = %w[before after around].freeze
