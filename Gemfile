@@ -22,6 +22,7 @@ group :third_party_plugin_tests do
   gem 'shoulda-matchers'
   gem 'rspec-sidekiq'
   gem 'webmock'
+  gem 'airborne'
 end
 
 # Debugging

@@ -1068,5 +1068,31 @@ RSpec.describe Solargraph::Rspec::Convention do
         expect(completion_at(filename, [8, 5])).to include('assert_not_requested')
       end
     end
+
+    describe 'airborne' do
+      it 'completes airborne matchers' do
+        load_string filename, <<~RUBY
+          RSpec.describe SomeNamespace::Transaction, type: :controller do
+            it 'does something' do
+              expect_jso
+              expect_jso
+              expect_jso
+              expect_jso
+              expect_sta
+              expect_hea
+              expect_hea
+            end
+          end
+        RUBY
+
+        expect(completion_at(filename, [2, 5])).to include('expect_json_types')
+        expect(completion_at(filename, [3, 5])).to include('expect_json')
+        expect(completion_at(filename, [4, 5])).to include('expect_json_keys')
+        # expect(completion_at(filename, [5, 5])).to include('expect_json_sizes')
+        expect(completion_at(filename, [6, 5])).to include('expect_status')
+        expect(completion_at(filename, [7, 5])).to include('expect_header')
+        expect(completion_at(filename, [8, 5])).to include('expect_header_contains')
+      end
+    end
   end
 end
