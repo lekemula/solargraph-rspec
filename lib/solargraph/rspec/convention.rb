@@ -36,6 +36,8 @@ module Solargraph
       'Shoulda::Matchers::ActionController',
       'Shoulda::Matchers::Routing',
       'RSpec::Sidekiq::Matchers',
+      'WebMock::API',
+      'WebMock::Matchers',
     ].freeze
     HOOK_METHODS = %w[before after around].freeze
     LET_METHODS = %w[let let!].freeze
@@ -162,6 +164,7 @@ module Solargraph
           actionmailer
           activesupport
           rspec-sidekiq
+          webmock
         ]
         Solargraph.logger.debug "[RSpec] added requires #{requires}"
 

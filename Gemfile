@@ -21,6 +21,7 @@ group :third_party_plugin_tests do
   gem 'actionmailer'
   gem 'shoulda-matchers'
   gem 'rspec-sidekiq'
+  gem 'webmock'
 end
 
 # Debugging

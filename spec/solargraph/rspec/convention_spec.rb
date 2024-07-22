@@ -1028,5 +1028,45 @@ RSpec.describe Solargraph::Rspec::Convention do
         expect(completion_at(filename, [9, 5])).to include('be_delayed')
       end
     end
+
+    describe 'webmock' do
+      it 'completes webmock helpers' do
+        load_string filename, <<~RUBY
+          RSpec.describe SomeNamespace::Transaction, type: :controller do
+            it 'does something' do
+              stub_requ
+              a_requ
+            end
+          end
+        RUBY
+
+        expect(completion_at(filename, [2, 5])).to include('stub_request')
+        expect(completion_at(filename, [3, 5])).to include('a_request')
+      end
+
+      it 'completes webmock matchers' do
+        load_string filename, <<~RUBY
+          RSpec.describe SomeNamespace::Transaction, type: :controller do
+            it 'does something' do
+              expect(a_request(:post, "www.something.com")).to have_bee
+              expect(a_request(:post, "www.something.com")).to have_no
+              expect(stub).to have_been_req
+              expect(WebMock).to have_requ
+              expect(WebMock).to have_not_
+              assert_req
+              assert_not_req
+            end
+          end
+        RUBY
+
+        expect(completion_at(filename, [2, 60])).to include('have_been_made')
+        expect(completion_at(filename, [3, 60])).to include('have_not_been_made')
+        expect(completion_at(filename, [4, 31])).to include('have_been_requested')
+        expect(completion_at(filename, [5, 31])).to include('have_requested')
+        expect(completion_at(filename, [6, 31])).to include('have_not_requested')
+        expect(completion_at(filename, [7, 5])).to include('assert_requested')
+        expect(completion_at(filename, [8, 5])).to include('assert_not_requested')
+      end
+    end
   end
 end
