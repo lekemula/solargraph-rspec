@@ -34,7 +34,8 @@ module Solargraph
       'Shoulda::Matchers::ActiveModel',
       'Shoulda::Matchers::ActiveRecord',
       'Shoulda::Matchers::ActionController',
-      'Shoulda::Matchers::Routing'
+      'Shoulda::Matchers::Routing',
+      'RSpec::Sidekiq::Matchers',
     ].freeze
     HOOK_METHODS = %w[before after around].freeze
     LET_METHODS = %w[let let!].freeze
@@ -152,8 +153,16 @@ module Solargraph
             "[RSpec] added #{pins.map(&:inspect)} to #{source_map.filename}"
           )
         end
-# rspec/rails rspec/rails/matchers
-        requires = %w[rspec shoulda-matchers shoulda/matchers rspec-rails actionmailer activesupport]
+
+        requires = %w[
+          rspec
+          shoulda-matchers
+          shoulda/matchers
+          rspec-rails
+          actionmailer
+          activesupport
+          rspec-sidekiq
+        ]
         Solargraph.logger.debug "[RSpec] added requires #{requires}"
 
         Environ.new(requires: requires, pins: pins)

@@ -1000,5 +1000,33 @@ RSpec.describe Solargraph::Rspec::Convention do
         expect(completion_at(filename, [10, 5])).to include('have_enqueued_job')
       end
     end
+
+    describe 'rspec-sidekiq' do
+      it 'completes sidekiq matchers' do
+        load_string filename, <<~RUBY
+          RSpec.describe SomeNamespace::Transaction, type: :model do
+            it 'completes controller matchers' do
+              enqueue_sidekiq
+              have_enqueued_sidekiq
+              be_processe
+              be_retry
+              save_backt
+              be_un
+              be_expire
+              be_del
+            end
+          end
+        RUBY
+
+        expect(completion_at(filename, [2, 5])).to include('enqueue_sidekiq_job')
+        expect(completion_at(filename, [3, 5])).to include('have_enqueued_sidekiq_job')
+        expect(completion_at(filename, [4, 5])).to include('be_processed_in')
+        expect(completion_at(filename, [5, 5])).to include('be_retryable')
+        expect(completion_at(filename, [6, 5])).to include('save_backtrace')
+        expect(completion_at(filename, [7, 5])).to include('be_unique')
+        expect(completion_at(filename, [8, 5])).to include('be_expired_in')
+        expect(completion_at(filename, [9, 5])).to include('be_delayed')
+      end
+    end
   end
 end
