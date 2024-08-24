@@ -109,6 +109,10 @@ module Solargraph
       def global(_yard_map)
         pins = []
         pins += include_helper_pins
+        pins += annotation_pins
+        # TODO: Include gem requires conditionally based on Gemfile definition
+        requires = %w[ rspec shoulda-matchers shoulda/matchers rspec-rails actionmailer activesupport rspec-sidekiq
+                       webmock airborne ]
 
         if pins.any?
           Solargraph.logger.debug(
@@ -116,7 +120,9 @@ module Solargraph
           )
         end
 
-        Environ.new(pins: pins + annotation_pins)
+        Solargraph.logger.debug "[RSpec] added requires #{requires}"
+
+        Environ.new(requires: requires, pins: pins)
       rescue StandardError => e
         raise e if ENV['SOLARGRAPH_DEBUG']
 
@@ -157,20 +163,7 @@ module Solargraph
           )
         end
 
-        requires = %w[
-          rspec
-          shoulda-matchers
-          shoulda/matchers
-          rspec-rails
-          actionmailer
-          activesupport
-          rspec-sidekiq
-          webmock
-          airborne
-        ]
-        Solargraph.logger.debug "[RSpec] added requires #{requires}"
-
-        Environ.new(requires: requires, pins: pins)
+        Environ.new(requires: [], pins: pins)
       rescue StandardError => e
         raise e if ENV['SOLARGRAPH_DEBUG']
 
