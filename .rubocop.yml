@@ -13,6 +13,9 @@ Style/StringLiteralsInInterpolation:
 Style/Documentation:
   Enabled: false
 
+Style/StructInheritance:
+  Enabled: false
+
 Layout/LineLength:
   Max: 120
 

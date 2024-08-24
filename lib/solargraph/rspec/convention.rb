@@ -10,36 +10,12 @@ require_relative 'correctors/let_methods_corrector'
 require_relative 'correctors/subject_method_corrector'
 require_relative 'correctors/context_block_methods_corrector'
 require_relative 'correctors/dsl_methods_corrector'
+require_relative 'test_helpers'
 require_relative 'pin_factory'
 
 module Solargraph
   module Rspec
     ROOT_NAMESPACE = 'RSpec::ExampleGroups'
-    HELPER_MODULES = [
-      'RSpec::Matchers',
-      'RSpec::Mocks::ExampleMethods', # https://github.com/rspec/rspec-mocks
-      # TODO: Rspec-rails add a separate convetion and include conditionally based on spec type
-      'RSpec::Rails::Matchers', # https://github.com/rspec/rspec-rails#helpful-rails-matchers
-      # @see https://github.com/rspec/rspec-rails#what-tests-should-i-write
-      'ActionController::TestCase::Behavior',
-      'ActionMailer::TestCase::Behavior',
-      'ActiveSupport::Testing::Assertions',
-      'ActiveSupport::Testing::TimeHelpers',
-      'ActiveSupport::Testing::FileFixtures',
-      'ActiveRecord::TestFixtures',
-      'ActionDispatch::Integration::Runner',
-      'ActionDispatch::Routing::UrlFor',
-      'ActionController::TemplateAssertions',
-      # @see https://matchers.shoulda.io/docs/v6.2.0/#matchers
-      'Shoulda::Matchers::ActiveModel',
-      'Shoulda::Matchers::ActiveRecord',
-      'Shoulda::Matchers::ActionController',
-      'Shoulda::Matchers::Routing',
-      'RSpec::Sidekiq::Matchers',
-      'WebMock::API',
-      'WebMock::Matchers',
-      'Airborne'
-    ].freeze
     HOOK_METHODS = %w[before after around].freeze
     LET_METHODS = %w[let let!].freeze
     SUBJECT_METHODS = %w[subject subject!].freeze
@@ -108,11 +84,12 @@ module Solargraph
       # @return [Environ]
       def global(_yard_map)
         pins = []
-        pins += include_helper_pins
+        pins += Solargraph::Rspec::TestHelpers.include_helper_pins(
+          root_example_group_namespace_pin: root_example_group_namespace_pin
+        )
         pins += annotation_pins
         # TODO: Include gem requires conditionally based on Gemfile definition
-        requires = %w[ rspec shoulda-matchers shoulda/matchers rspec-rails actionmailer activesupport rspec-sidekiq
-                       webmock airborne ]
+        requires = Solargraph::Rspec::TestHelpers.gem_names
 
         if pins.any?
           Solargraph.logger.debug(
@@ -175,20 +152,6 @@ module Solargraph
 
       private
 
-      # @param helper_modules [Array<String>]
-      # @param source_map [SourceMap]
-      # @return [Array<Pin::Base>]
-      def include_helper_pins(helper_modules: HELPER_MODULES)
-        Solargraph.logger.debug "[RSpec] adding helper modules #{helper_modules}"
-        helper_modules.map do |helper_module|
-          PinFactory.build_module_include(
-            root_example_group_namespace_pin,
-            helper_module,
-            root_example_group_namespace_pin.location
-          )
-        end
-      end
-
       # @return [Config]
       def config
         self.class.config
@@ -204,7 +167,7 @@ module Solargraph
 
       # @return [Array<Pin::Base>]
       def annotation_pins
-        ann = File.read(File.dirname(__FILE__) + '/annotations.rb')
+        ann = File.read("#{File.dirname(__FILE__)}/annotations.rb")
         source = Solargraph::Source.load_string(ann, 'rspec-annotations.rb')
         map = Solargraph::SourceMap.map(source)
         map.pins
