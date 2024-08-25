@@ -95,6 +95,39 @@ RSpec.describe Solargraph::Rspec::Convention do
     expect(completion_at(filename, [22, 8])).to include('nested_something')
   end
 
+  # @see https://rspec.info/features/3-12/rspec-core/subject/one-liner-syntax/
+  it 'generates method for one-liner expectations' do
+    load_string filename, <<~RUBY
+      RSpec.describe SomeNamespace::Transaction, type: :model do
+        subject(:transaction) { described_class.new }
+
+        it { is_expected.to be_a(SomeNamespace::Transaction) }
+        it { should be_a(SomeNamespace::Transaction) }
+        it { should_not be_a(String)  }
+      end
+    RUBY
+
+    subject_location = { start: { line: 1, character: 2 }, end: { line: 1, character: 23 } }
+
+    assert_public_instance_method(
+      api_map,
+      'RSpec::ExampleGroups::TestSomeNamespaceTransaction#is_expected',
+      ['RSpec::Expectations::ExpectationTarget']
+    ) { |pin| expect(pin.location.range.to_hash).to eq(subject_location) }
+
+    assert_public_instance_method(
+      api_map,
+      'RSpec::ExampleGroups::TestSomeNamespaceTransaction#should',
+      ['RSpec::Matchers::BuiltIn::PositiveOperatorMatcher']
+    ) { |pin| expect(pin.location.range.to_hash).to eq(subject_location) }
+
+    assert_public_instance_method(
+      api_map,
+      'RSpec::ExampleGroups::TestSomeNamespaceTransaction#should_not',
+      ['RSpec::Matchers::BuiltIn::NegativeOperatorMatcher']
+    ) { |pin| expect(pin.location.range.to_hash).to eq(subject_location) }
+  end
+
   it 'generates let methods with do/end block' do
     load_string filename, <<~RUBY
       RSpec.describe SomeNamespace::Transaction, type: :model do

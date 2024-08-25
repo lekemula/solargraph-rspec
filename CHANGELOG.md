@@ -20,6 +20,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
     <img src="./doc/images/3rd_party_matchers.png" width="600" alt="3rd party matchers completion">
     </details>
 
+- Implement RSpec [one-liner syntax](https://rspec.info/features/3-12/rspec-core/subject/one-liner-syntax/) helpers: `is_expected`, `should` and `should_not`
+  - <details><summary>📹</summary>
+    <img src="./doc/images/one_liners_demo.gif" width="600" alt="One-liner syntax completion">
+    </details>
 
 ## v0.3.0 - 2024-07-10
 
