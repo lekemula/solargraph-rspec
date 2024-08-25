@@ -7,7 +7,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-Add here...
+### Added
+
+- Support for 3rd party helpers from most known RSpec extension libraries.
+  - [rspec-mocks](https://github.com/rspec/rspec-mocks)
+  - [rspec-rails](https://github.com/rspec/rspec-rails)
+  - [webmock](https://github.com/bblimke/webmock)
+  - [shoulda-matchers](https://matchers.shoulda.io/)
+  - [rspec-sidekiq](https://github.com/wspurgin/rspec-sidekiq)
+  - [airborne](https://github.com/brooklynDev/airborne)
+  - <details><summary>📸</summary>
+    <img src="./doc/images/3rd_party_matchers.png" width="600" alt="3rd party matchers completion">
+    </details>
+
 
 ## v0.3.0 - 2024-07-10
 

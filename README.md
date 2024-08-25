@@ -16,8 +16,8 @@ This gem aims to provide better support for RSpec in Solargraph and it supports 
   - type inference 🚀
   - and more to come...
 
-![solargraph-rspec-with-types](https://github.com/lekemula/solargraph-rspec/assets/9197495/077e74f8-a800-4e90-8922-fa5351adcda3)
-![solargraph-rspec-with-types-vs-code](https://github.com/lekemula/solargraph-rspec/assets/9197495/6a942460-256d-46ca-82de-9869a65309ec)
+![solargraph-rspec-with-types](./doc/images/vim_demo.gif)
+![solargraph-rspec-with-types-vs-code](./doc/images/vscode_demo.gif)
 
 
 ## Installation

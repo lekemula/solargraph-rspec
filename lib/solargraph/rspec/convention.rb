@@ -2,6 +2,7 @@
 
 require_relative 'config'
 require_relative 'spec_walker'
+require_relative 'annotations'
 require_relative 'correctors/context_block_namespace_corrector'
 require_relative 'correctors/example_and_hook_blocks_binding_corrector'
 require_relative 'correctors/described_class_corrector'
@@ -9,12 +10,12 @@ require_relative 'correctors/let_methods_corrector'
 require_relative 'correctors/subject_method_corrector'
 require_relative 'correctors/context_block_methods_corrector'
 require_relative 'correctors/dsl_methods_corrector'
+require_relative 'test_helpers'
 require_relative 'pin_factory'
 
 module Solargraph
   module Rspec
     ROOT_NAMESPACE = 'RSpec::ExampleGroups'
-    HELPER_MODULES = ['RSpec::Matchers'].freeze
     HOOK_METHODS = %w[before after around].freeze
     LET_METHODS = %w[let let!].freeze
     SUBJECT_METHODS = %w[subject subject!].freeze
@@ -83,7 +84,12 @@ module Solargraph
       # @return [Environ]
       def global(_yard_map)
         pins = []
-        pins += include_helper_pins
+        pins += Solargraph::Rspec::TestHelpers.include_helper_pins(
+          root_example_group_namespace_pin: root_example_group_namespace_pin
+        )
+        pins += annotation_pins
+        # TODO: Include gem requires conditionally based on Gemfile definition
+        requires = Solargraph::Rspec::TestHelpers.gem_names
 
         if pins.any?
           Solargraph.logger.debug(
@@ -91,7 +97,9 @@ module Solargraph
           )
         end
 
-        Environ.new(pins: pins)
+        Solargraph.logger.debug "[RSpec] added requires #{requires}"
+
+        Environ.new(requires: requires, pins: pins)
       rescue StandardError => e
         raise e if ENV['SOLARGRAPH_DEBUG']
 
@@ -132,7 +140,7 @@ module Solargraph
           )
         end
 
-        Environ.new(requires: ['rspec'], pins: pins)
+        Environ.new(requires: [], pins: pins)
       rescue StandardError => e
         raise e if ENV['SOLARGRAPH_DEBUG']
 
@@ -143,19 +151,6 @@ module Solargraph
       end
 
       private
-
-      # @param helper_modules [Array<String>]
-      # @param source_map [SourceMap]
-      # @return [Array<Pin::Base>]
-      def include_helper_pins(helper_modules: HELPER_MODULES)
-        helper_modules.map do |helper_module|
-          PinFactory.build_module_include(
-            root_example_group_namespace_pin,
-            helper_module,
-            root_example_group_namespace_pin.location
-          )
-        end
-      end
 
       # @return [Config]
       def config
@@ -168,6 +163,14 @@ module Solargraph
           name: ROOT_NAMESPACE,
           location: PinFactory.dummy_location('lib/rspec/core/example_group.rb')
         )
+      end
+
+      # @return [Array<Pin::Base>]
+      def annotation_pins
+        ann = File.read("#{File.dirname(__FILE__)}/annotations.rb")
+        source = Solargraph::Source.load_string(ann, 'rspec-annotations.rb')
+        map = Solargraph::SourceMap.map(source)
+        map.pins
       end
     end
   end

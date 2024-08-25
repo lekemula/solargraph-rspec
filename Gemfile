@@ -16,6 +16,15 @@ gem 'simplecov'           # Code coverage
 gem 'simplecov-cobertura' # Code coverage
 # gem 'vernier'        # Profiling only on Ruby >= 3.2.1
 
+group :third_party_plugin_tests do
+  gem 'actionmailer'
+  gem 'airborne'
+  gem 'rspec-rails'
+  gem 'rspec-sidekiq'
+  gem 'shoulda-matchers'
+  gem 'webmock'
+end
+
 # Debugging
 # Use local solargraph repo for ease of debugging
 # gem 'solargraph', path: '../solargraph'
