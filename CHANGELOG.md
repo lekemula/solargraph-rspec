@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## v.0.4.0 - 2024-08-25
+
 ### Added
 
 - Support for 3rd party helpers from most known RSpec extension libraries.
