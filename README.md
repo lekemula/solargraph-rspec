@@ -7,14 +7,21 @@
 
 RSpec is a testing framework of choice for many Ruby developers. But at the same time is highly dynamic and heavily relying on metaprogramming making it hard to provide accurate code completion and type inference. 
 
-This gem aims to provide better support for RSpec in Solargraph and it supports the following features:
-  - `describe` and `it` methods completion
-  - memoized `let` and `let!` methods completion 
-  - implicit and explicit `subject` methods
+This gem aims to provide better support for RSpec in Solargraph and it supports the following features (completion, jump to definition and type inference 🚀):
+  - `describe` and `it` methods 
+  - memoized `let` and `let!` methods 
   - `described_class` with appropriate type inference
-  - `RSpec::Matchers` methods completion
-  - type inference 🚀
-  - and more to come...
+  - implicit and explicit `subject` methods
+  - one liner syntax helpers `is_expected`, `should` and `should_not` linked to the appropriate subject
+  - Core and 3rd party spec helpers & matchers
+    - [rspec-mocks](https://github.com/rspec/rspec-mocks)
+    - [rspec-rails](https://github.com/rspec/rspec-rails)
+    - [webmock](https://github.com/bblimke/webmock)
+    - [shoulda-matchers](https://matchers.shoulda.io/)
+    - [rspec-sidekiq](https://github.com/wspurgin/rspec-sidekiq)
+    - [airborne](https://github.com/brooklynDev/airborne)
+  - Custom DSL extensions support (see [Configuration](#configuration) section)
+  - and more to come... ⏲️
 
 ![solargraph-rspec-with-types](./doc/images/vim_demo.gif)
 ![solargraph-rspec-with-types-vs-code](./doc/images/vscode_demo.gif)

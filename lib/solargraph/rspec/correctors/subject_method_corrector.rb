@@ -68,9 +68,9 @@ module Solargraph
         # @return [Array<Pin::Method>]
         def one_liner_expectation_pins(subject_pin)
           [
-            one_liner_expecation_pin(subject_pin.closure, :is_expected, subject_pin.location),
-            one_liner_expecation_pin(subject_pin.closure, :should, subject_pin.location),
-            one_liner_expecation_pin(subject_pin.closure, :should_not, subject_pin.location)
+            one_liner_expectation_pin(subject_pin.closure, :is_expected, subject_pin.location),
+            one_liner_expectation_pin(subject_pin.closure, :should, subject_pin.location),
+            one_liner_expectation_pin(subject_pin.closure, :should_not, subject_pin.location)
           ]
         end
 
@@ -78,7 +78,7 @@ module Solargraph
         # @param method_name [:is_expected, :should, :should_not]
         # @param location [Solargraph::Location]
         # @return [Pin::Method]
-        def one_liner_expecation_pin(namespace_pin, method_name, location)
+        def one_liner_expectation_pin(namespace_pin, method_name, location)
           return_type = case method_name
                         when :is_expected
                           ['::RSpec::Expectations::ExpectationTarget']
