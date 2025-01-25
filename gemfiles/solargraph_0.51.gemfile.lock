@@ -1,5 +1,5 @@
 PATH
-  remote: .
+  remote: ..
   specs:
     solargraph-rspec (0.4.0)
       solargraph (~> 0.49, >= 0.49.0)
@@ -47,9 +47,11 @@ GEM
       thor (>= 0.14.0)
     ast (2.4.2)
     backport (1.2.0)
-    benchmark (0.3.0)
+    benchmark (0.4.0)
     bigdecimal (3.1.8)
     builder (3.3.0)
+    byebug (11.1.3)
+    coderay (1.1.3)
     concurrent-ruby (1.3.3)
     connection_pool (2.4.1)
     crack (1.0.0)
@@ -64,7 +66,6 @@ GEM
     docile (1.4.0)
     domain_name (0.5.20190701)
       unf (>= 0.0.5, < 1.0.0)
-    e2mmap (0.1.0)
     erubi (1.13.0)
     globalid (1.2.1)
       activesupport (>= 6.1)
@@ -82,6 +83,7 @@ GEM
       rexml
     kramdown-parser-gfm (1.1.0)
       kramdown (~> 2.0)
+    logger (1.6.5)
     loofah (2.22.0)
       crass (~> 1.0.2)
       nokogiri (>= 1.12.0)
@@ -106,9 +108,9 @@ GEM
     netrc (0.11.0)
     nokogiri (1.13.10-arm64-darwin)
       racc (~> 1.4)
-    nokogiri (1.13.10-x86_64-linux)
-      racc (~> 1.4)
+    observer (0.1.2)
     optparse (0.5.0)
+    ostruct (0.6.1)
     parallel (1.24.0)
     parser (3.3.4.0)
       ast (~> 2.4.1)
@@ -116,6 +118,12 @@ GEM
     profile-viewer (0.0.2)
       optparse
       webrick
+    pry (0.13.1)
+      coderay (~> 1.1)
+      method_source (~> 1.0)
+    pry-byebug (3.9.0)
+      byebug (~> 11.0)
+      pry (~> 0.13.0)
     public_suffix (5.1.1)
     racc (1.8.0)
     rack (2.2.9)
@@ -135,7 +143,7 @@ GEM
       thor (~> 1.0)
     rainbow (3.1.1)
     rake (13.2.1)
-    rbs (2.8.4)
+    rbs (3.1.3)
     redis (4.8.1)
     regexp_parser (2.9.2)
     reline (0.5.9)
@@ -144,7 +152,7 @@ GEM
       http-cookie (>= 1.0.2, < 2.0)
       mime-types (>= 1.16, < 3.0)
       netrc (~> 0.7)
-    reverse_markdown (2.1.1)
+    reverse_markdown (3.0.0)
       nokogiri
     rexml (3.3.1)
       strscan
@@ -202,25 +210,27 @@ GEM
       simplecov (~> 0.19)
     simplecov-html (0.12.3)
     simplecov_json_formatter (0.1.4)
-    solargraph (0.50.0)
+    solargraph (0.51.1)
       backport (~> 1.2)
       benchmark
       bundler (~> 2.0)
       diff-lcs (~> 1.4)
-      e2mmap
-      jaro_winkler (~> 1.5)
+      jaro_winkler (~> 1.6)
       kramdown (~> 2.3)
       kramdown-parser-gfm (~> 1.1)
+      logger (~> 1.6)
+      observer (~> 0.1)
+      ostruct (~> 0.6)
       parser (~> 3.0)
-      rbs (~> 2.0)
-      reverse_markdown (~> 2.0)
+      rbs (~> 3.0)
+      reverse_markdown (>= 2.0, < 4)
       rubocop (~> 1.38)
       thor (~> 1.0)
       tilt (~> 2.0)
       yard (~> 0.9, >= 0.9.24)
     strscan (3.1.0)
     thor (1.3.1)
-    tilt (2.4.0)
+    tilt (2.6.0)
     timeout (0.4.1)
     tzinfo (2.0.6)
       concurrent-ruby (~> 1.0)
@@ -233,12 +243,11 @@ GEM
       crack (>= 0.3.2)
       hashdiff (>= 0.4.0, < 2.0.0)
     webrick (1.8.1)
-    yard (0.9.36)
+    yard (0.9.37)
     zeitwerk (2.6.16)
 
 PLATFORMS
   arm64-darwin-22
-  x86_64-linux
 
 DEPENDENCIES
   actionmailer
@@ -247,6 +256,7 @@ DEPENDENCIES
   bundler
   debug
   profile-viewer
+  pry-byebug
   rake
   rspec
   rspec-rails
@@ -255,6 +265,7 @@ DEPENDENCIES
   shoulda-matchers
   simplecov
   simplecov-cobertura
+  solargraph (~> 0.51)
   solargraph-rspec!
   webmock
 

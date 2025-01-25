@@ -6,6 +6,7 @@ source 'https://rubygems.org'
 gemspec
 
 # Development Dependencies
+gem 'appraisal'           # Test against multiple versions of dependencies
 gem 'bundler'             # Dependency management
 gem 'debug'               # Debugging
 gem 'profile-viewer'      # View profile from Vernier
