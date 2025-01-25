@@ -10,12 +10,13 @@ gem 'appraisal'           # Test against multiple versions of dependencies
 gem 'bundler'             # Dependency management
 gem 'debug'               # Debugging
 gem 'profile-viewer'      # View profile from Vernier
+gem 'pry-byebug'          # Debugging
 gem 'rake'                # Build
 gem 'rspec'               # Testing
 gem 'rubocop'             # Linting
 gem 'simplecov'           # Code coverage
 gem 'simplecov-cobertura' # Code coverage
-# gem 'vernier'        # Profiling only on Ruby >= 3.2.1
+# gem 'vernier'             # Profiling only on Ruby >= 3.2.1
 
 group :third_party_plugin_tests do
   gem 'actionmailer'

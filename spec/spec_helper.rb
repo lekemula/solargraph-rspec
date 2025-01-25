@@ -2,7 +2,7 @@
 
 require_relative 'code_coverage' # Needs to be required first
 require 'solargraph-rspec'
-require 'debug' unless ENV['NO_DEBUG'] # Useful for: `fswatch lib spec | NO_DEBUG=1 xargs -n1 -I{} rspec`
+require 'pry-byebug' unless ENV['NO_DEBUG'] # Useful for: `fswatch lib spec | NO_DEBUG=1 xargs -n1 -I{} rspec`
 
 Solargraph.logger.level = Logger::WARN
 YARD::Logger.instance.level = Logger::WARN
