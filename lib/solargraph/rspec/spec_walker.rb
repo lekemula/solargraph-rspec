@@ -14,7 +14,7 @@ module Solargraph
       def initialize(source_map:, config:)
         @source_map = source_map
         @config = config
-        @walker = Rspec::Walker.new(source_map.source.node)
+        @walker = Rspec::Walker.new(ruby_vm_node(source_map))
         @handlers = {
           on_described_class: [],
           on_let_method: [],
@@ -208,6 +208,19 @@ module Solargraph
           parent_namespace = namespace_name = "#{parent_namespace}::#{block_name}"
           block&.call(namespace_name, block_ast)
           next parent_namespace
+        end
+      end
+
+      # HACK: Make it work for ruby '>= 3.4.9' and solargraph '>= 0.51.0'
+      # https://github.com/castwide/solargraph/pull/739 disables the `rubyvm` for Ruby 3.4
+      # TODO: Implement SpecWalker with parser gem
+      # @param source_map [SourceMap]
+      # @return [RubyVM::AbstractSyntaxTree::Node]
+      def ruby_vm_node(source_map)
+        if Solargraph::Parser.rubyvm?
+          source_map.source.node
+        else
+          RubyVM::AbstractSyntaxTree.parse(source_map.source.code)
         end
       end
     end
