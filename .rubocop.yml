@@ -5,6 +5,13 @@ AllCops:
 Style/StringLiterals:
   Enabled: true
   EnforcedStyle: single_quotes
+  Exclude:
+    - "gemfiles/**/*"
+
+Style/FrozenStringLiteralComment:
+  Enabled: true
+  Exclude:
+    - "gemfiles/**/*"
 
 Style/StringLiteralsInInterpolation:
   Enabled: true

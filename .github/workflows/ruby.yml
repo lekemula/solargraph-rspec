@@ -36,35 +36,28 @@ jobs:
           ruby-version: ${{ matrix.ruby-version }}
           bundler-cache: false
 
+      # FIXME: Why caching for ruby 2.6 and 2.7 is not working after setting up appraisals?
       - name: Cache Ruby gems
         uses: actions/cache@v3
         with:
           path: solargraph-rspec/vendor/bundle
-          key: bundle-use-ruby-${{ matrix.os }}-${{ matrix.ruby-version }}-${{ hashFiles('solargraph-rspec/Gemfile.lock') }}
+          key: bundle-use-ruby-${{ matrix.os }}-${{ matrix.ruby-version }}-${{ hashFiles('solargraph-rspec/Gemfile.lock', 'solargraph-rspec/gemfiles/*.gemfile.lock') }}
           restore-keys: |
-            bundle-use-ruby-${{ matrix.os }}-${{ matrix.ruby-version }}-
+            bundle-use-ruby-${{ matrix.os }}-${{ matrix.ruby-version }}-${{ hashFiles('solargraph-rspec/Gemfile.lock', 'solargraph-rspec/gemfiles/*.gemfile.lock') }}
 
       - name: Install dependencies
         run: |
           cd solargraph-rspec
           bundle config path vendor/bundle
           bundle install --jobs 4 --retry 3
+          bundle exec appraisal install
 
       - name: Run Rubocop
         run: cd solargraph-rspec && bundle exec rubocop
 
-      - name: Cache Yardocs
-        id: cache-yardocs
-        uses: actions/cache@v3
-        with:
-          path: solargraph-rspec/.yardoc
-          key: yardoc-${{ matrix.os }}-${{ matrix.ruby-version }}-${{ hashFiles('solargraph-rspec/Gemfile.lock') }}
-          restore-keys: |
-            yardoc-${{ matrix.os }}-${{ matrix.ruby-version }}-
-
       - name: Set up yardocs
-        if: steps.cache-yardocs.outputs.cache-hit != 'true'
-        run: cd solargraph-rspec && bundle exec yard gems --verbose
+        # yard gems caches the yardocs into <gem_path>/doc/.yardoc path, hence they should be cached by ruby gems cache 
+        run: cd solargraph-rspec && bundle exec appraisal yard gems --verbose
 
       - name: List all Yardoc constants and methods
         run: |
@@ -72,7 +65,7 @@ jobs:
             bundle exec yard list
 
       - name: Run tests
-        run: cd solargraph-rspec && bundle exec rspec --format progress
+        run: cd solargraph-rspec && bundle exec appraisal rspec --format progress
 
       - name: Upload coverage reports to Codecov
         uses: codecov/codecov-action@v4

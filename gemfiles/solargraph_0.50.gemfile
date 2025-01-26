@@ -4,15 +4,15 @@ source "https://rubygems.org"
 
 gem "appraisal"
 gem "bundler"
-gem "pry-byebug"
 gem "debug"
 gem "profile-viewer"
+gem "pry-byebug"
 gem "rake"
 gem "rspec"
 gem "rubocop"
 gem "simplecov"
 gem "simplecov-cobertura"
-gem "solargraph", "~> 0.50"
+gem "solargraph", "~> 0.50.0"
 
 group :third_party_plugin_tests do
   gem "actionmailer"
