@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+
+- (Hot)fix parsing and type inference for solargraph v0.51.x and ruby v3.4.x (008d3ea and 7e68707)
+
 ## v.0.4.0 - 2024-08-25
 
 ### Added

@@ -100,7 +100,7 @@ module Solargraph
         Solargraph.logger.debug "[RSpec] added requires #{requires}"
 
         Environ.new(requires: requires, pins: pins)
-      rescue StandardError => e
+      rescue StandardError, SyntaxError => e
         raise e if ENV['SOLARGRAPH_DEBUG']
 
         Solargraph.logger.warn(
@@ -141,7 +141,7 @@ module Solargraph
         end
 
         Environ.new(requires: [], pins: pins)
-      rescue StandardError => e
+      rescue StandardError, SyntaxError => e
         raise e if ENV['SOLARGRAPH_DEBUG']
 
         Solargraph.logger.warn(

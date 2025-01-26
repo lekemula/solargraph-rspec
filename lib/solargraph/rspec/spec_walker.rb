@@ -119,7 +119,7 @@ module Solargraph
           method_name = NodeTypes.let_method_name(block_ast)
           next unless method_name
 
-          fake_method_ast = FakeLetMethod.transform_block(block_ast, @source_map.source.code)
+          fake_method_ast = FakeLetMethod.transform_block(block_ast, @source_map.source.code, method_name)
 
           @handlers[:on_let_method].each do |handler|
             handler.call(method_name, PinFactory.build_location_range(block_ast.children[0]), fake_method_ast)

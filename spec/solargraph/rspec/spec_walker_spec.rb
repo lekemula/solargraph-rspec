@@ -6,6 +6,14 @@ RSpec.describe Solargraph::Rspec::SpecWalker do
   let(:config) { Solargraph::Rspec::Config.new }
   let(:source_map) { api_map.source_maps.first }
 
+  def parse_expected_let_method(code)
+    if Solargraph::Parser.rubyvm?
+      RubyVM::AbstractSyntaxTree.parse(code).children[2]
+    else
+      Parser::CurrentRuby.parse(code)
+    end
+  end
+
   # @param code [String]
   # @yieldparam [Solargraph::Rspec::SpecWalker]
   # @return [void]
@@ -41,7 +49,7 @@ RSpec.describe Solargraph::Rspec::SpecWalker do
 
   describe '#on_let_method' do
     let(:fake_let_with_block) do
-      RubyVM::AbstractSyntaxTree.parse(<<~RUBY).children[2]
+      parse_expected_let_method(<<~RUBY)
         def fake_test_with_block
           create(
             :some_model,
@@ -55,7 +63,7 @@ RSpec.describe Solargraph::Rspec::SpecWalker do
     end
 
     let(:fake_let_with_curly_block) do
-      RubyVM::AbstractSyntaxTree.parse(<<~RUBY).children[2]
+      parse_expected_let_method(<<~RUBY)
         def fake_test_with_curly_block
           create(
             :some_model,
@@ -118,7 +126,7 @@ RSpec.describe Solargraph::Rspec::SpecWalker do
 
   describe '#on_subject' do
     let(:fake_subject_with_block) do
-      RubyVM::AbstractSyntaxTree.parse(<<~RUBY).children[2]
+      parse_expected_let_method(<<~RUBY)
         def subject_with_block
           create(
             :some_model,
@@ -132,7 +140,7 @@ RSpec.describe Solargraph::Rspec::SpecWalker do
     end
 
     let(:fake_subject_with_curly_block) do
-      RubyVM::AbstractSyntaxTree.parse(<<~RUBY).children[2]
+      parse_expected_let_method(<<~RUBY)
         def subject_with_curly_block
           create(
             :some_model,
@@ -146,7 +154,7 @@ RSpec.describe Solargraph::Rspec::SpecWalker do
     end
 
     let(:fake_subject_without_name) do
-      RubyVM::AbstractSyntaxTree.parse(<<~RUBY).children[2]
+      parse_expected_let_method(<<~RUBY)
         def subject
           create(:some_model)
         end
