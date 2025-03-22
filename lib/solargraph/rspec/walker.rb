@@ -71,7 +71,7 @@ module Solargraph
       def initialize(ast, comments = {})
         @comments = comments
         @ast = ast
-        @hooks = Hash.new([])
+        @hooks = Hash.new { |h, k| h[k] = [] }
       end
 
       def on(node_type, args = [], &block)

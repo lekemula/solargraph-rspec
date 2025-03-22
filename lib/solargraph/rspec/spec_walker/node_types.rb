@@ -75,7 +75,7 @@ module Solargraph
         # @param block_ast [RubyVM::AbstractSyntaxTree::Node]
         # @return [String]
         def self.let_method_name(block_ast)
-          block_ast.children[0].children[1]&.children&.[](0)&.children&.[](0)&.to_s
+          block_ast.children[0].children[1]&.children&.[](0)&.children&.[](0)&.to_s # rubocop:disable Style/SafeNavigationChainLength
         end
       end
     end
