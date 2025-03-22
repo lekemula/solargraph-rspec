@@ -4,8 +4,8 @@ module Solargraph
   module Rspec
     class SpecWalker
       class FakeLetMethod
-        MATCH_DO_END = /.*? do(.*)end/m.freeze
-        MATCH_CURLY = /{(.*)}/m.freeze
+        MATCH_DO_END = /.*? do(.*)end/m
+        MATCH_CURLY = /{(.*)}/m
 
         class << self
           # Transforms let block to method ast node

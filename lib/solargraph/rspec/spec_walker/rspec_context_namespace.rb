@@ -33,7 +33,7 @@ module Solargraph
             return 'Anonymous'.dup if name.empty?
 
             # Convert to CamelCase.
-            name = +" #{name}"
+            name = " #{name}"
             name.gsub!(/[^0-9a-zA-Z]+([0-9a-zA-Z])/) do
               match = ::Regexp.last_match[1]
               match.upcase!
