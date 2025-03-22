@@ -342,7 +342,7 @@ RSpec.describe Solargraph::Rspec::Convention do
       end
     RUBY
 
-    assert_class_method(api_map, 'RSpec::ExampleGroups::TestSomeNamespaceTransaction.it', [''])
+    assert_class_method(api_map, 'RSpec::ExampleGroups::TestSomeNamespaceTransaction.it', [])
     expect(completion_at(filename, [1, 7])).to include('describe')
     expect(completion_at(filename, [2, 7])).to include('context')
     expect(completion_at(filename, [3, 7])).to include('xit')
@@ -450,7 +450,7 @@ RSpec.describe Solargraph::Rspec::Convention do
     end
 
     it 'infers type for some_array' do
-      load_and_assert_type('let(:some_array) { [1, 2, 3] }', 'some_array', 'Array')
+      load_and_assert_type('let(:some_array) { [1, 2, 3] }', 'some_array', 'Array<Integer>')
     end
 
     it 'infers type for some_hash' do
@@ -481,7 +481,9 @@ RSpec.describe Solargraph::Rspec::Convention do
     end
 
     it 'infers type for some_class' do
-      load_and_assert_type('let(:some_class) { Class.new }', 'some_class', 'Class<BasicObject>')
+      # FIXME: once https://github.com/castwide/solargraph/pull/786 gets released
+      # load_and_assert_type('let(:some_class) { Class.new }', 'some_class', 'Class<BasicObject>')
+      load_and_assert_type('let(:some_class) { Class.new }', 'some_class', 'Class')
     end
 
     it 'infers type for some_module' do
@@ -549,7 +551,7 @@ RSpec.describe Solargraph::Rspec::Convention do
       assert_public_instance_method_inferred_type(
         api_map,
         'RSpec::ExampleGroups::TestSomeNamespaceTransaction#some_array',
-        'Array'
+        'Array<Integer>'
       )
       assert_public_instance_method_inferred_type(
         api_map,
@@ -584,7 +586,9 @@ RSpec.describe Solargraph::Rspec::Convention do
       assert_public_instance_method_inferred_type(
         api_map,
         'RSpec::ExampleGroups::TestSomeNamespaceTransaction#some_class',
-        'Class<BasicObject>'
+        # FIXME: once https://github.com/castwide/solargraph/pull/786 gets released
+        # 'Class<BasicObject>'
+        'Class'
       )
     end
   end
