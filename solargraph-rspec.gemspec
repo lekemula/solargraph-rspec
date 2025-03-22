@@ -12,7 +12,7 @@ Gem::Specification.new do |spec|
   spec.description = 'RSpec is a testing tool of choice for many Ruby developers. ' \
                      'This plugin provides code completion and other features for RSpec files in Solargraph.'
   spec.license = 'MIT'
-  spec.required_ruby_version = '>= 2.6.0'
+  spec.required_ruby_version = '>= 3.0'
 
   spec.metadata['source_code_uri'] = 'https://github.com/lekemula/solargraph-rspec'
 
@@ -28,7 +28,7 @@ Gem::Specification.new do |spec|
   spec.executables = spec.files.grep(%r{\Aexe/}) { |f| File.basename(f) }
   spec.require_paths = ['lib']
 
-  spec.add_runtime_dependency 'solargraph', '~> 0.49', '>= 0.49.0'
+  spec.add_dependency 'solargraph', '~> 0.52', '>= 0.52.0'
 
   # For more information and examples about making a new gem, check out our
   # guide at: https://bundler.io/guides/creating_gem.html
