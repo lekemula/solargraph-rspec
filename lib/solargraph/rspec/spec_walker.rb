@@ -14,6 +14,7 @@ module Solargraph
       def initialize(source_map:, config:)
         @source_map = source_map
         @config = config
+        # TODO: Implement SpecWalker with parser gem using default AST from `source_map.source.node`
         @walker = Rspec::Walker.new(ruby_vm_node(source_map))
         @handlers = {
           on_described_class: [],
@@ -211,17 +212,10 @@ module Solargraph
         end
       end
 
-      # HACK: Make it work for ruby '>= 3.4.9' and solargraph '>= 0.51.0'
-      # https://github.com/castwide/solargraph/pull/739 disables the `rubyvm` for Ruby 3.4
-      # TODO: Implement SpecWalker with parser gem
       # @param source_map [SourceMap]
       # @return [RubyVM::AbstractSyntaxTree::Node]
       def ruby_vm_node(source_map)
-        if Solargraph::Parser.rubyvm?
-          source_map.source.node
-        else
-          RubyVM::AbstractSyntaxTree.parse(source_map.source.code)
-        end
+        RubyVM::AbstractSyntaxTree.parse(source_map.source.code)
       end
     end
   end
