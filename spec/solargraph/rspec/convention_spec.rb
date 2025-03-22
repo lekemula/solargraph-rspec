@@ -352,7 +352,7 @@ RSpec.describe Solargraph::Rspec::Convention do
     expect(completion_at(filename, [3, 7])).to include('xit')
     expect(completion_at(filename, [4, 7])).to include('fexample')
 
-    # child/nexted context
+    # child/nested context
     # https://github.com/rspec/rspec/pull/200
     if Gem.loaded_specs['rspec-core'].version > Gem::Version.new('3.13.3')
       expect(completion_at(filename, [8, 7])).to include('describe')
