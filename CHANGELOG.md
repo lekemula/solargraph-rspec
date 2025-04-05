@@ -7,6 +7,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.5.0] - 2025-04-05
+
+### Changed
+
+- Require ruby >=3 and update gems
+- Re-use RSpec method definitions directly from source YARD definitions (#9)
+  - Fixes also class methods inheritance inside `context/describe` blocks
+
 ## v.0.4.1 - 2025-01-28
 
 ### Fixed
