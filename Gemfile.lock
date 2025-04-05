@@ -1,7 +1,7 @@
 PATH
   remote: .
   specs:
-    solargraph-rspec (0.5.0)
+    solargraph-rspec (0.5.1)
       solargraph (~> 0.52, >= 0.52.0)
 
 GEM
