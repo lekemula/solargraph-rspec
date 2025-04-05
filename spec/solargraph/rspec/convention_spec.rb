@@ -319,8 +319,7 @@ RSpec.describe Solargraph::Rspec::Convention do
     RUBY
 
     expect(completion_at(filename, [4, 9])).to include('my_class_method')
-    # TODO: Complete class methods from the parent context scope. This seems to be an issue with Solargraph itself.
-    # expect(completion_at(filename, [7, 11])).to include('my_class_method')
+    expect(completion_at(filename, [7, 11])).to include('my_class_method') # inherit from parent context
   end
 
   it 'completes RSpec DSL methods' do
