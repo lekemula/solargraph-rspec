@@ -5,6 +5,9 @@ source 'https://rubygems.org'
 # Specify your gem's dependencies in solargraph-rspec.gemspec
 gemspec
 
+# TODO: Remove me after fixing specs till latest solargraph version
+gem 'solargraph', '0.53.0'
+
 # Development Dependencies
 gem 'appraisal'           # Test against multiple versions of dependencies
 gem 'bundler'             # Dependency management
