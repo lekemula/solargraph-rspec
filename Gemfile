@@ -6,7 +6,7 @@ source 'https://rubygems.org'
 gemspec
 
 # TODO: Remove me after fixing specs till latest solargraph version
-gem 'solargraph', '0.53.4'
+gem 'solargraph', path: '../solargraph'
 
 # Development Dependencies
 gem 'appraisal'           # Test against multiple versions of dependencies

@@ -17,7 +17,7 @@ RSpec.describe Solargraph::Rspec::Convention do
     RUBY
 
     assert_public_instance_method(api_map, 'RSpec::ExampleGroups::TestSomeNamespaceTransaction#described_class',
-                                  ['Class<::SomeNamespace::Transaction>']) do |pin|
+                                  ['Class<SomeNamespace::Transaction>']) do |pin|
       expect(pin.location.filename).to eq(filename)
       expect(pin.location.range.to_hash).to eq(
         { start: { line: 0, character: 15 }, end: { line: 0, character: 41 } }
