@@ -486,7 +486,9 @@ RSpec.describe Solargraph::Rspec::Convention do
     end
 
     it 'infers type for some_class' do
-      load_and_assert_type('let(:some_class) { Class.new }', 'some_class', 'Class<BasicObject>')
+      # FIXME: once https://github.com/castwide/solargraph/pull/786 gets released
+      # load_and_assert_type('let(:some_class) { Class.new }', 'some_class', 'Class<BasicObject>')
+      load_and_assert_type('let(:some_class) { Class.new }', 'some_class', 'Class')
     end
 
     it 'infers type for some_module' do
@@ -589,7 +591,9 @@ RSpec.describe Solargraph::Rspec::Convention do
       assert_public_instance_method_inferred_type(
         api_map,
         'RSpec::ExampleGroups::TestSomeNamespaceTransaction#some_class',
-        'Class<BasicObject>'
+        # FIXME: once https://github.com/castwide/solargraph/pull/786 gets released
+        # 'Class<BasicObject>'
+        'Class'
       )
     end
   end

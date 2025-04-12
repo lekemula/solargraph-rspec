@@ -260,7 +260,7 @@ GEM
       simplecov (~> 0.19)
     simplecov-html (0.13.1)
     simplecov_json_formatter (0.1.4)
-    solargraph (0.53.2)
+    solargraph (0.53.3)
       backport (~> 1.2)
       benchmark
       bundler (~> 2.0)
@@ -319,7 +319,7 @@ DEPENDENCIES
   shoulda-matchers
   simplecov
   simplecov-cobertura
-  solargraph (= 0.53.2)
+  solargraph (= 0.53.3)
   solargraph-rspec!
   webmock
 
