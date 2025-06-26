@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.5.2] - 2025-06-26
+
+### Fixed
+
+- Prevent issues for solargraph prism update (c574b4d)
+
 ## [0.5.1] - 2025-04-05
 
 ### Fixed
