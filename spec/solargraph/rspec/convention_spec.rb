@@ -17,7 +17,7 @@ RSpec.describe Solargraph::Rspec::Convention do
     RUBY
 
     assert_public_instance_method(api_map, 'RSpec::ExampleGroups::TestSomeNamespaceTransaction#described_class',
-                                  ['Class<::SomeNamespace::Transaction>']) do |pin|
+                                  ['Class<SomeNamespace::Transaction>']) do |pin|
       expect(pin.location.filename).to eq(filename)
       expect(pin.location.range.to_hash).to eq(
         { start: { line: 0, character: 15 }, end: { line: 0, character: 41 } }
@@ -252,6 +252,7 @@ RSpec.describe Solargraph::Rspec::Convention do
 
   # NOTE: This spec depends on RSpec's YARDoc comments, if it fails try running: yard gems
   it 'completes RSpec::Matchers methods' do
+    pending('https://github.com/castwide/solargraph/pull/877')
     load_string filename, <<~RUBY
       RSpec.describe SomeNamespace::Transaction, type: :model do
         context 'some context' do
@@ -323,6 +324,7 @@ RSpec.describe Solargraph::Rspec::Convention do
   end
 
   it 'completes RSpec DSL methods' do
+    pending('https://github.com/castwide/solargraph/pull/877')
     load_string filename, <<~RUBY
       RSpec.describe SomeNamespace::Transaction, type: :model do
         desc
@@ -467,7 +469,7 @@ RSpec.describe Solargraph::Rspec::Convention do
     end
 
     it 'infers type for some_nil' do
-      load_and_assert_type('let(:some_nil) { nil }', 'some_nil', 'nil')
+      load_and_assert_type('let(:some_nil) { nil }', 'some_nil', 'NilClass')
     end
 
     it 'infers type for some_float' do
@@ -571,7 +573,7 @@ RSpec.describe Solargraph::Rspec::Convention do
       assert_public_instance_method_inferred_type(
         api_map,
         'RSpec::ExampleGroups::TestSomeNamespaceTransaction#some_nil',
-        'nil'
+        'NilClass'
       )
       assert_public_instance_method_inferred_type(
         api_map,
@@ -706,7 +708,8 @@ RSpec.describe Solargraph::Rspec::Convention do
         ENV['SOLARGRAPH_DEBUG'] = 'true'
       end
 
-      it 'does not raise an exception' do
+      it 'does not raise an exception and it logs instead' do
+        allow(Solargraph.logger).to receive(:warn)
         filename = File.expand_path('spec/models/some_namespace/transaction_spec.rb')
         file = load_string filename, <<~RUBY
           0-1i23981
@@ -715,6 +718,8 @@ RSpec.describe Solargraph::Rspec::Convention do
         expect do
           load_sources(file)
         end.not_to raise_error
+
+        expect(Solargraph.logger).to have_received(:warn).with(/\[RSpec\] Error processing/).at_least(:once)
       end
 
       it 'logs via solargraph logger' do
@@ -728,6 +733,8 @@ RSpec.describe Solargraph::Rspec::Convention do
   end
 
   describe 'helpers' do
+    before { pending('https://github.com/castwide/solargraph/pull/877') }
+
     describe 'shoulda-matchers' do
       it 'completes active-model matchers' do
         load_string filename, <<~RUBY
@@ -994,6 +1001,11 @@ RSpec.describe Solargraph::Rspec::Convention do
             end
           end
         RUBY
+
+        expect(completion_at(filename, [2, 5])).to include('after_teardown')
+        expect(completion_at(filename, [3, 5])).to include('freeze_time')
+        expect(completion_at(filename, [4, 5])).to include('travel')
+        expect(completion_at(filename, [5, 5])).to include('travel_back')
       end
 
       it 'completes mailer methods' do

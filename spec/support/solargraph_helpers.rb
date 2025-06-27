@@ -8,11 +8,9 @@ module SolargraphHelpers
   end
 
   def load_sources(*sources)
-    workspace = Solargraph::Workspace.new('*')
-    sources.each { |s| workspace.merge(s) }
-    library = Solargraph::Library.new(workspace)
-    library.map!
-    api_map.catalog library # api_map should be defined in the spec
+    source_maps = sources.map { |s| Solargraph::SourceMap.map(s) }
+    bench = Solargraph::Bench.new(source_maps: source_maps)
+    api_map.catalog bench # api_map should be defined in the spec
   end
 
   def assert_public_instance_method(map, query, return_type)
@@ -28,7 +26,7 @@ module SolargraphHelpers
     pin = find_pin(query, map)
     expect(pin).to_not be_nil, "Method #{query} not found"
     expect(pin.scope).to eq(:instance)
-    inferred_return_type = pin.probe(api_map).tag
+    inferred_return_type = pin.probe(api_map).simplify_literals.to_s
 
     expect(inferred_return_type).to eq(return_type)
 
