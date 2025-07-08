@@ -23,7 +23,7 @@ module Solargraph
 
         # @param namespace [Pin::Namespace]
         # @param method_name [String]
-        # @param node [RubyVM::AbstractSyntaxTree::Node]
+        # @param node [::Parser::AST::Node, nil]
         # @param types [Array<String>, nil]
         # @return [Pin::Method, nil]
         def rspec_let_method(namespace, method_name, location_range, node = nil, types: nil)

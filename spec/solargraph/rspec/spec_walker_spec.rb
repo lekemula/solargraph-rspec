@@ -7,8 +7,7 @@ RSpec.describe Solargraph::Rspec::SpecWalker do
   let(:source_map) { api_map.source_maps.first }
 
   def parse_expected_let_method(code)
-    # TODO: Replace with Solargraph::Parser::ParserGem.parse(code) after solargraph gem release >0.52.0
-    Parser::CurrentRuby.parse(code)
+    Solargraph::Parser.parse(code)
   end
 
   # @param code [String]

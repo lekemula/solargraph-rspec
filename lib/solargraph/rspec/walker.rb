@@ -17,7 +17,7 @@ module Solargraph
           @proc = Proc.new(&block)
         end
 
-        # @param node [RubyVM::AbstractSyntaxTree::Node]
+        # @param node [::Parser::AST::Node]
         # @return [void]
         def visit(node)
           return unless matches?(node)
@@ -33,15 +33,15 @@ module Solargraph
 
         private
 
-        # @param node [RubyVM::AbstractSyntaxTree::Node]
+        # @param node [::Parser::AST::Node]
         # @return [Boolean]
         def matches?(node)
           return false unless node.type == node_type
           return false unless node.children
           return true if @args.empty?
 
-          a_child_matches = node.children.first.is_a?(RubyVM::AbstractSyntaxTree::Node) && node.children.any? do |child|
-            child.is_a?(RubyVM::AbstractSyntaxTree::Node) &&
+          a_child_matches = node.children.first.is_a?(::Parser::AST::Node) && node.children.any? do |child|
+            child.is_a?(::Parser::AST::Node) &&
               match_children(child.children, @args[1..])
           end
 
@@ -50,12 +50,12 @@ module Solargraph
           match_children(node.children)
         end
 
-        # @param children [Array<RubyVM::AbstractSyntaxTree::Node>]
+        # @param children [Array<::Parser::AST::Node>]
         def match_children(children, args = @args)
           args.each_with_index.all? do |arg, i|
             if arg == :any
               true
-            elsif children[i].is_a?(RubyVM::AbstractSyntaxTree::Node) && arg.is_a?(Symbol)
+            elsif children[i].is_a?(::Parser::AST::Node) && arg.is_a?(Symbol)
               children[i].type == arg
             else
               children[i] == arg
@@ -66,7 +66,7 @@ module Solargraph
 
       attr_reader :ast, :comments
 
-      # @param ast [RubyVM::AbstractSyntaxTree::Node]
+      # @param ast [::Parser::AST::Node]
       # @param comments [Hash]
       def initialize(ast, comments = {})
         @comments = comments
@@ -74,6 +74,8 @@ module Solargraph
         @hooks = Hash.new { |h, k| h[k] = [] }
       end
 
+      # @yieldparam [::Parser::AST::Node]
+      # @yieldparam [Walker]
       def on(node_type, args = [], &block)
         @hooks[node_type] << Hook.new(node_type, args, &block)
       end
@@ -85,7 +87,7 @@ module Solargraph
       private
 
       def traverse(node)
-        return unless node.is_a?(RubyVM::AbstractSyntaxTree::Node)
+        return unless node.is_a?(::Parser::AST::Node)
 
         @hooks[node.type].each { |hook| hook.visit(node) }
 

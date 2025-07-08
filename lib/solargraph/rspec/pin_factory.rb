@@ -74,16 +74,10 @@ module Solargraph
         )
       end
 
-      # @param ast [RubyVM::AbstractSyntaxTree::Node]
-      # @see [RubyVM::AbstractSyntaxTree::NodeWrapper] - for why we need -1 for lineno
+      # @param ast [::Parser::AST::Node]
       # @return [Solargraph::Range]
       def self.build_location_range(ast)
-        Solargraph::Range.from_to(
-          ast.first_lineno - 1,
-          ast.first_column,
-          ast.last_lineno - 1,
-          ast.last_column
-        )
+        Solargraph::Parser.node_range(ast)
       end
 
       # @param location_range [Solargraph::Range]
