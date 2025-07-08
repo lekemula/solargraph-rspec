@@ -119,7 +119,7 @@ module Solargraph
           method_name = NodeTypes.let_method_name(block_ast)
           next unless method_name
 
-          fake_method_ast = FakeLetMethod.transform_block(block_ast, @source_map.source.code, method_name)
+          fake_method_ast = FakeLetMethod.transform_block(block_ast, method_name)
 
           @handlers[:on_let_method].each do |handler|
             handler.call(method_name, PinFactory.build_location_range(block_ast.children[0]), fake_method_ast)
@@ -130,7 +130,7 @@ module Solargraph
           next unless NodeTypes.a_subject_block?(block_ast)
 
           method_name = NodeTypes.let_method_name(block_ast)
-          fake_method_ast = FakeLetMethod.transform_block(block_ast, @source_map.source.code, method_name || 'subject')
+          fake_method_ast = FakeLetMethod.transform_block(block_ast, method_name || 'subject')
 
           @handlers[:on_subject].each do |handler|
             handler.call(method_name, PinFactory.build_location_range(block_ast.children[0]), fake_method_ast)

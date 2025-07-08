@@ -10,9 +10,8 @@ module Solargraph
         class << self
           # Transforms let block to method ast node
           # @param block_ast [::Parser::AST::Node]
-          # @param code [String] code
           # @return [::Parser::AST::Node, nil]
-          def transform_block(block_ast, code, method_name = nil)
+          def transform_block(block_ast, method_name = nil)
             method_name ||= NodeTypes.let_method_name(block_ast)
 
             ::Parser::AST::Node.new( # transform let block to a method ast node
