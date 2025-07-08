@@ -5,13 +5,13 @@ module Solargraph
     class SpecWalker
       class RspecContextNamespace
         class << self
-          # @param block_ast [RubyVM::AbstractSyntaxTree::Node]
+          # @param block_ast [::Parser::AST::Node]
           # @return [String, nil]
           def from_block_ast(block_ast)
-            return unless block_ast.is_a?(RubyVM::AbstractSyntaxTree::Node)
+            return unless block_ast.is_a?(::Parser::AST::Node)
 
             ast = NodeTypes.context_description_node(block_ast)
-            if ast.type == :STR
+            if ast.type == :str
               string_to_const_name(ast)
             elsif NodeTypes.a_constant?(ast)
               FullConstantName.from_ast(ast).gsub('::', '')
@@ -27,7 +27,7 @@ module Solargraph
           # @param ast [Parser::AST::Node]
           # @return [String]
           def string_to_const_name(string_ast)
-            return unless string_ast.type == :STR
+            return unless string_ast.type == :str
 
             name = string_ast.children[0]
             return 'Anonymous'.dup if name.empty?

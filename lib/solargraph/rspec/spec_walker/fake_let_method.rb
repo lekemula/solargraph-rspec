@@ -9,30 +9,17 @@ module Solargraph
 
         class << self
           # Transforms let block to method ast node
-          # @param block_ast [RubyVM::AbstractSyntaxTree::Node]
-          # @param code [String] code
+          # @param block_ast [::Parser::AST::Node]
           # @return [::Parser::AST::Node, nil]
-          def transform_block(block_ast, code, method_name = nil)
+          def transform_block(block_ast, method_name = nil)
             method_name ||= NodeTypes.let_method_name(block_ast)
 
-            code_lines = code.split("\n")
-            # extract let definition block body code
-            first_line = code_lines[block_ast.first_lineno - 1]
-            last_line = code_lines[block_ast.last_lineno - 1]
-            code_lines[block_ast.first_lineno - 1] = first_line[(block_ast.first_column)..]
-            code_lines[block_ast.last_lineno - 1] = last_line[0..(block_ast.last_column)]
-            let_definition_code = code_lines[
-              (block_ast.first_lineno - 1)..(block_ast.last_lineno - 1)
-            ].join("\n")
-
-            let_definition_ast = Solargraph::Parser.parse(let_definition_code)
-            method_body = let_definition_ast.children[2]
             ::Parser::AST::Node.new( # transform let block to a method ast node
               :def,
               [
                 method_name.to_sym,
                 ::Parser::AST::Node.new(:args, []),
-                method_body
+                block_ast.children[2]
               ]
             )
           rescue SyntaxError => e

@@ -5,17 +5,24 @@ module Solargraph
     class SpecWalker
       class FullConstantName
         class << self
-          # @param ast [RubyVM::AbstractSyntaxTree::Node]
+          # @param ast [::Parser::AST::Node]
           # @return [String]
           def from_ast(ast)
-            raise 'Node is not a constant' unless NodeTypes.a_constant?(ast)
+            parts = []
 
-            if ast.type == :CONST
-              ast.children[0].to_s
-            elsif ast.type == :COLON2
-              name = ast.children[1].to_s
-              "#{from_ast(ast.children[0])}::#{name}"
+            until ast.nil?
+              if ast.is_a? ::Parser::AST::Node
+                break unless ast.type == :const
+
+                parts << ast.children[1]
+                ast = ast.children[0]
+              else
+                parts << ast
+                break
+              end
             end
+
+            parts.reverse.join('::')
           end
 
           def from_context_block_ast(block_ast)
