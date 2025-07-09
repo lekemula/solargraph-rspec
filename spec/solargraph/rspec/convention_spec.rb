@@ -1149,4 +1149,64 @@ RSpec.describe Solargraph::Rspec::Convention do
       end
     end
   end
+
+  describe 'included modules' do
+    require 'parser'
+
+    before do
+      allow(Solargraph::Parser).to receive(:node_range).and_return(Solargraph::Range.from_to(0, 0, 0, 1))
+      allow_any_instance_of(Solargraph::Rspec::SpecHelperInclude).to receive(:parse_included_modules).and_return([
+        Solargraph::Rspec::SpecHelperInclude::INCLUDED_MODULE_DATA.new(
+          ::Parser::AST::Node.new(:send), 'spec_helper.rb', 'HelperModule'
+        )
+      ])
+
+      load_string 'spec_helper.rb', <<~RUBY
+        module HelperModule
+          def module_method
+          end
+        end
+      RUBY
+
+      load_string filename, <<~RUBY
+        RSpec.describe SomeNamespace::Transaction, type: :model do
+          it 'example test' do
+            mo
+          end
+
+          describe 'example group' do
+            let(:var) { mo }
+
+            before do
+              mo
+            end
+
+            it 'example test' do
+              mo
+            end
+          end
+        end
+      RUBY
+    end
+
+    it 'should complete inside a top level example' do
+      expect(completion_at(filename, [2, 6])).to include('module_method')
+    end
+
+    it 'should complete inside a let block' do
+      expect(completion_at(filename, [6, 18])).to include('module_method')
+    end
+
+    it 'should complete inside a context block' do
+      expect(completion_at(filename, [8, 6])).to include('module_method')
+    end
+
+    it 'should complete inside a hook' do
+      expect(completion_at(filename, [11, 8])).to include('module_method')
+    end
+
+    it 'should complete a nested example' do
+      expect(completion_at(filename, [15, 8])).to include('module_method')
+    end
+  end
 end
