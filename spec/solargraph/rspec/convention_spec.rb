@@ -1154,28 +1154,43 @@ RSpec.describe Solargraph::Rspec::Convention do
     require 'parser'
 
     before do
-      allow(Solargraph::Parser).to receive(:node_range).and_return(Solargraph::Range.from_to(0, 0, 0, 1))
-      allow_any_instance_of(Solargraph::Rspec::SpecHelperInclude).to receive(:parse_included_modules).and_return([
-        Solargraph::Rspec::SpecHelperInclude::INCLUDED_MODULE_DATA.new(
-          ::Parser::AST::Node.new(:send), 'spec_helper.rb', 'HelperModule'
-        )
-      ])
+      Solargraph::Rspec::SpecHelperInclude.reset
 
-      load_string 'spec_helper.rb', <<~RUBY
+      allow_any_instance_of(Solargraph::Rspec::SpecHelperInclude).to receive(:parse_included_modules).and_return(
+        [
+          Solargraph::Rspec::SpecHelperInclude::INCLUDED_MODULE_DATA.new(
+            # What the fuck
+            Parser::AST::Node.new(
+              :send, [], {
+                location: Parser::Source::Map.new(
+                  Parser::Source::Range.new(
+                    Parser::Source::Buffer.new('name.rb', source: '1'),
+                    0, 1
+                  )
+                )
+              }
+            ), 'spec_helper.rb', 'HelperModule'
+          )
+        ]
+      )
+
+      source_helper = parse_string File.expand_path('spec/spec_helper.rb'), <<~RUBY
         module HelperModule
           def module_method
           end
         end
       RUBY
 
-      load_string filename, <<~RUBY
+      source_main = parse_string filename, <<~RUBY
         RSpec.describe SomeNamespace::Transaction, type: :model do
           it 'example test' do
             mo
           end
 
-          describe 'example group' do
+          describe 'fake example group' do
             let(:var) { mo }
+
+            mo
 
             before do
               mo
@@ -1187,6 +1202,8 @@ RSpec.describe Solargraph::Rspec::Convention do
           end
         end
       RUBY
+
+      load_sources(source_helper, source_main)
     end
 
     it 'should complete inside a top level example' do

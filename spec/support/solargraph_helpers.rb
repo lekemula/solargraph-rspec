@@ -2,9 +2,20 @@
 
 module SolargraphHelpers
   def load_string(filename, str)
-    source = Solargraph::Source.load_string(str, filename)
+    source = parse_string(filename, str)
     api_map.map(source) # api_map should be defined in the spec
     source
+  end
+
+  # Util method to parse (but NOT load) a string
+  # This method is mostly here for heredocs
+  #
+  # @param filename [String]
+  # @param str [String] The source code
+  #
+  # @return [Solargraph::Source]
+  def parse_string(filename, str)
+    Solargraph::Source.load_string(str, filename)
   end
 
   def load_sources(*sources)
