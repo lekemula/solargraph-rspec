@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 module Solargraph
   module Rspec
     # RSpec.configure ... config.include handler, essentially
@@ -5,8 +7,8 @@ module Solargraph
       COMMON_HELPER_FILES = [
         'spec/spec_helper.rb',
         'spec/rails_helper.rb'
-      ]
-      
+      ].freeze
+
       # @param node [::Parser::AST::Node]
       # @param file [String] The name of the file this is module is defined in
       # @param module_name [String] The name of the module to be included
@@ -22,12 +24,8 @@ module Solargraph
 
       # @return [Array<Solargraph::Pin::Reference::Include>]
       def pins
-        ns = Solargraph::Pin::Namespace.new(
-          name: "RSpec::ExampleGroups",
-        )
-        ns2 = Solargraph::Pin::Namespace.new(
-          name: "RSpec::Example",
-        )
+        ns = Solargraph::Pin::Namespace.new(name: 'RSpec::ExampleGroups')
+        ns2 = Solargraph::Pin::Namespace.new(name: 'RSpec::Example')
 
         included_modules.flat_map do |m|
           [
@@ -40,15 +38,15 @@ module Solargraph
               closure: ns2,
               name: m.module_name,
               location: Solargraph::Location.new(m.file, Solargraph::Parser.node_range(m.node))
-            ),
+            )
           ]
         end
       end
 
       def extra_requires
-        included_modules.map(&:file).uniq + Dir["spec/support/**/*.rb"]
+        included_modules.map(&:file).uniq + Dir['spec/support/**/*.rb']
       end
-      
+
       # @return [Array<INCLUDED_MODULE_DATA>]
       def included_modules
         @included_modules ||= parse_included_modules
@@ -102,7 +100,7 @@ module Solargraph
             next unless mod_node.type == :const
 
             included_modules << INCLUDED_MODULE_DATA.new(
-              include_node, file, SpecWalker::FullConstantName.from_ast(mod_node),
+              include_node, file, SpecWalker::FullConstantName.from_ast(mod_node)
             )
           end
 

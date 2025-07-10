@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 RSpec.describe Solargraph::Rspec::SpecHelperInclude do
   describe '#extract_included_modules' do
     it 'should pull included modules' do
