@@ -48,11 +48,11 @@ jobs:
           key: bundle-use-ruby-${{ matrix.os }}-${{ matrix.ruby-version }}-${{ hashFiles('solargraph-rspec/solargraph-rspec.gemspec') }}
           restore-keys: |
             bundle-use-ruby-${{ matrix.os }}-${{ matrix.ruby-version }}-${{ hashFiles('solargraph-rspec/solargraph-rspec.gemspec') }}
-      - name: Cache Solargraph Docs
-        uses: actions/cache@v3
-        with:
-          path: solargraph-rspec/$SOLARGRAPH_CACHE
-          key: bundle-ruby-${{ matrix.ruby-version }}-${{ hashFiles('solargraph-rspec/Gemfile', 'solargraph-rspec/gemfiles/default.gemfile.lock') }}
+      # - name: Cache Solargraph Docs
+      #   uses: actions/cache@v3
+      #   with:
+      #     path: solargraph-rspec/$SOLARGRAPH_CACHE
+      #     key: bundle-ruby-${{ matrix.ruby-version }}-${{ hashFiles('solargraph-rspec/Gemfile', 'solargraph-rspec/gemfiles/default.gemfile.lock') }}
 
       - name: Install dependencies
         run: |
@@ -65,11 +65,10 @@ jobs:
         run: cd solargraph-rspec && bundle exec rubocop
 
       - name: Cache Docs
-        # I don't know why rspec needs to be rebuilt but wtv
         run: |-
           cd solargraph-rspec
-          bundle exec appraisal solargraph gems
-          bundle exec appraisal solargraph gems --rebuild rspec rspec-core
+          bundle exec appraisal solargraph gems --rebuild
+          find $SOLARGRAPH_CACHE | grep rspec
 
       - name: Run tests
         run: cd solargraph-rspec && bundle exec appraisal rspec --format progress
