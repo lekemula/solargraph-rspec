@@ -67,6 +67,7 @@ jobs:
       - name: Cache Docs
         run: |-
           cd solargraph-rspec
+          bundle exec appraisal yard gems
           bundle exec appraisal solargraph gems --rebuild
           find $SOLARGRAPH_CACHE | grep rspec
 
