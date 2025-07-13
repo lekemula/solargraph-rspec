@@ -13,3 +13,5 @@
 .rspec_status
 
 .solargraph.yml
+vendor
+gemfiles/vendor

@@ -252,7 +252,6 @@ RSpec.describe Solargraph::Rspec::Convention do
 
   # NOTE: This spec depends on RSpec's YARDoc comments, if it fails try running: yard gems
   it 'completes RSpec::Matchers methods' do
-    pending('https://github.com/castwide/solargraph/pull/877')
     load_string filename, <<~RUBY
       RSpec.describe SomeNamespace::Transaction, type: :model do
         context 'some context' do
@@ -324,7 +323,6 @@ RSpec.describe Solargraph::Rspec::Convention do
   end
 
   it 'completes RSpec DSL methods' do
-    pending('https://github.com/castwide/solargraph/pull/877')
     load_string filename, <<~RUBY
       RSpec.describe SomeNamespace::Transaction, type: :model do
         desc
@@ -732,6 +730,29 @@ RSpec.describe Solargraph::Rspec::Convention do
     end
   end
 
+  # TODO: Move back to helpers context method
+  describe 'rspec-mocks' do
+    it 'completes methods from rspec-mocks' do
+      load_string filename, <<~RUBY
+        RSpec.describe SomeNamespace::Transaction, type: :model do
+          let(:something) { double }
+
+          it 'should do something' do
+            allow(something).to rec
+            allow(double).to receive_me
+            my_double = doub
+            my_double = inst
+          end
+        end
+      RUBY
+
+      expect(completion_at(filename, [4, 26])).to include('receive')
+      expect(completion_at(filename, [5, 30])).to include('receive_message_chain')
+      expect(completion_at(filename, [6, 18])).to include('double')
+      expect(completion_at(filename, [7, 18])).to include('instance_double')
+    end
+  end
+
   describe 'helpers' do
     before { pending('https://github.com/castwide/solargraph/pull/877') }
 
@@ -846,28 +867,6 @@ RSpec.describe Solargraph::Rspec::Convention do
         expect(completion_at(filename, [12, 5])).to include('use_after_action')
         expect(completion_at(filename, [13, 5])).to include('use_around_action')
         expect(completion_at(filename, [14, 5])).to include('use_before_action')
-      end
-    end
-
-    describe 'rspec-mocks' do
-      it 'completes methods from rspec-mocks' do
-        load_string filename, <<~RUBY
-          RSpec.describe SomeNamespace::Transaction, type: :model do
-            let(:something) { double }
-
-            it 'should do something' do
-              allow(something).to rec
-              allow(double).to receive_me
-              my_double = doub
-              my_double = inst
-            end
-          end
-        RUBY
-
-        expect(completion_at(filename, [4, 26])).to include('receive')
-        expect(completion_at(filename, [5, 30])).to include('receive_message_chain')
-        expect(completion_at(filename, [6, 18])).to include('double')
-        expect(completion_at(filename, [7, 18])).to include('instance_double')
       end
     end
 
