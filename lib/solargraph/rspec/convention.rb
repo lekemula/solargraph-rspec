@@ -10,6 +10,7 @@ require_relative 'correctors/let_methods_corrector'
 require_relative 'correctors/subject_method_corrector'
 require_relative 'correctors/context_block_methods_corrector'
 require_relative 'correctors/dsl_methods_corrector'
+require_relative 'factory_bot'
 require_relative 'spec_helper_include'
 require_relative 'test_helpers'
 require_relative 'pin_factory'
@@ -136,6 +137,12 @@ module Solargraph
 
         rspec_walker.walk!
         pins += namespace_pins
+        pins += begin
+          FactoryBot.instance.pins
+        rescue StandardError => e
+          Solargraph.logger.error("[solargraph-rspec] [factory bot] Can't add pins: #{e}")
+          []
+        end
         begin
           pins += SpecHelperInclude.instance.pins
           extra_requires += SpecHelperInclude.instance.extra_requires
