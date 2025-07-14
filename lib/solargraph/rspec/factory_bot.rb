@@ -10,12 +10,25 @@ module Solargraph
         'spec/factories/**/*.rb'
       ].freeze
 
-      FactoryData = Struct.new(
-        :factory_names,
-        :model_class,
-        :traits,
-        :kwargs,
-        keyword_init: true
+      ALWAYS_IGNORE = %i[after before callbacks to_create].freeze
+      SPECIAL_CALLBACKS = %i[add_attribute sequence association trait].freeze
+
+      # @param factory_names [Array<Symbol>] Names & aliases. The first name is the "official" factory name
+      # @param model_class [String] The class that this factory should uses
+      # @param traits [Array<Symbol>] A list of trait names
+      # @param kwargs [Array<Symbol>] Any available kwargs
+      # @param docs [YARD::Docstring, nil] The parsed docs
+      FactoryData = Struct.new(:factory_names, :model_class, :traits, :kwargs, :docs, keyword_init: true)
+
+      UnresolvedAssociation = Struct.new(
+        # @return [Symbol] The column name
+        :column,
+        # @return [Symbol] The factory from which this is being made
+        :source_factory,
+        # @return [Symbol] The factory to which this association associates to
+        :target_factory,
+        # @return [::Parser::AST::Node] The node that does the association
+        :node
       )
 
       def self.instance
@@ -31,11 +44,46 @@ module Solargraph
           method_builder('create', :instance),
           method_builder('fake_create', :instance),
           method_builder('create', :class),
-          method_builder('fake_create', :class),
+          method_builder('fake_create', :class)
         ]
       end
 
       private
+
+      # @param factory [FactoryData]
+      # @param method [Solargraph::Pin::Method]
+      def signature_for_factory(factory, method)
+        sig = Solargraph::Pin::Signature.new(
+          return_type: Solargraph::ComplexType.parse(factory.model_class),
+          closure: method,
+          docstring: factory.docs,
+          parameters: []
+        )
+
+        sig.parameters << Solargraph::Pin::Parameter.new(
+          name: 'name',
+          return_type: Solargraph::ComplexType.parse(*factory.factory_names.map { |n| ":#{n}" }),
+          closure: sig
+        )
+
+        unless factory.traits.empty?
+          sig.parameters << Solargraph::Pin::Parameter.new(
+            name: 'traits',
+            return_type: Solargraph::ComplexType.parse(*factory.traits.map { |n| ":#{n}" }),
+            closure: sig,
+            decl: :restarg
+          )
+        end
+        sig.parameters += factory.kwargs.map do |n|
+          Solargraph::Pin::Parameter.new(
+            name: n.to_s,
+            closure: sig,
+            decl: :kwoptarg,
+          )
+        end
+
+        sig
+      end
 
       def method_builder(name, scope)
         method = Solargraph::Pin::Method.new(
@@ -47,19 +95,7 @@ module Solargraph
           )
         )
 
-        method.signatures = factories.map do |d|
-          Solargraph::Pin::Signature.new(
-            return_type: Solargraph::ComplexType.parse(d.model_class),
-            closure: method,
-            parameters: [
-              Solargraph::Pin::Parameter.new(
-                name: 'name',
-                return_type: Solargraph::ComplexType.parse(*d.factory_names.map { |n| ":#{n}" }),
-                closure: method
-              )
-            ]
-          )
-        end
+        method.signatures = factories.map { |f| signature_for_factory(f, method) }
 
         method
       end
@@ -70,27 +106,52 @@ module Solargraph
       end
 
       def parse_factories
-        # @type [Array<Parser::AST::Node>]
-        nodes = []
+        # @type [Array<FactoryData>]
+        factories = []
+        # @type [Array<Array(Solargraph::Source, Array<UnresolvedAssociation>)>]
+        associations = []
 
         FACTORY_LOCATIONS.each do |pattern|
           Dir.glob(pattern).each do |file|
-            nodes << Solargraph::Parser.parse(File.read(file), file)
-          rescue StandardError
-            Solargraph.logger.error("[solargraph-rspec] [factory bot] Can't read file #{file}")
+            src = Solargraph::Source.load_string(File.read(file), file)
+            out = extract_factories_from_source(src)
+            factories += out[0]
+            associations << [src, out[1]] unless out[1].empty?
+          rescue StandardError => e
+            Solargraph.logger.error("[solargraph-rspec] [factory bot] Can't read file #{file}: #{e}")
           end
         end
 
-        return [] if nodes.empty?
+        associations.each do |cfg|
+          cfg[1].each do |ass|
+            target = factories.find { |f| f.factory_names.include? ass.target_factory }
+            source = factories.find { |f| f.factory_names.first == ass.source_factory }
+            if target.nil?
+              # If we can't find target factory - either its bad indexing or truly undefined
+              # We should lean on the more tolerant side & give a warning in logs & just accept whatever comments say
+              # If no comments are present, then too bad ig
+              Solargraph.logger.warn("[solargraph-rspec] [factory bot] can't map association #{ass.source_factory}##{ass.column} (as #{ass.target_factory}) to any factory")
+            else
+              param = source.docs.tags.find { |t| t.tag_name == 'param' && t.name == ass.column.to_s }
+              if param.nil?
+                source.docs.add_tag YARD::Tags::Tag.new(:param, '', [target.model_class], ass.column.to_s)
+              else
+                param.types = [target.model_class]
+              end
+            end
+          end
+        end
 
-        extract_factories_from_ast(nodes)
+        factories
       end
 
-      # @param ast [Parser::AST::Node]
-      def extract_factories_from_ast(ast)
-        walker = Walker.new(ast)
+      # @param src [Solargraph::Source]
+      # @return [Array(Array<FactoryData>, Array<UnresolvedAssociation>)]
+      def extract_factories_from_source(src)
+        walker = Walker.new(src.node)
         # @type [Array<FactoryData>]
         factories = []
+        unresolved_associations = []
 
         walker.on :block, [:send, nil, :factory] do |ast|
           factory_cfg = ast.children.first.children
@@ -120,17 +181,89 @@ module Solargraph
             end
           end
 
+          kwargs = []
+          traits = []
+          comments = src.comments_for(ast) || ''
+
+          unless ast.children[2].nil?
+            w = Walker.new(ast.children[2])
+
+            w.on :send do |ast|
+              col = ast.children[1]
+              next if ALWAYS_IGNORE.include? col
+
+              if SPECIAL_CALLBACKS.include? col
+                # these lads need an arg or more
+                next if ast.children.length < 3
+                next unless ast.children[2].type == :sym
+
+                mod = col
+                col = ast.children[2].children.first
+
+                if mod == :trait
+                  # Traits can't have docs so
+                  traits << col
+                  next
+                elsif mod == :association
+                  target_factory = col
+                  if ast.children.last&.type == :hash # rubocop:disable Metrics/BlockNesting
+                    factory_pair = ast.children.last.children.find do |n|
+                      n.type == :pair && n.children[0].type == :sym && n.children[0].children[0] == :factory
+                    end
+                    target_factory = factory_pair.children[1].children[0] unless factory_pair.nil? # rubocop:disable Metrics/BlockNesting
+                  end
+
+                  unresolved_associations << UnresolvedAssociation.new(col, factory_names.first, target_factory, ast)
+                end
+              end
+
+              comment = comment_for_attribute(src, col, ast)
+              comments += "#{comment}\n" unless comment.nil?
+              kwargs << col
+            end
+
+            w.walk
+          end
+
+          # Fun fact: solargraph captures errors & guarantees a parser to be returned
+          docstring = Solargraph::Source.parse_docstring(comments).to_docstring
+
+          return_tags = docstring.tags(:return)
+          unless return_tags.empty?
+            # goal is to keep comments but ignore types, so that we can have stuff like create_list
+            docstring.delete_tags(:return)
+            tag = return_tags.first
+            tag.types = nil
+            docstring.add_tag(tag)
+          end
+
           factories << FactoryData.new(
             factory_names: factory_names,
-            model_class: model_class
-            # traits: ,
-            # kwargs: ,
+            model_class: model_class,
+            kwargs: kwargs,
+            traits: traits,
+            docs: docstring
           )
         end
 
         walker.walk
 
-        factories
+        [factories, unresolved_associations]
+      end
+
+      def comment_for_attribute(src, name, node)
+        comment = src.comments_for(node)
+        return nil if comment.nil?
+
+        if comment.start_with?('@return ')
+          comment = comment[7..]
+        elsif comment.start_with?('@type ')
+          comment = comment[5..]
+        else
+          return nil
+        end
+
+        "@param #{name}#{comment}"
       end
     end
   end
