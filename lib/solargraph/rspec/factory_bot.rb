@@ -40,12 +40,25 @@ module Solargraph
       end
 
       def pins
-        [
-          method_builder('create', :instance),
-          method_builder('fake_create', :instance),
-          method_builder('create', :class),
-          method_builder('fake_create', :class)
+        namespaces = [
+          Solargraph::Pin::Namespace.new(
+            name: 'FactoryGirl::Syntax::Methods',
+            location: PinFactory.dummy_location('spec/factories.rb')
+          ),
+          Solargraph::Pin::Namespace.new(
+            name: 'FactoryBot::Syntax::Methods',
+            location: PinFactory.dummy_location('spec/factories.rb')
+          )
         ]
+
+        namespaces.flat_map do |ns|
+          [
+            build_method('create', ns),
+            build_method('build', ns),
+            build_list_method('create', ns),
+            build_list_method('build', ns)
+          ]
+        end
       end
 
       private
@@ -85,14 +98,27 @@ module Solargraph
         sig
       end
 
-      def method_builder(name, scope)
-        method = Solargraph::Pin::Method.new(
-          name: name,
-          scope: scope,
-          closure: Solargraph::Pin::Namespace.new(
-            name: 'FactoryGirl::Syntax::Methods',
-            location: PinFactory.dummy_location('factories.rb')
+      def build_list_method(method_prefix, ns)
+        m = build_method("#{method_prefix}_list", ns)
+        m.signatures.each do |sig|
+          sig.parameters.insert(
+            1,
+            Solargraph::Pin::Parameter.new(
+              name: 'amount',
+              closure: sig,
+              return_type: Solargraph::ComplexType.parse('Integer')
+            )
           )
+        end
+
+        m
+      end
+
+      def build_method(method_name, ns)
+        method = Solargraph::Pin::Method.new(
+          name: method_name,
+          scope: :instance,
+          closure: ns
         )
 
         method.signatures = factories.map { |f| signature_for_factory(f, method) }

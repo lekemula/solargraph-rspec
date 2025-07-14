@@ -143,12 +143,12 @@ module Solargraph
           Solargraph.logger.error("[solargraph-rspec] [factory bot] Can't add pins: #{e}")
           []
         end
+
         begin
           pins += SpecHelperInclude.instance.pins
           extra_requires += SpecHelperInclude.instance.extra_requires
         rescue StandardError => e
           Solargraph.logger.error("[solargraph-rspec] [spec helper] Can't add pins: #{e}")
-          []
         end
 
         if pins.any?
