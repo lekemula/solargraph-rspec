@@ -80,10 +80,10 @@ module Solargraph
         filename.include?('spec/')
       end
 
-      # @param yard_map [YardMap]
+      # @param yard_map [DocMap]
       # @return [Environ]
-      def global(_yard_map)
-        pins = []
+      def global(_doc_map)
+        pins = [root_example_group_namespace_pin]
         pins += Solargraph::Rspec::TestHelpers.include_helper_pins(
           root_example_group_namespace_pin: root_example_group_namespace_pin
         )
