@@ -35,9 +35,10 @@ module Solargraph
         end
       end
 
+      # NOTE: These gems are loaded via `Gem::Specification.find_by_path` by solargraph as opposed to `Gem::Specification.find_by_name`
       GEM_HELPERS = [
         GemHelpers.new(
-          required_gems: %w[rspec],
+          required_gems: %w[rspec-core rspec-expectations],
           helper_modules: %w[RSpec::Matchers]
         ),
         # https://github.com/rspec/rspec-mocks
@@ -48,7 +49,7 @@ module Solargraph
         # @see https://github.com/rspec/rspec-rails#what-tests-should-i-write
         # @see https://github.com/rspec/rspec-rails#helpful-rails-matchers
         GemHelpers.new(
-          required_gems: %w[rspec-rails actionmailer activesupport activerecord],
+          required_gems: %w[rspec-rails rspec-expectations action_mailer actionpack activesupport activerecord],
           helper_modules: [
             'RSpec::Rails::Matchers',
             'ActionController::TestCase::Behavior',

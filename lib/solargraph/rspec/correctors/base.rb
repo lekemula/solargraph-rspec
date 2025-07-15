@@ -46,14 +46,6 @@ module Solargraph
           added_pins.concat(pins.flatten.compact)
         end
 
-        # @return [Solargraph::Pin::Namespace]
-        def root_example_group_namespace_pin
-          Solargraph::Pin::Namespace.new(
-            name: ROOT_NAMESPACE,
-            location: PinFactory.dummy_location('lib/rspec/core/example_group.rb')
-          )
-        end
-
         # @param namespace_pins [Array<Pin::Namespace>]
         # @param line [Integer]
         # @return [Pin::Namespace, nil]

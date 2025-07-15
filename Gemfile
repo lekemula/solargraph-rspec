@@ -20,6 +20,8 @@ gem 'simplecov-cobertura' # Code coverage
 
 group :third_party_plugin_tests do
   gem 'actionmailer'
+  gem 'activerecord'
+  gem 'rspec-mocks'
   gem 'airborne'
   gem 'rspec-rails'
   gem 'rspec-sidekiq'
