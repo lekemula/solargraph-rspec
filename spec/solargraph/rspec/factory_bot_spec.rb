@@ -53,6 +53,7 @@ RSpec.describe Solargraph::Rspec::FactoryBot do
 
             association :ass, factory: :alias_name_here
             association :person
+            association :arr_fact, factory: %i[person some_trait]
           end
 
           factory :other_table, class: 'Blah' do
@@ -87,9 +88,14 @@ RSpec.describe Solargraph::Rspec::FactoryBot do
       sig.parameters.find { |p| p.name == param.to_s }
     end
 
-    it 'interprets class from class: arg' do
+    it 'interprets class from class: arg (when const)' do
       expect(factories.first.model_class).to eql('Abc')
       expect(factories.first.factory_names).to include(:person)
+    end
+
+    it 'interprets class from class: arg (when string)' do
+      expect(factories.last.model_class).to eql('Blah')
+      expect(factories.last.factory_names).to include(:other_table)
     end
 
     it 'interprets class from factory name if theres no class: arg' do
@@ -169,6 +175,12 @@ RSpec.describe Solargraph::Rspec::FactoryBot do
             expect(arg).not_to be_nil
             expect(arg&.return_type.to_s).to eql('SomeTable')
           end
+        end
+
+        it 'understand array factory: param' do
+          arg = find_factory_arg(:some_table, :arr_fact)
+          expect(arg).not_to be_nil
+          expect(arg&.return_type.to_s).to eql('Abc')
         end
       end
 

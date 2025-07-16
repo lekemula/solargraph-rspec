@@ -1225,4 +1225,81 @@ RSpec.describe Solargraph::Rspec::Convention do
       expect(completion_at(filename, [15, 8])).to include('module_method')
     end
   end
+
+  describe 'factory bot' do
+    before do
+      # step 1: we need to include the factory bot syntax in our spec_helper file
+      Solargraph::Rspec::SpecHelperInclude.reset
+      allow_any_instance_of(Solargraph::Rspec::SpecHelperInclude).to receive(:parse_included_modules).and_return(
+        [
+          Solargraph::Rspec::SpecHelperInclude::INCLUDED_MODULE_DATA.new(
+            Parser::AST::Node.new(
+              :send, [], {
+                location: Parser::Source::Map.new(
+                  Parser::Source::Range.new(
+                    Parser::Source::Buffer.new('name.rb', source: '1'),
+                    0, 1
+                  )
+                )
+              }
+            ), 'spec_helper.rb', 'FactoryBot::Syntax::Methods'
+          )
+        ]
+      )
+
+      # Step 2: we need to load a factory or 2
+      Solargraph::Rspec::FactoryBot.reset
+      allow_any_instance_of(Solargraph::Rspec::FactoryBot).to receive(:factories).and_return(
+        [
+          Solargraph::Rspec::FactoryBot::FactoryData.new(
+            factory_names: %i[user person],
+            model_class: 'User',
+            traits: %i[some_trait],
+            kwargs: %i[name last_name],
+            docs: YARD::Docstring.parser.to_docstring
+          ),
+          Solargraph::Rspec::FactoryBot::FactoryData.new(
+            factory_names: %i[post],
+            model_class: 'Post',
+            traits: %i[trait_a trait_b trait_c],
+            kwargs: %i[tags],
+            docs: YARD::Docstring.parser.to_docstring
+          )
+        ]
+      )
+
+      load_string filename, <<~RUBY
+        RSpec.describe SomeNamespace::Transaction, type: :model do
+          describe 'fake example group' do
+            let(:let_user) { create(:user) }
+
+            it 'example test' do
+              include FactoryBot::Syntax::Methods
+              let_user
+              crea
+              create(:user)
+              eg_person = create(:user)
+              eg_post = create(:post)
+            end
+          end
+        end
+      RUBY
+    end
+
+    it 'should interpret create(:factory_name) result as a specific module' do
+      puts api_map.get_methods('FactoryBot::Syntax::Methods')
+      include FactoryBot::Syntax::Methods
+
+      create(:user)
+
+      abc = FactoryBot::Syntax::Methods.create(:user)
+      bac = create(:user)
+
+      top_clip = api_map.clip_at(filename, [7, 10])
+      # eg_clip = api_map.clip_at(filename, [13, 6])
+
+      puts "=========== infer top clip"
+      puts top_clip.complete.pins
+    end
+  end
 end

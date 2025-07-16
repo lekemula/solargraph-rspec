@@ -17,7 +17,7 @@ module Solargraph
       # @param model_class [String] The class that this factory should uses
       # @param traits [Array<Symbol>] A list of trait names
       # @param kwargs [Array<Symbol>] Any available kwargs
-      # @param docs [YARD::Docstring, nil] The parsed docs
+      # @param docs [YARD::Docstring] The parsed docs
       FactoryData = Struct.new(:factory_names, :model_class, :traits, :kwargs, :docs, keyword_init: true)
 
       UnresolvedAssociation = Struct.new(
@@ -40,6 +40,8 @@ module Solargraph
       end
 
       def pins
+        return [] if factories.empty?
+
         namespaces = [
           Solargraph::Pin::Namespace.new(
             name: 'FactoryGirl::Syntax::Methods',
@@ -51,13 +53,17 @@ module Solargraph
           )
         ]
 
-        namespaces.flat_map do |ns|
-          [
-            build_method('create', ns),
-            build_method('build', ns),
-            build_list_method('create', ns),
-            build_list_method('build', ns)
-          ]
+        # Tmp change: this is done for debug.
+        # In the end the scope should always be :instance
+        [:class, :instance].flat_map do |scope|
+          namespaces.flat_map do |ns|
+            [
+              build_method('create', ns, scope),
+              build_method('build', ns, scope),
+              build_list_method('create', ns, scope),
+              build_list_method('build', ns, scope)
+            ]
+          end
         end
       end
 
@@ -98,8 +104,8 @@ module Solargraph
         sig
       end
 
-      def build_list_method(method_prefix, ns)
-        m = build_method("#{method_prefix}_list", ns)
+      def build_list_method(method_prefix, ns, scope)
+        m = build_method("#{method_prefix}_list", ns, scope)
         m.signatures.each do |sig|
           sig.parameters.insert(
             1,
@@ -114,10 +120,10 @@ module Solargraph
         m
       end
 
-      def build_method(method_name, ns)
+      def build_method(method_name, ns, scope)
         method = Solargraph::Pin::Method.new(
           name: method_name,
-          scope: :instance,
+          scope: scope,
           closure: ns
         )
 
@@ -231,15 +237,7 @@ module Solargraph
                   traits << col
                   next
                 elsif mod == :association
-                  target_factory = col
-                  if ast.children.last&.type == :hash # rubocop:disable Metrics/BlockNesting
-                    factory_pair = ast.children.last.children.find do |n|
-                      n.type == :pair && n.children[0].type == :sym && n.children[0].children[0] == :factory
-                    end
-                    target_factory = factory_pair.children[1].children[0] unless factory_pair.nil? # rubocop:disable Metrics/BlockNesting
-                  end
-
-                  unresolved_associations << UnresolvedAssociation.new(col, factory_names.first, target_factory, ast)
+                  unresolved_associations << UnresolvedAssociation.new(col, factory_names.first, extract_association_name_from_ast(col, ast), ast)
                 end
               end
 
@@ -290,6 +288,29 @@ module Solargraph
         end
 
         "@param #{name}#{comment}"
+      end
+
+      # @param col [Symbol]
+      # @param ast [::Parser::AST::Node]
+      def extract_association_name_from_ast(col, ast)
+        return col if ast.children.last&.type != :hash
+
+        factory_pair = ast.children.last.children.find do |n|
+          n.type == :pair && n.children[0].type == :sym && n.children[0].children[0] == :factory
+        end
+        return col if factory_pair.nil?
+
+        if factory_pair.children[1].type == :array
+          return col if factory_pair.children[1].children.empty?
+
+          name = factory_pair.children[1].children.first
+        else
+          name = factory_pair.children[1]
+        end
+
+        return col if name.type != :sym
+
+        name.children[0]
       end
     end
   end
