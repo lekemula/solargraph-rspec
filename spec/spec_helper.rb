@@ -14,6 +14,9 @@ Dir["#{File.dirname(__FILE__)}/support/**/*.rb"].each { |f| require f }
 
 RSpec.configure do |config|
   config.include SolargraphHelpers
+  # Tmp: in the end, this should be removed as we are not a db project
+  config.include FactoryBot::Syntax::Methods
+
   # Enable flags like --only-failures and --next-failure
   config.example_status_persistence_file_path = '.rspec_status'
 

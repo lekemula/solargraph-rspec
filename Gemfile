@@ -21,6 +21,7 @@ gem 'simplecov-cobertura' # Code coverage
 group :third_party_plugin_tests do
   gem 'actionmailer'
   gem 'airborne'
+  gem 'factory_bot', '~> 6.5'
   gem 'rspec-rails'
   gem 'rspec-sidekiq'
   gem 'shoulda-matchers'

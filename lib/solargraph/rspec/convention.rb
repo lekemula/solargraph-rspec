@@ -10,6 +10,8 @@ require_relative 'correctors/let_methods_corrector'
 require_relative 'correctors/subject_method_corrector'
 require_relative 'correctors/context_block_methods_corrector'
 require_relative 'correctors/dsl_methods_corrector'
+require_relative 'factory_bot'
+require_relative 'spec_helper_include'
 require_relative 'test_helpers'
 require_relative 'pin_factory'
 
@@ -120,6 +122,8 @@ module Solargraph
         pins = []
         # @type [Array<Pin::Namespace>]
         namespace_pins = []
+        # @type [Array<String>]
+        extra_requires = ['rspec']
 
         rspec_walker = SpecWalker.new(source_map: source_map, config: config)
 
@@ -133,14 +137,31 @@ module Solargraph
 
         rspec_walker.walk!
         pins += namespace_pins
+        pins += begin
+          FactoryBot.instance.pins
+        rescue StandardError => e
+          Solargraph.logger.error("[solargraph-rspec] [factory bot] Can't add pins: #{e}")
+          []
+        end
+        begin
+          pins += SpecHelperInclude.instance.pins
+          extra_requires += SpecHelperInclude.instance.extra_requires
+        rescue StandardError => e
+          Solargraph.logger.error("[solargraph-rspec] [spec helper] Can't add pins: #{e}")
+        end
 
         if pins.any?
           Solargraph.logger.debug(
             "[RSpec] added #{pins.map(&:inspect)} to #{source_map.filename}"
           )
         end
+        if extra_requires.any?
+          Solargraph.logger.debug(
+            "[RSpec] added requires #{extra_requires} to #{source_map.filename}"
+          )
+        end
 
-        Environ.new(requires: [], pins: pins)
+        Environ.new(requires: extra_requires, pins: pins)
       rescue StandardError, SyntaxError => e
         raise e if ENV['SOLARGRAPH_DEBUG']
 
