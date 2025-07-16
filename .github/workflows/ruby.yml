@@ -57,16 +57,10 @@ jobs:
       # - name: Run Rubocop
       #   run: cd solargraph-rspec && bundle exec rubocop
 
-      - name: 'Apply solargraph debug patch'
-        run: |-
-          echo 'exclude: ["vendor/**/*", "gemfiles/**/*"]' > solargraph-rspec/.solargraph.yml
-          cd solargraph-rspec/gemfiles/vendor/bundle/ruby/${{ matrix.ruby-version }}.0/gems/solargraph-0.56.0
-
-          awk '/Caching yardoc for/ { print "return nil unless Dir.exist?(gemspec.gem_dir)"; print; next }1' lib/solargraph/yardoc.rb > tmp.rb
-          mv tmp.rb lib/solargraph/yardoc.rb
-
       - name: Cache Docs
         run: |-
+          # Vendor files: don't do them
+          echo 'exclude: ["**/vendor/**/*"]' > solargraph-rspec/.solargraph.yml
           cd solargraph-rspec
           bundle exec solargraph gems --rebuild
 
