@@ -11,6 +11,9 @@ module Solargraph
         # @param source_map [Solargraph::SourceMap]
         # @return [void]
         def correct(source_map)
+          # @type [Hash{Solargraph::Pin::Block => Solargraph::Pin::Block}]
+          @corrected_blocks = {}
+
           rspec_walker.on_example_block do |location_range|
             bind_closest_namespace(location_range, source_map)
           end
@@ -29,6 +32,17 @@ module Solargraph
 
           rspec_walker.on_subject do |_method_name, location_range|
             bind_closest_namespace(location_range, source_map)
+          end
+
+          rspec_walker.after_walk do
+            source_map.locals.each do |p|
+              next unless p.is_a? Solargraph::Pin::BaseVariable
+
+              fixed_block = @corrected_blocks[p.closure]
+
+              # This might not be be best best practice, but imo its much simpler to keep up with updates and such
+              p.instance_variable_set('@closure', fixed_block) unless fixed_block.nil?
+            end
           end
         end
 
