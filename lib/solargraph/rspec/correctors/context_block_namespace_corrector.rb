@@ -12,7 +12,6 @@ module Solargraph
           # @param location_range [Solargraph::Range]
           rspec_walker.on_each_context_block do |namespace_name, location_range|
             original_block_pin = source_map.locate_block_pin(location_range.start.line, location_range.start.column)
-            original_block_pin_index = source_map.pins.index(original_block_pin)
             location = PinFactory.build_location(location_range, source_map.filename)
 
             # Define a dynamic module for the example group block
@@ -26,17 +25,10 @@ module Solargraph
               location: location
             )
 
-            fixed_namespace_block_pin = Solargraph::Pin::Block.new(
-              closure: namespace_pin,
-              location: original_block_pin.location,
-              receiver: original_block_pin.receiver,
-              scope: original_block_pin.scope
-            )
-
-            source_map.pins[original_block_pin_index] = fixed_namespace_block_pin
+            override_closure(original_block_pin, namespace_pin)
 
             # Include DSL methods in the example group block
-            # TOOD: This does not work on solagraph! Class methods are not included from parent class.
+            # TODO: This does not work on solagraph! Class methods are not included from parent class.
             namespace_extend_pin = PinFactory.build_module_extend(
               namespace_pin,
               root_example_group_namespace_pin.name,
