@@ -12,7 +12,6 @@ module Solargraph
           # @param location_range [Solargraph::Range]
           rspec_walker.on_each_context_block do |namespace_name, location_range|
             original_block_pin = source_map.locate_block_pin(location_range.start.line, location_range.start.column)
-            original_block_pin_index = source_map.pins.index(original_block_pin)
             location = PinFactory.build_location(location_range, source_map.filename)
 
             # Define a dynamic module for the example group block
