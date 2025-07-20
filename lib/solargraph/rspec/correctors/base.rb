@@ -63,6 +63,16 @@ module Solargraph
             distance >= 0 ? distance : Float::INFINITY
           end
         end
+
+        # Overrides a pin's closure, and resets all the needed instance vars
+        # @param pin [Solargraph::Pin::Base]
+        # @param new_closure [Solargraph::Pin::Closure]
+        def override_closure(pin, new_closure)
+          pin.instance_variable_set('@closure', new_closure)
+          pin.reset_generated!
+
+          pin.remove_instance_variable(:@path) if pin.instance_variables.include? :@path
+        end
       end
     end
   end

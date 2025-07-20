@@ -8,7 +8,6 @@ require_relative 'correctors/example_and_hook_blocks_binding_corrector'
 require_relative 'correctors/described_class_corrector'
 require_relative 'correctors/let_methods_corrector'
 require_relative 'correctors/subject_method_corrector'
-require_relative 'correctors/context_block_methods_corrector'
 require_relative 'correctors/dsl_methods_corrector'
 require_relative 'test_helpers'
 require_relative 'pin_factory'
@@ -52,7 +51,6 @@ module Solargraph
 
     # @type [Array<Class<Correctors::Base>>]
     CORRECTOR_CLASSES = [
-      Correctors::ContextBlockMethodsCorrector,
       Correctors::ContextBlockNamespaceCorrector,
       Correctors::DescribedClassCorrector,
       Correctors::DslMethodsCorrector,
