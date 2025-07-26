@@ -192,6 +192,35 @@ RSpec.describe Solargraph::Rspec::Convention do
     expect(completion_at(filename, [9, 9])).to include('subject')
   end
 
+  it 'does not generate implicit subject when describing a string instead of a class' do
+    load_string filename, <<~RUBY
+      RSpec.describe 'some text description', type: :model do
+        it 'should do something' do
+          sub
+        end
+      end
+    RUBY
+
+    expect(completion_at(filename, [2, 6])).not_to include('subject')
+    expect(api_map.pins.any? { |pin| pin.name == 'subject' }).to be false
+  end
+
+  # Regression test: prevents errors when described_class is manually overridden with a let
+  it 'handles manually overridden described_class without errors' do
+    load_string filename, <<~RUBY
+      RSpec.describe 'some text description', type: :model do
+        let(:described_class) { SomeNamespace::Transaction }
+
+        it 'should do something' do
+          sub
+        end
+      end
+    RUBY
+
+    expect(completion_at(filename, [2, 6])).not_to include('subject')
+    expect(api_map.pins.any? { |pin| pin.name == 'subject' }).to be false
+  end
+
   it 'generates modules for describe/context blocks' do
     load_string filename, <<~RUBY
       RSpec.describe SomeNamespace::Transaction, type: :model do

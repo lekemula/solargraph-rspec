@@ -24,7 +24,7 @@ module Solargraph
 
             namespace_pin = closest_namespace_pin(namespace_pins, described_class_pin.location.range.start.line)
 
-            if namespace_pin
+            if namespace_pin && described_class_pin.return_type.to_s != 'undefined'
               implicit_subject_pin = implicit_subject_method(described_class_pin, namespace_pin)
               add_pin(implicit_subject_pin)
               add_pins(one_liner_expectation_pins(implicit_subject_pin))
