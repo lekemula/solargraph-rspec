@@ -43,15 +43,8 @@ module Solargraph
 
           original_block_pin = source_map.locate_block_pin(location_range.start.line,
                                                            location_range.start.column)
-          original_block_pin_index = source_map.pins.index(original_block_pin)
-          fixed_namespace_block_pin = Solargraph::Pin::Block.new(
-            closure: example_run_method(namespace_pin),
-            location: original_block_pin.location,
-            receiver: original_block_pin.receiver,
-            scope: original_block_pin.scope
-          )
 
-          source_map.pins[original_block_pin_index] = fixed_namespace_block_pin
+          override_closure(original_block_pin, example_run_method(namespace_pin))
         end
 
         # @param namespace_pin [Solargraph::Pin::Namespace]
