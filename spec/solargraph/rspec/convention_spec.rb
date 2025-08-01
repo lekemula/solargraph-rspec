@@ -281,7 +281,6 @@ RSpec.describe Solargraph::Rspec::Convention do
 
   # NOTE: This spec depends on RSpec's YARDoc comments, if it fails try running: yard gems
   it 'completes RSpec::Matchers methods' do
-    pending('https://github.com/castwide/solargraph/pull/877')
     load_string filename, <<~RUBY
       RSpec.describe SomeNamespace::Transaction, type: :model do
         context 'some context' do
@@ -353,7 +352,6 @@ RSpec.describe Solargraph::Rspec::Convention do
   end
 
   it 'completes RSpec DSL methods' do
-    pending('https://github.com/castwide/solargraph/pull/877')
     load_string filename, <<~RUBY
       RSpec.describe SomeNamespace::Transaction, type: :model do
         desc
@@ -761,6 +759,29 @@ RSpec.describe Solargraph::Rspec::Convention do
     end
   end
 
+  # TODO: Move back to helpers context method
+  describe 'rspec-mocks' do
+    it 'completes methods from rspec-mocks' do
+      load_string filename, <<~RUBY
+        RSpec.describe SomeNamespace::Transaction, type: :model do
+          let(:something) { double }
+
+          it 'should do something' do
+            allow(something).to rec
+            allow(double).to receive_me
+            my_double = doub
+            my_double = inst
+          end
+        end
+      RUBY
+
+      expect(completion_at(filename, [4, 26])).to include('receive')
+      expect(completion_at(filename, [5, 30])).to include('receive_message_chain')
+      expect(completion_at(filename, [6, 18])).to include('double')
+      expect(completion_at(filename, [7, 18])).to include('instance_double')
+    end
+  end
+
   describe 'helpers' do
     before { pending('https://github.com/castwide/solargraph/pull/877') }
 
@@ -875,28 +896,6 @@ RSpec.describe Solargraph::Rspec::Convention do
         expect(completion_at(filename, [12, 5])).to include('use_after_action')
         expect(completion_at(filename, [13, 5])).to include('use_around_action')
         expect(completion_at(filename, [14, 5])).to include('use_before_action')
-      end
-    end
-
-    describe 'rspec-mocks' do
-      it 'completes methods from rspec-mocks' do
-        load_string filename, <<~RUBY
-          RSpec.describe SomeNamespace::Transaction, type: :model do
-            let(:something) { double }
-
-            it 'should do something' do
-              allow(something).to rec
-              allow(double).to receive_me
-              my_double = doub
-              my_double = inst
-            end
-          end
-        RUBY
-
-        expect(completion_at(filename, [4, 26])).to include('receive')
-        expect(completion_at(filename, [5, 30])).to include('receive_message_chain')
-        expect(completion_at(filename, [6, 18])).to include('double')
-        expect(completion_at(filename, [7, 18])).to include('instance_double')
       end
     end
 
@@ -1176,6 +1175,160 @@ RSpec.describe Solargraph::Rspec::Convention do
         expect(completion_at(filename, [7, 5])).to include('expect_header')
         expect(completion_at(filename, [8, 5])).to include('expect_header_contains')
       end
+    end
+  end
+
+  describe 'included modules' do
+    require 'parser'
+
+    before do
+      Solargraph::Rspec::SpecHelperInclude.reset
+
+      allow_any_instance_of(Solargraph::Rspec::SpecHelperInclude).to receive(:parse_included_modules).and_return(
+        [
+          Solargraph::Rspec::SpecHelperInclude::INCLUDED_MODULE_DATA.new(
+            # What the fuck
+            Parser::AST::Node.new(
+              :send, [], {
+                location: Parser::Source::Map.new(
+                  Parser::Source::Range.new(
+                    Parser::Source::Buffer.new('name.rb', source: '1'),
+                    0, 1
+                  )
+                )
+              }
+            ), 'spec_helper.rb', 'HelperModule'
+          )
+        ]
+      )
+
+      source_helper = parse_string File.expand_path('spec/spec_helper.rb'), <<~RUBY
+        module HelperModule
+          def module_method
+          end
+        end
+      RUBY
+
+      source_main = parse_string filename, <<~RUBY
+        RSpec.describe SomeNamespace::Transaction, type: :model do
+          it 'example test' do
+            mo
+          end
+
+          describe 'fake example group' do
+            let(:var) { mo }
+
+            mo
+
+            before do
+              mo
+            end
+
+            it 'example test' do
+              mo
+            end
+          end
+        end
+      RUBY
+
+      load_sources(source_helper, source_main)
+    end
+
+    it 'should complete inside a top level example' do
+      expect(completion_at(filename, [2, 6])).to include('module_method')
+    end
+
+    it 'should complete inside a let block' do
+      expect(completion_at(filename, [6, 18])).to include('module_method')
+    end
+
+    it 'should complete inside a context block' do
+      expect(completion_at(filename, [8, 6])).to include('module_method')
+    end
+
+    it 'should complete inside a hook' do
+      expect(completion_at(filename, [11, 8])).to include('module_method')
+    end
+
+    it 'should complete a nested example' do
+      expect(completion_at(filename, [15, 8])).to include('module_method')
+    end
+  end
+
+  describe 'factory bot' do
+    before do
+      # step 1: we need to include the factory bot syntax in our spec_helper file
+      Solargraph::Rspec::SpecHelperInclude.reset
+      allow_any_instance_of(Solargraph::Rspec::SpecHelperInclude).to receive(:parse_included_modules).and_return(
+        [
+          Solargraph::Rspec::SpecHelperInclude::INCLUDED_MODULE_DATA.new(
+            Parser::AST::Node.new(
+              :send, [], {
+                location: Parser::Source::Map.new(
+                  Parser::Source::Range.new(
+                    Parser::Source::Buffer.new('name.rb', source: '1'),
+                    0, 1
+                  )
+                )
+              }
+            ), 'spec_helper.rb', 'FactoryBot::Syntax::Methods'
+          )
+        ]
+      )
+
+      # Step 2: we need to load a factory or 2
+      Solargraph::Rspec::FactoryBot.reset
+      allow_any_instance_of(Solargraph::Rspec::FactoryBot).to receive(:factories).and_return(
+        [
+          Solargraph::Rspec::FactoryBot::FactoryData.new(
+            factory_names: %i[user person],
+            model_class: 'User',
+            traits: %i[some_trait],
+            kwargs: %i[name last_name],
+            docs: YARD::Docstring.parser.to_docstring
+          ),
+          Solargraph::Rspec::FactoryBot::FactoryData.new(
+            factory_names: %i[post],
+            model_class: 'Post',
+            traits: %i[trait_a trait_b trait_c],
+            kwargs: %i[tags],
+            docs: YARD::Docstring.parser.to_docstring
+          )
+        ]
+      )
+
+      load_string filename, <<~RUBY
+        RSpec.describe SomeNamespace::Transaction, type: :model do
+          describe 'fake example group' do
+            let(:let_user) { create(:user) }
+
+            it 'example test' do
+              include FactoryBot::Syntax::Methods
+              let_user
+              crea
+              create(:user)
+              eg_person = create(:user)
+              eg_post = create(:post)
+            end
+          end
+        end
+      RUBY
+    end
+
+    it 'should interpret create(:factory_name) result as a specific module' do
+      puts api_map.get_methods('FactoryBot::Syntax::Methods')
+      include FactoryBot::Syntax::Methods
+
+      create(:user)
+
+      abc = FactoryBot::Syntax::Methods.create(:user)
+      bac = create(:user)
+
+      top_clip = api_map.clip_at(filename, [7, 10])
+      # eg_clip = api_map.clip_at(filename, [13, 6])
+
+      puts "=========== infer top clip"
+      puts top_clip.complete.pins
     end
   end
 end
