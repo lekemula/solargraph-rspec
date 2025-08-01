@@ -1,6 +1,24 @@
 # frozen_string_literal: true
 
 module SolargraphHelpers
+  ### Debug Helpers
+
+  def debug_gem_pins(name, load: true, rebuild: true)
+    debug_load_gems(name, rebuild: rebuild) if load
+    gemspec = Gem::Specification.find_by_name(*name.split('='))
+    Solargraph::GemPins.build_yard_pins(gemspec)
+  end
+
+  def debug_load_gems(*names, rebuild: true)
+    names.each do |name|
+      gemspec = Gem::Specification.find_by_name(name)
+      api_map.doc_map # HACK: ensure doc_map is initialized
+      api_map.cache_gem(gemspec, rebuild: rebuild, out: $stdout)
+    end
+  end
+
+  ### Spec Helpers
+
   def load_string(filename, str)
     source = Solargraph::Source.load_string(str, filename)
     api_map.map(source) # api_map should be defined in the spec
@@ -64,6 +82,7 @@ module SolargraphHelpers
     cursor = clip.send(:cursor)
     word = cursor.chain.links.first.word
 
+    # puts "Complete: word=#{word}, links=#{cursor.chain.links}"
     Solargraph.logger.debug(
       "Complete: word=#{word}, links=#{cursor.chain.links}"
     )
