@@ -1153,11 +1153,11 @@ RSpec.describe Solargraph::Rspec::Convention do
     require 'parser'
 
     before do
-      Solargraph::Rspec::SpecHelperInclude.reset
+      Solargraph::Rspec::RSpecConfigure.reset
 
-      allow_any_instance_of(Solargraph::Rspec::SpecHelperInclude).to receive(:parse_included_modules).and_return(
+      allow_any_instance_of(Solargraph::Rspec::RSpecConfigure).to receive(:parse_included_modules).and_return(
         [
-          Solargraph::Rspec::SpecHelperInclude::INCLUDED_MODULE_DATA.new(
+          Solargraph::Rspec::RSpecConfigure::IncludedModule.new(
             # What the fuck
             Parser::AST::Node.new(
               :send, [], {

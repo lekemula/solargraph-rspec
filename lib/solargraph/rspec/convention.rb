@@ -10,7 +10,7 @@ require_relative 'correctors/let_methods_corrector'
 require_relative 'correctors/subject_method_corrector'
 require_relative 'correctors/context_block_methods_corrector'
 require_relative 'correctors/dsl_methods_corrector'
-require_relative 'spec_helper_include'
+require_relative 'rspec_helper'
 require_relative 'test_helpers'
 require_relative 'pin_factory'
 
@@ -137,10 +137,10 @@ module Solargraph
         rspec_walker.walk!
         pins += namespace_pins
         begin
-          pins += SpecHelperInclude.instance.pins
-          extra_requires += SpecHelperInclude.instance.extra_requires
+          pins += RSpecConfigure.instance.pins
+          extra_requires += RSpecConfigure.instance.extra_requires
         rescue StandardError => e
-          Solargraph.logger.error("[solargraph-rspec] [spec helper] Can't add pins: #{e}")
+          Solargraph.logger.error("[RSpec] [RSpecConfigure] Can't add pins: #{e}")
           []
         end
 
