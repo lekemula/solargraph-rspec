@@ -85,7 +85,7 @@ module SolargraphHelpers
   # @param map [Solargraph::ApiMap] The Api Map (defaults to the one defined in a test)
   #
   # @return [Solargraph::Pin::BaseVariable] The variable pin
-  def expect_local_type(var_name, expected_type, file = filename, map = api_map)
+  def expect_local_variable_type(var_name, expected_type, file = filename, map = api_map)
     var_pin = map.source_map(file).locals.find { |p| p.name == var_name }
     expect(var_pin).not_to be_nil
     expect(var_pin.probe(map).to_s).to eql(expected_type)

@@ -600,84 +600,82 @@ RSpec.describe Solargraph::Rspec::Convention do
       )
     end
 
-    context 'on variables' do
-      context 'in an example' do
-        it 'should parse result of a method defined in an example' do
-          load_string filename, <<~RUBY
-            RSpec.describe SomeNamespace::Transaction, type: :model do
-              it 'some example' do
-                # @return [Numeric]
-                def example_method
-                end
-
-                result = example_method
-              end
-            end
-          RUBY
-
-          var_pin = expect_local_type('result', 'Numeric')
-          # This is mostly important of includes outside an include pin (ie. https://github.com/lekemula/solargraph-rspec/pull/13)
-          expect(var_pin.namespace).to eql('RSpec::ExampleGroups::TestSomeNamespaceTransaction')
-        end
-
-        it 'should parse result of a method defined in a context' do
-          load_string filename, <<~RUBY
-            RSpec.describe SomeNamespace::Transaction, type: :model do
-              # @return [String]
-              def example_method
-              end
-
-              it 'some example' do
-                result = example_method
-              end
-            end
-          RUBY
-
-          var_pin = expect_local_type('result', 'String')
-          expect(var_pin.namespace).to eql('RSpec::ExampleGroups::TestSomeNamespaceTransaction')
-        end
-
-        it 'should parse result of a module method included in an example' do
-          load_string filename, <<~RUBY
-            module SomeModule
-              # @return [String]
-              def example_method
-              end
-            end
-
-            RSpec.describe SomeNamespace::Transaction, type: :model do
-              it 'some example' do
-                include SomeModule
-
-                result = example_method
-              end
-            end
-          RUBY
-
-          var_pin = expect_local_type('result', 'String')
-          expect(var_pin.namespace).to eql('RSpec::ExampleGroups::TestSomeNamespaceTransaction')
-        end
-
-        it 'should parse result of a module method included in a context' do
-          load_string filename, <<~RUBY
-            module SomeModule
+    describe 'on variables' do
+      it 'should parse result of a method defined in an example' do
+        load_string filename, <<~RUBY
+          RSpec.describe SomeNamespace::Transaction, type: :model do
+            it 'some example' do
               # @return [Numeric]
               def example_method
               end
+
+              result = example_method
+            end
+          end
+        RUBY
+
+        var_pin = expect_local_variable_type('result', 'Numeric')
+        # This is mostly important of includes outside an include pin (ie. https://github.com/lekemula/solargraph-rspec/pull/13)
+        expect(var_pin.namespace).to eql('RSpec::ExampleGroups::TestSomeNamespaceTransaction')
+      end
+
+      it 'should parse result of a method defined in a context' do
+        load_string filename, <<~RUBY
+          RSpec.describe SomeNamespace::Transaction, type: :model do
+            # @return [String]
+            def example_method
             end
 
-            RSpec.describe SomeNamespace::Transaction, type: :model do
+            it 'some example' do
+              result = example_method
+            end
+          end
+        RUBY
+
+        var_pin = expect_local_variable_type('result', 'String')
+        expect(var_pin.namespace).to eql('RSpec::ExampleGroups::TestSomeNamespaceTransaction')
+      end
+
+      it 'should parse result of a module method included in an example' do
+        load_string filename, <<~RUBY
+          module SomeModule
+            # @return [String]
+            def example_method
+            end
+          end
+
+          RSpec.describe SomeNamespace::Transaction, type: :model do
+            it 'some example' do
               include SomeModule
 
-              it 'some example' do
-                result = example_method
-              end
+              result = example_method
             end
-          RUBY
+          end
+        RUBY
 
-          var_pin = expect_local_type('result', 'Numeric')
-          expect(var_pin.namespace).to eql('RSpec::ExampleGroups::TestSomeNamespaceTransaction')
-        end
+        var_pin = expect_local_variable_type('result', 'String')
+        expect(var_pin.namespace).to eql('RSpec::ExampleGroups::TestSomeNamespaceTransaction')
+      end
+
+      it 'should parse result of a module method included in a context' do
+        load_string filename, <<~RUBY
+          module SomeModule
+            # @return [Numeric]
+            def example_method
+            end
+          end
+
+          RSpec.describe SomeNamespace::Transaction, type: :model do
+            include SomeModule
+
+            it 'some example' do
+              result = example_method
+            end
+          end
+        RUBY
+
+        var_pin = expect_local_variable_type('result', 'Numeric')
+        expect(var_pin.namespace).to eql('RSpec::ExampleGroups::TestSomeNamespaceTransaction')
       end
     end
   end
