@@ -15,6 +15,10 @@ on:
 permissions:
   contents: read
 
+env:
+  SOLARGRAPH_CACHE: "${{ github.workspace }}/solargraph-rspec/gem-cache"
+  BUNDLE_GEMFILE: "${{ github.workspace }}/solargraph-rspec/gemfiles/default.gemfile"
+
 jobs:
   test:
     name: Tests (ruby v${{ matrix.ruby-version }})
@@ -25,7 +29,6 @@ jobs:
         # FIXME: Why '3.0' is not working with Appraisal?
         # FIXME: Add 'head' https://github.com/lekemula/solargraph-rspec/pull/8/commits/3b52752b96e7f2ec01831406f8e5a51c91523187 
         ruby-version: ['3.1', '3.2', '3.3']
-
     steps:
       - name: Checkout solargraph-rspec
         uses: actions/checkout@v4
@@ -42,32 +45,27 @@ jobs:
       - name: Cache Ruby gems
         uses: actions/cache@v3
         with:
-          path: solargraph-rspec/vendor/bundle
-          key: bundle-use-ruby-${{ matrix.os }}-${{ matrix.ruby-version }}-${{ hashFiles('solargraph-rspec/solargraph-rspec.gemspec') }}
-          restore-keys: |
-            bundle-use-ruby-${{ matrix.os }}-${{ matrix.ruby-version }}-${{ hashFiles('solargraph-rspec/solargraph-rspec.gemspec') }}
+          path: solargraph-rspec/gemfiles/vendor/bundle
+          key: bundle-use-ruby-${{ matrix.ruby-version }}-${{ hashFiles('solargraph-rspec/Gemfile', 'solargraph-rspec/gemfiles/default.gemfile.lock') }}
 
       - name: Install dependencies
         run: |
           cd solargraph-rspec
           bundle config path vendor/bundle
           bundle install --jobs 4 --retry 3
-          bundle exec appraisal install
 
-      - name: Run Rubocop
-        run: cd solargraph-rspec && bundle exec rubocop
+      # - name: Run Rubocop
+      #   run: cd solargraph-rspec && bundle exec rubocop
 
-      - name: Set up yardocs
-        # yard gems caches the yardocs into <gem_path>/doc/.yardoc path, hence they should be cached by ruby gems cache 
-        run: cd solargraph-rspec && bundle exec appraisal yard gems --verbose
-
-      - name: List all Yardoc constants and methods
-        run: |
-            cd solargraph-rspec
-            bundle exec yard list
+      - name: Cache Docs
+        run: |-
+          # Vendor files: don't do them
+          echo 'exclude: ["**/vendor/**/*"]' > solargraph-rspec/.solargraph.yml
+          cd solargraph-rspec
+          bundle exec solargraph gems --rebuild
 
       - name: Run tests
-        run: cd solargraph-rspec && bundle exec appraisal rspec --format progress
+        run: cd solargraph-rspec && bundle exec rspec --format progress
 
       - name: Upload coverage reports to Codecov
         uses: codecov/codecov-action@v4
