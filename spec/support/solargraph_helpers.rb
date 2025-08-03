@@ -59,7 +59,9 @@ module SolargraphHelpers
     map.pins.select { |p| p.path == path }
   end
 
+  # @return [Array<Solargraph::Pin::Base>]
   def completion_pins_at(filename, position, map = api_map)
+    # @type [Solargraph::SourceMap::Clip]
     clip = map.clip_at(filename, position)
     cursor = clip.send(:cursor)
     word = cursor.chain.links.first.word
@@ -73,5 +75,21 @@ module SolargraphHelpers
 
   def completion_at(filename, position, map = api_map)
     completion_pins_at(filename, position, map).map(&:name)
+  end
+
+  # Expect that a local can be inferred with +expected_type+
+  #
+  # @param var_name [String]
+  # @param expected_type [String]
+  # @param file [String] The filename (defaults to filename defined in test)
+  # @param map [Solargraph::ApiMap] The Api Map (defaults to the one defined in a test)
+  #
+  # @return [Solargraph::Pin::BaseVariable] The variable pin
+  def expect_local_variable_type(var_name, expected_type, file = filename, map = api_map)
+    var_pin = map.source_map(file).locals.find { |p| p.name == var_name }
+    expect(var_pin).not_to be_nil
+    expect(var_pin.probe(map).to_s).to eql(expected_type)
+
+    var_pin
   end
 end
