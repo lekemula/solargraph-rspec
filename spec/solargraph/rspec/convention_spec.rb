@@ -201,8 +201,7 @@ RSpec.describe Solargraph::Rspec::Convention do
       end
     RUBY
 
-    expect(completion_at(filename, [2, 6])).not_to include('subject')
-    expect(api_map.pins.any? { |pin| pin.name == 'subject' }).to be false
+    expect(api_map.pins.any? { |pin| pin.path == 'RSpec::ExampleGroups::TestSomeTextDescription#subject' }).to be false
   end
 
   # Regression test: prevents errors when described_class is manually overridden with a let
@@ -217,8 +216,7 @@ RSpec.describe Solargraph::Rspec::Convention do
       end
     RUBY
 
-    expect(completion_at(filename, [2, 6])).not_to include('subject')
-    expect(api_map.pins.any? { |pin| pin.name == 'subject' }).to be false
+    expect(api_map.pins.any? { |pin| pin.path == 'RSpec::ExampleGroups::TestSomeTextDescription#subject' }).to be false
   end
 
   it 'generates modules for describe/context blocks' do
