@@ -510,11 +510,21 @@ RSpec.describe Solargraph::Rspec::Convention do
     end
 
     it 'infers type for some_object' do
-      pending('https://github.com/castwide/solargraph/pull/1008')
-      load_and_assert_type(<<~RUBY, 'some_object', 'RSpec::ExampleGroups::TestSomeNamespaceTransaction::MyClass')
+      # @todo Refactor spec to use load_and_assert_type once https://github.com/castwide/solargraph/pull/1008 is merged.
+      # @see https://github.com/lekemula/solargraph-rspec/pull/16#issuecomment-3148564258
+      load_string filename, <<~RUBY
         class MyClass; end
-        let(:some_object) { MyClass.new }
+
+        RSpec.describe SomeNamespace::Transaction, type: :model do
+          let(:some_object) { MyClass.new }
+        end
       RUBY
+
+      assert_public_instance_method_inferred_type(
+        api_map,
+        'RSpec::ExampleGroups::TestSomeNamespaceTransaction#some_object',
+        'MyClass'
+      )
     end
 
     it 'infers type for some_class' do
