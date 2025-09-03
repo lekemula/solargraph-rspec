@@ -70,6 +70,28 @@ module Solargraph
 
           block_ast.children[0].children[2]&.children&.[](0)&.to_s # rubocop:disable Style/SafeNavigationChainLength
         end
+
+        # @param block_ast [::Parser::AST::Node]
+        # @return [Boolean]
+        def self.a_shared_example_definition?(block_ast)
+          SHARED_EXAMPLE_DEFINITION_METHODS.include?(method_with_block_name(block_ast))
+        end
+
+        # @param block_ast [::Parser::AST::Node]
+        # @return [String, Symbol, nil] The name of the shared example being defined or included
+        def self.shared_example_name(block_ast)
+          return nil unless a_shared_example_definition?(block_ast)
+
+          name_node = block_ast.children[0].children[2]
+          return nil unless name_node
+
+          case name_node.type
+          when :str, :dstr
+            name_node.children[0]&.to_s
+          when :sym
+            name_node.children[0]
+          end
+        end
       end
     end
   end

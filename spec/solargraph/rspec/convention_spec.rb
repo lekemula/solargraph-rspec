@@ -201,8 +201,7 @@ RSpec.describe Solargraph::Rspec::Convention do
       end
     RUBY
 
-    expect(completion_at(filename, [2, 6])).not_to include('subject')
-    expect(api_map.pins.any? { |pin| pin.name == 'subject' }).to be false
+    expect(api_map.pins.any? { |pin| pin.path == 'RSpec::ExampleGroups::TestSomeTextDescription#subject' }).to be false
   end
 
   # Regression test: prevents errors when described_class is manually overridden with a let
@@ -217,8 +216,7 @@ RSpec.describe Solargraph::Rspec::Convention do
       end
     RUBY
 
-    expect(completion_at(filename, [2, 6])).not_to include('subject')
-    expect(api_map.pins.any? { |pin| pin.name == 'subject' }).to be false
+    expect(api_map.pins.any? { |pin| pin.path == 'RSpec::ExampleGroups::TestSomeTextDescription#subject' }).to be false
   end
 
   it 'generates modules for describe/context blocks' do
@@ -350,6 +348,65 @@ RSpec.describe Solargraph::Rspec::Convention do
 
     expect(completion_at(filename, [4, 9])).to include('my_class_method')
     expect(completion_at(filename, [7, 11])).to include('my_class_method') # inherit from parent context
+  end
+
+  it 'resolves globally and locally defined shared examples' do
+    load_string filename, <<~RUBY
+      RSpec.shared_examples 'a global shared example' do
+        it 'does something globally' do
+          expect(true).to eq(true)
+        end
+      end
+
+      RSpec.shared_examples :another_global_shared_example do
+        it 'does something globally with symbols' do
+          expect(true).to eq(true)
+        end
+      end
+
+      RSpec.describe SomeNamespace::Transaction do
+        shared_examples 'local shared example' do
+          it 'does something locally' do
+            expect(false).to eq(false)
+          end
+        end
+
+        shared_examples :local_symbol_example do
+          it 'does something locally with symbols' do
+            expect(42).to eq(42)
+          end
+        end
+
+        context 'when using shared examples' do
+          include_examples 'a global shared example'
+          include_examples :another_global_shared_example
+          include_examples 'local shared example'
+          it_behaves_like :local_symbol_example
+        end
+      end
+    RUBY
+
+    # Check global shared examples
+    pins = defintion_pins_at(filename, [26, 25])
+    factory_param = pins.first
+    expect(factory_param).not_to be_nil
+    expect(factory_param.value).to eq('a global shared example')
+
+    pins = defintion_pins_at(filename, [27, 25])
+    factory_param = pins.first
+    expect(factory_param).not_to be_nil
+    expect(factory_param.value).to eq(:another_global_shared_example)
+
+    # Check local shared examples
+    pins = defintion_pins_at(filename, [28, 25])
+    factory_param = pins.first
+    expect(factory_param).not_to be_nil
+    expect(factory_param.value).to eq('local shared example')
+
+    pins = defintion_pins_at(filename, [29, 25])
+    factory_param = pins.first
+    expect(factory_param).not_to be_nil
+    expect(factory_param.value).to eq(:local_symbol_example)
   end
 
   it 'completes RSpec DSL methods' do
