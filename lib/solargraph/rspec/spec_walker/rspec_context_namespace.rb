@@ -11,6 +11,8 @@ module Solargraph
             return unless block_ast.is_a?(::Parser::AST::Node)
 
             ast = NodeTypes.context_description_node(block_ast)
+            return unless ast
+
             if ast.type == :str
               string_to_const_name(ast)
             elsif NodeTypes.a_constant?(ast)
