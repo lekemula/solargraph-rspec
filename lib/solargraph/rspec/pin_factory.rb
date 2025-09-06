@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-# Credits: This file is a copy of the file from the solargraph-rspec gem
+# Credits: This file was originally copied and adapted from the log_bench gem.
 
 module Solargraph
   module Rspec

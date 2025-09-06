@@ -1,5 +1,8 @@
 # frozen_string_literal: true
 
+#
+# Credits: This file was originally copied and adapted from the solargraph-rails gem
+
 module Solargraph
   module Rspec
     class Walker
