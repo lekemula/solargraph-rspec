@@ -11,7 +11,7 @@ module Solargraph
       end
 
       class << self
-        # @return [String]
+        # @return [Array<String>]
         def gem_names
           GEM_HELPERS.flat_map(&:required_gems)
         end
