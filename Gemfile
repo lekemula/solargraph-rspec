@@ -12,6 +12,7 @@ gem 'debug'               # Debugging
 gem 'profile-viewer'      # View profile from Vernier
 gem 'pry-byebug'          # Debugging
 gem 'rake'                # Build
+gem 'rbs'                 # Ruby type signatures for gems
 gem 'rspec'               # Testing
 gem 'rubocop'             # Linting
 gem 'rubocop-yard'        # YARD documentation linting
