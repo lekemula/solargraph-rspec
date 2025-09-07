@@ -78,7 +78,7 @@ module Solargraph
         filename.include?('spec/')
       end
 
-      # @param yard_map [YardMap]
+      # @param _yard_map [YardMap]
       # @return [Environ]
       def global(_yard_map)
         pins = []

@@ -26,7 +26,7 @@ module Solargraph
           private
 
           # @see https://github.com/rspec/rspec-core/blob/1eeadce5aa7137ead054783c31ff35cbfe9d07cc/lib/rspec/core/example_group.rb#L862
-          # @param ast [Parser::AST::Node]
+          # @param string_ast [Parser::AST::Node]
           # @return [String]
           def string_to_const_name(string_ast)
             return unless string_ast.type == :str

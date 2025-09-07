@@ -12,7 +12,7 @@ module Solargraph
         # @return [Solargraph::Rspec::SpecWalker]
         attr_reader :rspec_walker
 
-        # @return [Array<Solargraph::Pin::Base]
+        # @return [Array<Solargraph::Pin::Base>]
         attr_reader :added_pins
 
         # @param namespace_pins [Array<Solargraph::Pin::Base>]

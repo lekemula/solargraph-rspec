@@ -54,6 +54,7 @@ module Solargraph
         end
 
         # @param children [Array<::Parser::AST::Node>]
+        # @param args [Array]
         def match_children(children, args = @args)
           args.each_with_index.all? do |arg, i|
             if arg == :any

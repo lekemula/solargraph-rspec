@@ -14,6 +14,7 @@ gem 'pry-byebug'          # Debugging
 gem 'rake'                # Build
 gem 'rspec'               # Testing
 gem 'rubocop'             # Linting
+gem 'rubocop-yard'        # YARD documentation linting
 gem 'simplecov'           # Code coverage
 gem 'simplecov-cobertura' # Code coverage
 # gem 'vernier'             # Profiling only on Ruby >= 3.2.1
