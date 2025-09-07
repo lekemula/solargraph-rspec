@@ -34,12 +34,16 @@ module Solargraph
 
       # @return [Array<Symbol>]
       def additional_let_methods
-        (rspec_raw_data['let_methods'] || []).map(&:to_sym)
+        # @type [Array<String>, nil]
+        let_methods = rspec_raw_data['let_methods']
+        (let_methods || []).map(&:to_sym)
       end
 
       # @return [Array<Symbol>]
       def additional_example_methods
-        (rspec_raw_data['example_methods'] || []).map(&:to_sym)
+        # @type [Array<String>, nil]
+        example_methods = rspec_raw_data['example_methods']
+        (example_methods || []).map(&:to_sym)
       end
 
       # @return [Hash]
