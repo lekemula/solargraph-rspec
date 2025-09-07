@@ -188,8 +188,9 @@ module Solargraph
       end
 
       # Find all describe/context blocks in the AST.
-      # @param ast [Parser::AST::Node]
       # @yield [String, Parser::AST::Node]
+      # @param [Parser::AST::Node] ast
+      # @param [String] root_namespace
       def each_context_block(ast, root_namespace = Rspec::ROOT_NAMESPACE, &block)
         each_block(ast, root_namespace) do |block_ast, parent_namespace|
           is_a_context = NodeTypes.a_context_block?(block_ast)

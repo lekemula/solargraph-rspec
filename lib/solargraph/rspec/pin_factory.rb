@@ -8,11 +8,12 @@ module Solargraph
     module PinFactory
       # @param namespace [Solargraph::Pin::Namespace]
       # @param name [String]
-      # @param types [Array<String>]
-      # @param location [Solargraph::Location]
+      # @param types [Array<String>, nil]
+      # @param [Parser::AST::Node, nil] node
+      # @param location [Solargraph::Location, nil]
       # @param comments [Array<String>]
       # @param attribute [Boolean]
-      # @param scope [:instance, :class]
+      # @param scope [:instance, :class] # rubocop:disable YARD/TagTypeSyntax
       # @return [Solargraph::Pin::Method]
       def self.build_public_method(
         namespace,
@@ -42,7 +43,7 @@ module Solargraph
       end
 
       # @param namespace [Solargraph::Pin::Namespace]
-      # @param name [String]
+      # @param module_name [String]
       # @param location [Solargraph::Location]
       # @return [Solargraph::Pin::Reference::Include]
       def self.build_module_include(namespace, module_name, location)

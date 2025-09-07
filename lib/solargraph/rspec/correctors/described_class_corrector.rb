@@ -7,7 +7,7 @@ module Solargraph
     module Correctors
       # Defines `described_class` method in the example group block
       class DescribedClassCorrector < Base
-        # @param source_map [Solargraph::SourceMap]
+        # @param _source_map [Solargraph::SourceMap]
         # @return [void]
         def correct(_source_map)
           rspec_walker.on_described_class do |described_class_name, location_range|

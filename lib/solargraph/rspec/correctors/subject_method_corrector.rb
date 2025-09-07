@@ -7,7 +7,7 @@ module Solargraph
     module Correctors
       # Defines let-like methods in the example group block
       class SubjectMethodCorrector < LetMethodsCorrector
-        # @param source_map [Solargraph::SourceMap]
+        # @param _source_map [Solargraph::SourceMap]
         # @return [void]
         def correct(_source_map)
           rspec_walker.on_subject do |subject_name, location_range, fake_method_ast|
@@ -75,7 +75,7 @@ module Solargraph
         end
 
         # @param namespace_pin [Pin::Namespace]
-        # @param method_name [:is_expected, :should, :should_not]
+        # @param method_name [:is_expected, :should, :should_not] # rubocop:disable YARD/TagTypeSyntax
         # @param location [Solargraph::Location]
         # @return [Pin::Method]
         def one_liner_expectation_pin(namespace_pin, method_name, location)
