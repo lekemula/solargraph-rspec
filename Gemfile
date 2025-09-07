@@ -31,4 +31,4 @@ end
 
 # Debugging
 # Use local solargraph repo for ease of debugging
-# gem 'solargraph', path: '../solargraph'
+gem 'solargraph', path: '../solargraph'
