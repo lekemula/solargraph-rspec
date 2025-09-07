@@ -9,6 +9,7 @@ require_relative 'correctors/described_class_corrector'
 require_relative 'correctors/let_methods_corrector'
 require_relative 'correctors/subject_method_corrector'
 require_relative 'correctors/dsl_methods_corrector'
+require_relative 'correctors/shared_examples_corrector'
 require_relative 'test_helpers'
 require_relative 'pin_factory'
 
@@ -33,6 +34,15 @@ module Solargraph
       pending
     ].freeze
 
+    SHARED_EXAMPLE_INCLUSION_METHODS = %w[
+      include_examples
+      it_behaves_like
+      it_should_behave_like
+      include_context
+    ].freeze
+
+    SHARED_EXAMPLE_DEFINITION_METHODS = %w[shared_examples shared_examples_for shared_context].freeze
+
     CONTEXT_METHODS = %w[
       example_group
       describe
@@ -42,12 +52,8 @@ module Solargraph
       fdescribe
       fcontext
       shared_examples
-      include_examples
-      it_behaves_like
-      it_should_behave_like
       shared_context
-      include_context
-    ].freeze
+    ].freeze + SHARED_EXAMPLE_INCLUSION_METHODS
 
     # @type [Array<Class<Correctors::Base>>]
     CORRECTOR_CLASSES = [
@@ -56,7 +62,8 @@ module Solargraph
       Correctors::DslMethodsCorrector,
       Correctors::ExampleAndHookBlocksBindingCorrector,
       Correctors::LetMethodsCorrector,
-      Correctors::SubjectMethodCorrector
+      Correctors::SubjectMethodCorrector,
+      Correctors::SharedExamplesCorrector
     ].freeze
 
     # Provides completion for RSpec DSL and helper methods.
