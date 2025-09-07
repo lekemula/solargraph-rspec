@@ -58,7 +58,7 @@ module Solargraph
         end
 
         # @param block_ast [::Parser::AST::Node]
-        # @return [::Parser::AST::Node]
+        # @return [::Parser::AST::Node, nil]
         def self.context_description_node(block_ast)
           return nil unless a_context_block?(block_ast)
 
@@ -66,7 +66,7 @@ module Solargraph
         end
 
         # @param block_ast [::Parser::AST::Node]
-        # @return [String]
+        # @return [String, nil]
         def self.let_method_name(block_ast)
           return nil unless a_block?(block_ast)
 
