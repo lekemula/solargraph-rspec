@@ -37,7 +37,7 @@ module Solargraph
 
       GEM_HELPERS = [
         GemHelpers.new(
-          required_gems: %w[rspec],
+          required_gems: %w[rspec rspec-expectations rspec-core],
           helper_modules: %w[RSpec::Matchers]
         ),
         # https://github.com/rspec/rspec-mocks
