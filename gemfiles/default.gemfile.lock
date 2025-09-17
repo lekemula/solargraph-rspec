@@ -119,7 +119,7 @@ GEM
     mime-types-data (3.2025.0916)
     mini_mime (1.1.5)
     minitest (5.25.5)
-    net-imap (0.5.10)
+    net-imap (0.4.22)
       date
       net-protocol
     net-pop (0.1.2)
@@ -316,6 +316,7 @@ DEPENDENCIES
   appraisal
   bundler
   debug
+  net-imap (~> 0.4.0)
   profile-viewer
   pry-byebug
   rake
