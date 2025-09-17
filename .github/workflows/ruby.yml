@@ -58,9 +58,9 @@ jobs:
         # https://github.com/rubocop/rubocop/issues/10893#issuecomment-1952517060
         run: cd solargraph-rspec && bundle exec rubocop --restart-server
 
-      - name: Set up yardocs
-        # yard gems caches the yardocs into <gem_path>/doc/.yardoc path, hence they should be cached by ruby gems cache 
-        run: cd solargraph-rspec && bundle exec appraisal yard gems --verbose
+      - name: Solargraph cache RSpec plugins YARD and RBS 
+        run: cd solargraph-rspec && bundle exec appraisal bundle exec solargraph gems --rebuild $(ruby -r './lib/solargraph-rspec' -e 'puts Solargraph::Rspec::TestHelpers.gem_names.join(" ")')
+
 
       - name: List all Yardoc constants and methods
         run: |
