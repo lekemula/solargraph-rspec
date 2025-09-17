@@ -29,8 +29,6 @@ jobs:
     steps:
       - name: Checkout solargraph-rspec
         uses: actions/checkout@v4
-        with:
-          path: solargraph-rspec
 
       - name: Set up Ruby
         uses: ruby/setup-ruby@v1
@@ -42,33 +40,31 @@ jobs:
       - name: Cache Ruby gems
         uses: actions/cache@v3
         with:
-          path: solargraph-rspec/vendor/bundle
-          key: bundle-use-ruby-${{ matrix.os }}-${{ matrix.ruby-version }}-${{ hashFiles('solargraph-rspec/solargraph-rspec.gemspec') }}
+          path: vendor/bundle
+          key: bundle-use-ruby-${{ matrix.os }}-${{ matrix.ruby-version }}-${{ hashFiles('solargraph-rspec.gemspec') }}
           restore-keys: |
-            bundle-use-ruby-${{ matrix.os }}-${{ matrix.ruby-version }}-${{ hashFiles('solargraph-rspec/solargraph-rspec.gemspec') }}
+            bundle-use-ruby-${{ matrix.os }}-${{ matrix.ruby-version }}-${{ hashFiles('solargraph-rspec.gemspec') }}
 
       - name: Install dependencies
         run: |
-          cd solargraph-rspec
           bundle config path vendor/bundle
           bundle install --jobs 4 --retry 3
           bundle exec appraisal install
 
       - name: Run Rubocop
         # https://github.com/rubocop/rubocop/issues/10893#issuecomment-1952517060
-        run: cd solargraph-rspec && bundle exec rubocop --restart-server
+        run: bundle exec rubocop --restart-server
 
       - name: Solargraph cache RSpec plugins YARD and RBS 
-        run: cd solargraph-rspec && bundle exec appraisal bundle exec solargraph gems --rebuild $(ruby -r './lib/solargraph-rspec' -e 'puts Solargraph::Rspec::TestHelpers.gem_names.join(" ")')
+        run: bundle exec appraisal bundle exec solargraph gems --rebuild $(ruby -r './lib/solargraph-rspec' -e 'puts Solargraph::Rspec::TestHelpers.gem_names.join(" ")')
 
 
       - name: List all Yardoc constants and methods
         run: |
-            cd solargraph-rspec
             bundle exec yard list
 
       - name: Run tests
-        run: cd solargraph-rspec && bundle exec appraisal rspec --format progress
+        run: bundle exec appraisal rspec --format progress
 
       - name: Upload coverage reports to Codecov
         uses: codecov/codecov-action@v4
