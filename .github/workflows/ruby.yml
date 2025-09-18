@@ -36,7 +36,6 @@ jobs:
           ruby-version: ${{ matrix.ruby-version }}
           bundler-cache: false
 
-      # FIXME: Why caching for ruby 2.6 and 2.7 is not working after setting up appraisals?
       - name: Cache Ruby gems
         uses: actions/cache@v3
         with:
@@ -49,6 +48,7 @@ jobs:
         run: |
           bundle config path vendor/bundle
           bundle install --jobs 4 --retry 3 # we need this to install appraisal
+          bundle exec appraisal bundle config path ../vendor/bundle
           bundle exec appraisal install --jobs 4 --retry 3
           # For some reason on ruby 3.1 it defaults to an old version: 1.3.2
           # https://github.com/lekemula/solargraph-rspec/actions/runs/17814581205/job/50645370316?pr=22
@@ -59,8 +59,10 @@ jobs:
         # https://github.com/rubocop/rubocop/issues/10893#issuecomment-1952517060
         run: bundle exec rubocop --restart-server
 
-      - name: Solargraph cache RSpec plugins YARD and RBS 
-        run: bundle exec appraisal bundle exec solargraph gems --rebuild $(ruby -r './lib/solargraph-rspec' -e 'puts Solargraph::Rspec::TestHelpers.gem_names.join(" ")')
+      - name: Solargraph cache RSpec plugins YARD and RBS
+        run: |
+          rspec_plugins=$(bundle exec appraisal bundle exec ruby -r './lib/solargraph-rspec' -e 'puts Solargraph::Rspec::TestHelpers.gem_names.join(" ")' 2>/dev/null | tail -n1)
+          bundle exec appraisal bundle exec solargraph gems --rebuild $rspec_plugins
 
 
       - name: List all Yardoc constants and methods
