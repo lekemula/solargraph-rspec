@@ -23,11 +23,6 @@ module Solargraph
                 block_ast.children[2]
               ]
             )
-          rescue SyntaxError => e
-            Solargraph.logger.warn "[RSpec] Failed to build fake let method: #{e.message}, \
-            \n\nlet_definition_code: \n```\n#{let_definition_code}\n```, \
-            \n\nmethod_body: \n```\n#{method_body}\n```, \
-            \nast: #{block_ast.inspect}"
           end
         end
       end

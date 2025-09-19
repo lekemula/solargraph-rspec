@@ -8,10 +8,13 @@ gem "debug"
 gem "profile-viewer"
 gem "pry-byebug"
 gem "rake"
+gem "rbs"
 gem "rspec"
 gem "rubocop"
+gem "rubocop-yard"
 gem "simplecov"
 gem "simplecov-cobertura"
+gem "net-imap", "~> 0.4.0"
 
 group :third_party_plugin_tests do
   gem "actionmailer"

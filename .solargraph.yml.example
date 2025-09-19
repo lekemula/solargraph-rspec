@@ -1,0 +1,26 @@
+---
+include:
+- "**/*.rb"
+exclude:
+- "spec/solargraph/**/*"
+- test/**/*
+- vendor/**/*
+- ".bundle/**/*"
+require: []
+domains: []
+reporters:
+- typecheck:strict
+- rubocop
+- require_not_found
+formatter:
+  rubocop:
+    cops: all
+require_paths: []
+plugins:
+- solargraph-rspec
+max_files: 20000
+rspec:
+  let_methods:
+  - let_it_be
+  example_methods:
+  - my_example
