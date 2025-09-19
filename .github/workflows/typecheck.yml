@@ -9,9 +9,9 @@ name: Typecheck
 
 on:
   push:
-    branches: [ master ]
+    branches: [main]
   pull_request:
-    branches: [ master ]
+    branches: [main]
 
 permissions:
   contents: read
@@ -23,17 +23,17 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    - uses: actions/checkout@v3
-    - name: Set up Ruby
-      uses: ruby/setup-ruby@v1
-      with:
-        ruby-version: 3.4
-        bundler-cache: false
-    - name: Install gems
-      run: |
-        bundle install
-        bundle update rbs # use latest available for this Ruby version
-    - name: Install gem types
-      run: bundle exec rbs collection install
-    - name: Typecheck self
-      run: bundle exec solargraph typecheck --level typed
+      - uses: actions/checkout@v3
+      - name: Set up Ruby
+        uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: 3.4
+          bundler-cache: false
+      - name: Install gems
+        run: |
+          bundle install
+          bundle update rbs # use latest available for this Ruby version
+      - name: Install gem types
+        run: bundle exec rbs collection install
+      - name: Typecheck self
+        run: bundle exec solargraph typecheck --level typed
