@@ -59,15 +59,13 @@ jobs:
         # https://github.com/rubocop/rubocop/issues/10893#issuecomment-1952517060
         run: bundle exec rubocop --restart-server
 
+      - name: Configure .solargraph.yml
+        run: cp .solargraph.yml.example .solargraph.yml
+
       - name: Solargraph cache RSpec plugins YARD and RBS
         run: |
           rspec_plugins=$(bundle exec appraisal bundle exec ruby -r './lib/solargraph-rspec' -e 'puts Solargraph::Rspec::TestHelpers.gem_names.join(" ")' 2>/dev/null | tail -n1)
           bundle exec appraisal bundle exec solargraph gems --rebuild $rspec_plugins
-
-
-      - name: List all Yardoc constants and methods
-        run: |
-            bundle exec yard list
 
       - name: Run tests
         run: bundle exec appraisal rspec --format progress
