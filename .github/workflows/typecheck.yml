@@ -28,10 +28,10 @@ jobs:
         uses: ruby/setup-ruby@v1
         with:
           ruby-version: 3.4
-          bundler-cache: false
+          bundler-cache: true # runs bundle install and caches the gems
       - name: Install gems
         run: |
-          bundle install
+          bundle update solargraph #  use the latest version of solargraph
           bundle update rbs # use latest available for this Ruby version
       - name: Install gem types
         run: bundle exec rbs collection install
