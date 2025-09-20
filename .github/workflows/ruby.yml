@@ -15,6 +15,9 @@ on:
 permissions:
   contents: read
 
+env:
+  SOLARGRAPH_CACHE: ${{ github.workspace }}/vendor/solargraph/cache
+
 jobs:
   test:
     name: Tests (ruby v${{ matrix.ruby-version }})
@@ -59,16 +62,22 @@ jobs:
         # https://github.com/rubocop/rubocop/issues/10893#issuecomment-1952517060
         run: bundle exec rubocop --restart-server
 
+      - name: Cache Solargraph YARD and RBS pins for gems
+        uses: actions/cache@v4
+        with:
+          path: ${{ env.SOLARGRAPH_CACHE }}
+          key: os-${{ runner.os }}-ruby-${{ matrix.ruby-version }}-solargraph-${{ hashFiles('**/Gemfile.lock') }}
+
       - name: Configure .solargraph.yml
         run: cp .solargraph.yml.example .solargraph.yml
 
-      - name: Solargraph cache RSpec plugins YARD and RBS
+      - name: Solargraph generate RSpec plugins YARD and RBS pins
         run: |
           rspec_plugins=$(bundle exec appraisal bundle exec ruby -r './lib/solargraph-rspec' -e 'puts Solargraph::Rspec::TestHelpers.gem_names.join(" ")' 2>/dev/null | tail -n1)
-          bundle exec appraisal bundle exec solargraph gems --rebuild $rspec_plugins
+          SOLARGRAPH_CACHE=${{ env.SOLARGRAPH_CACHE  }} bundle exec appraisal bundle exec solargraph gems $rspec_plugins
 
       - name: Run tests
-        run: bundle exec appraisal rspec --format progress
+        run: SOLARGRAPH_CACHE=${{ env.SOLARGRAPH_CACHE }} bundle exec appraisal rspec --format progress
 
       - name: Upload coverage reports to Codecov
         uses: codecov/codecov-action@v4
