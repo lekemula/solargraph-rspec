@@ -44,4 +44,4 @@ jobs:
       - name: Install gem types
         run: bundle exec rbs collection install
       - name: Typecheck self
-        run: SOLARGRAPH_CACHE=${{ env.SOLARGRAPH_CACHE  }} bundle exec solargraph typecheck --level typed
+        run: bundle exec solargraph typecheck --level typed
