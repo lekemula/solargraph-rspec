@@ -17,6 +17,7 @@ permissions:
 
 env:
   SOLARGRAPH_CACHE: ${{ github.workspace }}/vendor/solargraph/cache
+  BUNDLE_PATH: ${{ github.workspace  }}/vendor/bundle
 
 jobs:
   test:
@@ -42,16 +43,16 @@ jobs:
       - name: Cache Ruby gems
         uses: actions/cache@v3
         with:
-          path: vendor/bundle
+          path: ${{ env.BUNDLE_PATH }}
           key: bundle-use-ruby-${{ matrix.os }}-${{ matrix.ruby-version }}-${{ hashFiles('solargraph-rspec.gemspec') }}
           restore-keys: |
             bundle-use-ruby-${{ matrix.os }}-${{ matrix.ruby-version }}-${{ hashFiles('solargraph-rspec.gemspec') }}
 
       - name: Install dependencies
         run: |
-          bundle config path vendor/bundle
+          bundle config path ${{ env.BUNDLE_PATH }}
           bundle install --jobs 4 --retry 3 # we need this to install appraisal
-          bundle exec appraisal bundle config path ../vendor/bundle
+          bundle exec appraisal bundle config path ${{ env.BUNDLE_PATH }}
           bundle exec appraisal install --jobs 4 --retry 3
           # For some reason on ruby 3.1 it defaults to an old version: 1.3.2
           # https://github.com/lekemula/solargraph-rspec/actions/runs/17814581205/job/50645370316?pr=22
