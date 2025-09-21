@@ -2,13 +2,10 @@
 
 module Solargraph
   module Rspec
-    class TestHelpers
-      class GemHelpers < Struct.new(:required_gems, :helper_modules, keyword_init: true)
-        # @!attribute [r] required_gems
-        #   @return [Array<String>]
-        # @!attribute [r] helper_modules
-        #   @return [Array<String>]
-      end
+    class Gems
+      # @param required_gems [Array<String>]
+      # @param helper_modules [Array<String>]
+      GemHelpers = Struct.new(:required_gems, :helper_modules, keyword_init: true)
 
       class << self
         # @return [Array<String>]

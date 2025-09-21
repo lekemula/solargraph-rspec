@@ -72,10 +72,10 @@ jobs:
       - name: Configure .solargraph.yml
         run: cp .solargraph.yml.example .solargraph.yml
 
-      - name: Solargraph generate RSpec plugins YARD and RBS pins
+      - name: Solargraph generate RSpec gems YARD and RBS pins
         run: |
-          rspec_plugins=$(bundle exec appraisal bundle exec ruby -r './lib/solargraph-rspec' -e 'puts Solargraph::Rspec::TestHelpers.gem_names.join(" ")' 2>/dev/null | tail -n1)
-          bundle exec appraisal bundle exec solargraph gems $rspec_plugins
+          rspec_gems=$(bundle exec appraisal bundle exec ruby -r './lib/solargraph-rspec' -e 'puts Solargraph::Rspec::Gems.gem_names.join(" ")' 2>/dev/null | tail -n1)
+          bundle exec appraisal bundle exec solargraph gems $rspec_gems
 
       - name: Run tests
         run: bundle exec appraisal rspec --format progress
