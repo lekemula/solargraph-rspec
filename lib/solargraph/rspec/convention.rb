@@ -9,7 +9,7 @@ require_relative 'correctors/described_class_corrector'
 require_relative 'correctors/let_methods_corrector'
 require_relative 'correctors/subject_method_corrector'
 require_relative 'correctors/dsl_methods_corrector'
-require_relative 'test_helpers'
+require_relative 'gems'
 require_relative 'pin_factory'
 
 module Solargraph
@@ -82,12 +82,12 @@ module Solargraph
       # @return [Environ]
       def global(_yard_map)
         pins = []
-        pins += Solargraph::Rspec::TestHelpers.include_helper_pins(
+        pins += Solargraph::Rspec::Gems.include_helper_pins(
           root_example_group_namespace_pin: root_example_group_namespace_pin
         )
         pins += annotation_pins
         # TODO: Include gem requires conditionally based on Gemfile definition
-        requires = Solargraph::Rspec::TestHelpers.gem_names
+        requires = Solargraph::Rspec::Gems.gem_names
 
         if pins.any?
           Solargraph.logger.debug(
