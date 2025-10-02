@@ -5,12 +5,6 @@ RSpec.describe Solargraph::Rspec::Convention do
   let(:library) { Solargraph::Library.new }
   let(:filename) { File.expand_path('spec/models/some_namespace/transaction_spec.rb') }
 
-  before do
-    # For performance reasons, avoid solargraph loading all installed gems' YARDoc and RBS gem pins.
-    # If your specs depend on YARDoc or RBS types, add them to the spec/solargraph/rspec/first_party_gem_helpers_spec.rb
-    avoid_gem_yard_and_rbs_pin_generation
-  end
-
   it 'generates method for described_class' do
     load_string filename, <<~RUBY
       RSpec.describe SomeNamespace::Transaction, type: :model do
