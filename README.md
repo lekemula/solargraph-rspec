@@ -128,7 +128,7 @@ It's codebase IMO is an exemplary of how Ruby code written in a very simple PORO
 
 Code contributions are always appreciated. Feel free to fork the repo and submit pull requests. Check for open issues that could use help. Start new issues to discuss changes that have a major impact on the code or require large time commitments.
 
-Contributing is easy - note that this Gem uses 'appraisal' to test against Rails without adding to the main `Gemfile`:
+Contributing is easy - note that this Gem uses 'appraisal' to test against RSpec without adding to the main `Gemfile`:
 1. Create a fork and clone it
 2. Verify tests are green:
    ```sh
