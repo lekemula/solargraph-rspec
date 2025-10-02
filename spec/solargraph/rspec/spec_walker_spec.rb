@@ -6,11 +6,6 @@ RSpec.describe Solargraph::Rspec::SpecWalker do
   let(:config) { Solargraph::Rspec::Config.new }
   let(:source_map) { api_map.source_maps.first }
 
-  before do
-    # For performance reasons, avoid solargraph loading all installed gems' YARDoc and RBS gem pins.
-    avoid_gem_yard_and_rbs_pin_generation
-  end
-
   def parse_expected_let_method(code)
     Solargraph::Parser.parse(code)
   end
