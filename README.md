@@ -139,6 +139,7 @@ Contributing is easy - note that this Gem uses 'appraisal' to test against Rails
    rspec_gems=$(bundle exec appraisal bundle exec ruby -r './lib/solargraph-rspec' -e 'puts Solargraph::Rspec::Gems.gem_names.join(" ")' 2>/dev/null | tail -n1)
    bundle exec appraisal bundle exec solargraph gems $rspec_gems
    bundle exec appraisal rspec
+   ```
 3. Introduce your awesome changes
 4. Ensure they are well covered with tests
 5. Record your changes in the [CHANGELOG.md](./CHANGELOG.md)
