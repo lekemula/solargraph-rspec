@@ -5,11 +5,11 @@
 [![codecov](https://codecov.io/gh/lekemula/solargraph-rspec/graph/badge.svg?token=FH7ER8ZDPW)](https://codecov.io/gh/lekemula/solargraph-rspec)
 
 
-RSpec is a testing framework of choice for many Ruby developers. But at the same time is highly dynamic and heavily relying on metaprogramming making it hard to provide accurate code completion and type inference. 
+RSpec is a testing framework of choice for many Ruby developers. But at the same time is highly dynamic and heavily relying on metaprogramming making it hard to provide accurate code completion and type inference.
 
 This gem aims to provide better support for RSpec in Solargraph and it supports the following features (completion, jump to definition and type inference 🚀):
-  - `describe` and `it` methods 
-  - memoized `let` and `let!` methods 
+  - `describe` and `it` methods
+  - memoized `let` and `let!` methods
   - `described_class` with appropriate type inference
   - implicit and explicit `subject` methods
   - one liner syntax helpers `is_expected`, `should` and `should_not` linked to the appropriate subject
@@ -110,7 +110,7 @@ Run `yard config --gem-install-yri` to generate YARD documentation automatically
 
 ## Acknowledgements
 
-This gem is inspired by the [solargraph-rails](https://github.com/iftheshoefritz/solargraph-rails) which gave me an idea of how to extend Solargraph with custom features and provided me with simple and very understandable test suite which helped me to get started with playing around with Solargraph. 
+This gem is inspired by the [solargraph-rails](https://github.com/iftheshoefritz/solargraph-rails) which gave me an idea of how to extend Solargraph with custom features and provided me with simple and very understandable test suite which helped me to get started with playing around with Solargraph.
 
 In fact, most of the code I initially wrote on [a fork](https://github.com/lekemula/solargraph-rails/tree/rspec-support) of it, but then I realized that it would make more sense to extract it into a separate gem where it could be used by non-Rails projects as well.
 
@@ -128,17 +128,23 @@ It's codebase IMO is an exemplary of how Ruby code written in a very simple PORO
 
 Code contributions are always appreciated. Feel free to fork the repo and submit pull requests. Check for open issues that could use help. Start new issues to discuss changes that have a major impact on the code or require large time commitments.
 
-Contributing is easy:
+Contributing is easy - note that this Gem uses 'appraisal' to test against RSpec without adding to the main `Gemfile`:
 1. Create a fork and clone it
-2. Run `bundle install` to install dependencies
-3. Run `yard gems` to generate YARD documentation for your installed gems
-4. Run `bundle exec spec` to run the tests
-5. Introduce your awesome changes
-6. Ensure they are well covered with tests
-7. Record your changes in the [CHANGELOG.md](./CHANGELOG.md)
-7. Submit a pull request :rocket:
+2. Verify tests are green:
+   ```sh
+   bundle install
+   bundle exec appraisal install
+   cp .solargraph.yml.example .solargraph.yml
+   bundle exec appraisal bundle exec rbs collection update
+   rspec_gems=$(bundle exec appraisal bundle exec ruby -r './lib/solargraph-rspec' -e 'puts Solargraph::Rspec::Gems.gem_names.join(" ")' 2>/dev/null | tail -n1)
+   bundle exec appraisal bundle exec solargraph gems $rspec_gems
+   bundle exec appraisal rspec
+   ```
+3. Introduce your awesome changes
+4. Ensure they are well covered with tests
+5. Record your changes in the [CHANGELOG.md](./CHANGELOG.md)
+6. Submit a pull request :rocket:
 
 ## License
 
 The gem is available as open source under the terms of the [MIT License](https://opensource.org/licenses/MIT).
-
