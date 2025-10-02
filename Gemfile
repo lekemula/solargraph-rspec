@@ -20,14 +20,7 @@ gem 'simplecov'           # Code coverage
 gem 'simplecov-cobertura' # Code coverage
 # gem 'vernier'             # Profiling only on Ruby >= 3.2.1
 
-group :third_party_plugin_tests do
-  gem 'actionmailer'
-  gem 'airborne'
-  gem 'rspec-rails'
-  gem 'rspec-sidekiq'
-  gem 'shoulda-matchers'
-  gem 'webmock'
-end
+# For adding RSpec 3rd Party plugins eg. rspec-rails, shoulda-matchers etc. add them to the `Appraisals` file.
 
 # Debugging
 # Use local solargraph repo for ease of debugging
