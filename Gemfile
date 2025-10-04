@@ -18,6 +18,7 @@ gem 'rubocop'             # Linting
 gem 'rubocop-yard'        # YARD documentation linting
 gem 'simplecov'           # Code coverage
 gem 'simplecov-cobertura' # Code coverage
+gem 'unparser'            # Debug [Parser::AST::Node] to Ruby code via `Unparser.unparse(ast)`
 # gem 'vernier'             # Profiling only on Ruby >= 3.2.1
 
 # For adding RSpec 3rd Party plugins eg. rspec-rails, shoulda-matchers etc. add them to the `Appraisals` file.
