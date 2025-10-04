@@ -6,7 +6,7 @@ RSpec.describe Solargraph::Rspec::Gems do
   let(:filename) { File.expand_path('spec/models/some_namespace/transaction_spec.rb') }
 
   describe 'rspec' do
-    it 'finds defintion of DSL methods' do
+    it 'finds definition of DSL methods' do
       load_string filename, <<~RUBY
         RSpec.describe SomeNamespace::Transaction, type: :model do
           context 'some context' do
