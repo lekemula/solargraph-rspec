@@ -6,6 +6,26 @@ RSpec.describe Solargraph::Rspec::Gems do
   let(:filename) { File.expand_path('spec/models/some_namespace/transaction_spec.rb') }
 
   describe 'rspec' do
+    it 'finds definition of DSL methods' do
+      load_string filename, <<~RUBY
+        RSpec.describe SomeNamespace::Transaction, type: :model do
+          context 'some context' do
+            let(:something) { 'something' }
+
+            it 'should do something' do
+            end
+          end
+
+          context 'another context' do
+          end
+        end
+      RUBY
+
+      expect(definition_at(filename, [1, 3])).to include('RSpec::Core::ExampleGroup.context')
+      expect(definition_at(filename, [2, 5])).to include('RSpec::Core::MemoizedHelpers::ClassMethods#let')
+      expect(definition_at(filename, [4, 5])).to include('RSpec::Core::ExampleGroup.it')
+    end
+
     it 'completes RSpec::Matchers methods' do
       load_string filename, <<~RUBY
         RSpec.describe SomeNamespace::Transaction, type: :model do
