@@ -59,6 +59,8 @@ module SolargraphHelpers
     map.pins.select { |p| p.path == path }
   end
 
+  # @param filename [String]
+  # @param position [Array(Integer, Integer)] - [line, column]
   # @return [Array<Solargraph::Pin::Base>]
   def completion_pins_at(filename, position, map = api_map)
     # @type [Solargraph::SourceMap::Clip]
@@ -75,6 +77,22 @@ module SolargraphHelpers
 
   def completion_at(filename, position, map = api_map)
     completion_pins_at(filename, position, map).map(&:name)
+  end
+
+  # @param filename [String]
+  # @param position [Array(Integer, Integer)] - [line, column]
+  # @param map [Solargraph::ApiMap]
+  # @return [Solargraph::Pin::Base, nil]
+  def definition_at(filename, position, map = api_map)
+    clip = map.clip_at(filename, position)
+    cursor = clip.send(:cursor)
+    word = cursor.chain.links.first.word
+
+    Solargraph.logger.debug(
+      "Complete: word=#{word}, links=#{cursor.chain.links}"
+    )
+
+    clip.define.map(&:path)
   end
 
   # Expect that a local can be inferred with +expected_type+

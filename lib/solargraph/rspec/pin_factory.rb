@@ -75,10 +75,36 @@ module Solargraph
         )
       end
 
+      # Given the following code, Solargraph::Parser.node_range returns the following range for block ast:
+      #
+      # some_method_with_block do
+      # ^ - block start
+      # end
+      # ^ - block end
+      #
+      # Instead we want the range to be:
+      #
+      # some_method_with_block do
+      #                        ^ - block start
+      # end
+      # ^ - block end
+      #
       # @param ast [::Parser::AST::Node]
       # @return [Solargraph::Range]
       def self.build_location_range(ast)
-        Solargraph::Parser.node_range(ast)
+        if ast.type == :block
+          method_range = Solargraph::Parser.node_range(ast.children[0])
+          full_block_range = Solargraph::Parser.node_range(ast)
+
+          Solargraph::Range.from_to(
+            method_range.ending.line,
+            method_range.ending.character,
+            full_block_range.ending.line,
+            full_block_range.ending.character
+          )
+        else
+          Solargraph::Parser.node_range(ast)
+        end
       end
 
       # @param location_range [Solargraph::Range]

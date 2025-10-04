@@ -45,6 +45,7 @@ module Solargraph
                                                            location_range.start.column)
 
           override_closure(original_block_pin, example_run_method(namespace_pin))
+          override_block_location(original_block_pin, source_map)
         end
 
         # @param namespace_pin [Solargraph::Pin::Namespace]
