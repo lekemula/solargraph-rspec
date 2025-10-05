@@ -14,15 +14,13 @@ gem "rubocop"
 gem "rubocop-yard"
 gem "simplecov"
 gem "simplecov-cobertura"
+gem "unparser"
 gem "net-imap", "~> 0.4.0"
-
-group :third_party_plugin_tests do
-  gem "actionmailer"
-  gem "airborne"
-  gem "rspec-rails"
-  gem "rspec-sidekiq"
-  gem "shoulda-matchers"
-  gem "webmock"
-end
+gem "actionmailer"
+gem "airborne"
+gem "rspec-rails"
+gem "rspec-sidekiq"
+gem "shoulda-matchers"
+gem "webmock"
 
 gemspec path: "../"

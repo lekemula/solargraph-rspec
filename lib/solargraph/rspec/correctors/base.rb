@@ -68,10 +68,44 @@ module Solargraph
         # @param pin [Solargraph::Pin::Base]
         # @param new_closure [Solargraph::Pin::Closure]
         def override_closure(pin, new_closure)
+          # HACK: We should only rely on public API, and avoid instance_variable_get/set.
           pin.instance_variable_set('@closure', new_closure)
           pin.reset_generated!
 
           pin.remove_instance_variable(:@path) if pin.instance_variables.include? :@path
+        end
+
+        # Given the following code, Solargraph::Parser.node_range returns the following range for block ast:
+        #
+        # ```ruby
+        #   some_method_with_block do
+        #   ^ - block start
+        #   end
+        #   ^ - block end
+        # ```
+        #
+        # Instead we want the range to be:
+        #
+        # ```ruby
+        #   some_method_with_block do
+        #                          ^ - block start
+        #   end
+        #   ^ - block end
+        # ```
+        #
+        # @param closure [Solargraph::Pin::Closure]
+        # @param source_map [Solargraph::SourceMap]
+        # @return [void]
+        def override_block_location(closure, source_map)
+          range = closure.location.range
+          block_ast = source_map.source.node_at(range.ending.line, range.ending.column)
+          new_location = PinFactory.build_location(
+            PinFactory.build_location_range(block_ast),
+            closure.location.filename
+          )
+
+          # HACK: We should only rely on public API, and avoid instance_variable_get/set.
+          closure.instance_variable_set('@location', new_location)
         end
       end
     end

@@ -132,6 +132,7 @@ GEM
     nokogiri (1.18.10-arm64-darwin)
       racc (~> 1.4)
     observer (0.1.2)
+    open3 (0.2.1)
     optparse (0.6.0)
     ostruct (0.6.3)
     parallel (1.27.0)
@@ -263,6 +264,7 @@ GEM
     simplecov-html (0.13.2)
     simplecov_json_formatter (0.1.4)
     solargraph (0.57.0)
+      ast (~> 2.4.3)
       backport (~> 1.2)
       benchmark (~> 0.4)
       bundler (~> 2.0)
@@ -272,6 +274,7 @@ GEM
       kramdown-parser-gfm (~> 1.1)
       logger (~> 1.6)
       observer (~> 0.1)
+      open3 (~> 0.2.1)
       ostruct (~> 0.6)
       parser (~> 3.0)
       prism (~> 1.4)
@@ -292,6 +295,10 @@ GEM
     unicode-display_width (3.2.0)
       unicode-emoji (~> 4.1)
     unicode-emoji (4.1.0)
+    unparser (0.8.0)
+      diff-lcs (~> 1.6)
+      parser (>= 3.3.0)
+      prism (>= 1.4)
     uri (1.0.3)
     useragent (0.16.11)
     webmock (3.25.1)
@@ -330,6 +337,7 @@ DEPENDENCIES
   simplecov
   simplecov-cobertura
   solargraph-rspec!
+  unparser
   webmock
 
 BUNDLED WITH

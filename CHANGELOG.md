@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+- Go-to-defintion/Hover for RSpec DSL methods (eg. context or it)
+
+### Changed
+- Update testing steps in developer documentation
+
 ## [0.5.3] - 2025-09-02
 
 ### Fixed
@@ -125,7 +131,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 
 - `describe` and `it` methods completion
-- memoized `let` and `let!` methods completion 
+- memoized `let` and `let!` methods completion
 - implicit and explicit `subject` methods
 - `described_class` with appropriate type inference
 - `RSpec::Matchers` methods completion
