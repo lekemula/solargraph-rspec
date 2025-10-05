@@ -92,10 +92,4 @@ module SolargraphHelpers
 
     var_pin
   end
-
-  # For performance reasons, avoid solargraph loading all installed gems' YARDoc and RBS gem pins.
-  # @return [void]
-  def avoid_gem_yard_and_rbs_pin_generation
-    allow(Solargraph::Rspec::Gems).to receive(:gem_names).and_return([])
-  end
 end

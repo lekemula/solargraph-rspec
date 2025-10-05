@@ -8,7 +8,7 @@ RSpec.describe Solargraph::Rspec::SpecWalker do
 
   before do
     # For performance reasons, avoid solargraph loading all installed gems' YARDoc and RBS gem pins.
-    avoid_gem_yard_and_rbs_pin_generation
+    allow(Solargraph::Rspec::Gems).to receive(:gem_names).and_return([])
   end
 
   def parse_expected_let_method(code)
