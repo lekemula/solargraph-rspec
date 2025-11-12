@@ -38,6 +38,7 @@ jobs:
         uses: ruby/setup-ruby@v1
         with:
           ruby-version: ${{ matrix.ruby-version }}
+          rubygems: latest
           bundler: latest
           bundler-cache: false
 
@@ -78,6 +79,7 @@ jobs:
           set -euo pipefail
           set -x
 
+          bundle list
           bundle exec ruby -r './lib/solargraph-rspec' -e 'puts Solargraph::Rspec::Gems.gem_names.join(" ")'
           rspec_gems=$(bundle exec ruby -r './lib/solargraph-rspec' -e 'puts Solargraph::Rspec::Gems.gem_names.join(" ")' 2>/dev/null)
           echo "rspec_gems is [$rspec_gems]"
