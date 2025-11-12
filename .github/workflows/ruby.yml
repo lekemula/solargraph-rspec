@@ -77,8 +77,8 @@ jobs:
           set -euo pipefail
           set -x
 
-          ruby -r './lib/solargraph-rspec' -e 'puts Solargraph::Rspec::Gems.gem_names.join(" ")'
-          rspec_gems=$(ruby -r './lib/solargraph-rspec' -e 'puts Solargraph::Rspec::Gems.gem_names.join(" ")' 2>/dev/null)
+          bundle ruby -r './lib/solargraph-rspec' -e 'puts Solargraph::Rspec::Gems.gem_names.join(" ")'
+          rspec_gems=$(bundle exec ruby -r './lib/solargraph-rspec' -e 'puts Solargraph::Rspec::Gems.gem_names.join(" ")' 2>/dev/null)
           echo "rspec_gems is [$rspec_gems]"
           bundle exec appraisal solargraph gems $rspec_gems
 
