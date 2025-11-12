@@ -27,7 +27,7 @@ jobs:
       fail-fast: false
       matrix:
         # FIXME: Why '3.0' is not working with Appraisal?
-        # FIXME: Add 'head' https://github.com/lekemula/solargraph-rspec/pull/8/commits/3b52752b96e7f2ec01831406f8e5a51c91523187 
+        # FIXME: Add 'head' https://github.com/lekemula/solargraph-rspec/pull/8/commits/3b52752b96e7f2ec01831406f8e5a51c91523187
         ruby-version: ['3.1', '3.2', '3.3']
 
     steps:
@@ -75,7 +75,7 @@ jobs:
       - name: Solargraph generate RSpec gems YARD and RBS pins
         run: |
           rspec_gems=$(bundle exec appraisal bundle exec ruby -r './lib/solargraph-rspec' -e 'puts Solargraph::Rspec::Gems.gem_names.join(" ")' 2>/dev/null | tail -n1)
-          bundle exec appraisal bundle exec solargraph gems $rspec_gems
+          bundle exec appraisal solargraph gems $rspec_gems
 
       - name: Run tests
         run: bundle exec appraisal rspec --format progress
