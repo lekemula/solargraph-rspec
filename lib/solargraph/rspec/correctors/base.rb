@@ -119,9 +119,7 @@ module Solargraph
 
           # find children of this pin and reset them, as they may have
           # cached their binder or context based on the old closure
-          source_map.pins.each do |child_pin|
-            next unless child_pin.closure == closure
-
+          source_map.pins.select { |child_pin| child_pin.closure == closure }.each do |child_pin|
             child_pin.reset_generated!
           end
         end
