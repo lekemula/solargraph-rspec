@@ -136,7 +136,7 @@ Contributing is easy - note that this Gem uses 'appraisal' to test against RSpec
    bundle exec appraisal install
    cp .solargraph.yml.example .solargraph.yml
    bundle exec appraisal bundle exec rbs collection update
-    rspec_gems=$(bundle exec appraisal bundle exec ruby -r './lib/solargraph-rspec' -e 'puts Solargraph::Rspec::Gems.gem_names.join(" ")' 2>/dev/null | tail -n1)
+   rspec_gems=$(bundle exec appraisal bundle exec ruby -r './lib/solargraph-rspec' -e 'puts Solargraph::Rspec::Gems.gem_names.join(" ")' 2>/dev/null | tail -n1)
    bundle exec appraisal bundle exec solargraph gems $rspec_gems
    bundle exec appraisal rspec
    ```
