@@ -58,13 +58,9 @@ jobs:
           bundle install --jobs 4 --retry 3 # we need this to install appraisal
           bundle exec appraisal bundle config path ${{ env.BUNDLE_PATH }}
           bundle exec appraisal install --jobs 4 --retry 3
-          # Test the bleeding edge so that we can catch integration issues early
-          if [ ${{ matrix.ruby-version }} == 'head' ]
-          then
-            # test bleeding edge against bleeding edge to find
-            # integration issues
-            bundle exec appraisal bundle update --pre solargraph rbs
-          fi
+          # Test bleeding edge against bleeding edge to find
+          # integration issues
+          bundle exec appraisal bundle update --pre solargraph rbs
           bundle exec appraisal rbs --version
           bundle exec appraisal solargraph --version
           bundle exec appraisal bundle list
