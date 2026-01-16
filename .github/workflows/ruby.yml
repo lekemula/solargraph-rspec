@@ -79,9 +79,9 @@ jobs:
         with:
           path: ${{ env.SOLARGRAPH_CACHE }}
           key: os-${{ runner.os }}-ruby-${{ matrix.ruby-version }}-solargraph-${{ hashFiles('**/Gemfile.lock') }}
-        restore-keys: |
-          os-${{ runner.os }}-ruby-${{ matrix.ruby-version }}-solargraph-${{ hashFiles('**/Gemfile.lock') }}
-          os-${{ runner.os }}-ruby-${{ matrix.ruby-version }}-solargraph-
+          restore-keys: |
+            os-${{ runner.os }}-ruby-${{ matrix.ruby-version }}-solargraph-${{ hashFiles('**/Gemfile.lock') }}
+            os-${{ runner.os }}-ruby-${{ matrix.ruby-version }}-solargraph-
 
       - name: Configure .solargraph.yml
         run: cp .solargraph.yml.example .solargraph.yml
