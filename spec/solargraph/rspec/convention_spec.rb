@@ -1,5 +1,7 @@
 # frozen_string_literal: true
 
+require 'tmpdir'
+
 RSpec.describe Solargraph::Rspec::Convention do
   let(:api_map) { Solargraph::ApiMap.new }
   let(:library) { Solargraph::Library.new }
