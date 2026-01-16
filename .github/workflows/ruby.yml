@@ -55,6 +55,8 @@ jobs:
           bundle exec appraisal install --jobs 4 --retry 3
           # Test the bleeding edge so that we can catch integration issues early
           bundle exec appraisal update --pre solargraph rbs
+          bundle exec appraisal rbs --version
+          bundle exec appraisal solargraph --version
           # For some reason on ruby 3.1 it defaults to an old version: 1.3.2
           # https://github.com/lekemula/solargraph-rspec/actions/runs/17814581205/job/50645370316?pr=22
           # We update manually to the latest
