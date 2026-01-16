@@ -68,7 +68,12 @@ module Solargraph
         # @param pin [Solargraph::Pin::Base]
         # @param new_closure [Solargraph::Pin::Closure]
         def override_closure(pin, new_closure)
-          # HACK: We should only rely on public API, and avoid instance_variable_get/set.
+          if pin.respond_to?(:closure=)
+            pin.closure = new_closure
+            return
+          end
+
+          # work around older version of Solargraph
           pin.instance_variable_set('@closure', new_closure)
           pin.reset_generated!
 
@@ -104,8 +109,19 @@ module Solargraph
             closure.location.filename
           )
 
-          # HACK: We should only rely on public API, and avoid instance_variable_get/set.
-          closure.instance_variable_set('@location', new_location)
+          if closure.respond_to?(:location=)
+            closure.location = new_location
+          else
+            # work around older version of Solargraph
+            closure.instance_variable_set('@location', new_location)
+            closure.reset_generated!
+          end
+
+          # find children of this pin and reset them, as they may have
+          # cached their binder or context based on the old closure
+          source_map.pins.select { |child_pin| child_pin.closure == closure }.each do |child_pin|
+            child_pin.reset_generated!
+          end
         end
       end
     end
