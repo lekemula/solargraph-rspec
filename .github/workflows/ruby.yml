@@ -82,7 +82,12 @@ jobs:
           bundle exec appraisal bundle exec solargraph gems $rspec_gems
 
       - name: Run tests
-        run: bundle exec appraisal rspec --format progress
+        run: |
+          # we don't need byebug in CI; byebug requires readline
+          # support in Ruby which doesn't always appear in the Ruby
+          # installed by ruby/setup-ruby
+          export NO_DEBUG=true
+          bundle exec appraisal rspec --format progress
 
       - name: Upload coverage reports to Codecov
         uses: codecov/codecov-action@v4
