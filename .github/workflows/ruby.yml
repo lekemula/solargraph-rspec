@@ -43,9 +43,13 @@ jobs:
         uses: actions/cache@v3
         with:
           path: ${{ env.BUNDLE_PATH }}
-          key: bundle-use-ruby-${{ matrix.os }}-${{ matrix.ruby-version }}-${{ hashFiles('solargraph-rspec.gemspec') }}
+          key: bundle-use-ruby-${{ matrix.os }}-${{ matrix.ruby-version }}-${{ hashFiles('solargraph-rspec.gemspec') }}-${{ hashFiles('solargraph-rspec.gemspec') }}-${{ hashFiles('.github/workflows/ruby.yml') }}
           restore-keys: |
-            bundle-use-ruby-${{ matrix.os }}-${{ matrix.ruby-version }}-${{ hashFiles('solargraph-rspec.gemspec') }}
+            bundle-use-ruby-${{ matrix.os }}-${{ matrix.ruby-version }}-${{ hashFiles('solargraph-rspec.gemspec') }}-${{ hashFiles('solargraph-rspec.gemspec') }}-${{ hashFiles('.github/workflows/ruby.yml') }}
+            bundle-use-ruby-${{ matrix.os }}-${{ matrix.ruby-version }}-${{ hashFiles('solargraph-rspec.gemspec') }}-${{ hashFiles('solargraph-rspec.gemspec') }}
+            bundle-use-ruby-${{ matrix.os }}-${{ matrix.ruby-version }}-${{ hashFiles('solargraph-rspec.gemspec') }}-
+            bundle-use-ruby-${{ matrix.os }}-${{ matrix.ruby-version }}-
+            bundle-use-ruby-${{ matrix.os }}-
 
       - name: Install dependencies
         run: |
@@ -75,6 +79,9 @@ jobs:
         with:
           path: ${{ env.SOLARGRAPH_CACHE }}
           key: os-${{ runner.os }}-ruby-${{ matrix.ruby-version }}-solargraph-${{ hashFiles('**/Gemfile.lock') }}
+        restore-keys: |
+          os-${{ runner.os }}-ruby-${{ matrix.ruby-version }}-solargraph-${{ hashFiles('**/Gemfile.lock') }}
+          os-${{ runner.os }}-ruby-${{ matrix.ruby-version }}-solargraph-
 
       - name: Configure .solargraph.yml
         run: cp .solargraph.yml.example .solargraph.yml
