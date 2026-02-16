@@ -375,7 +375,6 @@ RSpec.describe Solargraph::Rspec::Gems do
     end
 
     it 'completes mailer methods' do
-      pending("FIXME: Why it doesn't work?")
       load_string filename, <<~RUBY
         RSpec.describe SomeNamespace::Transaction, type: :mailer do
           it 'should do something' do
