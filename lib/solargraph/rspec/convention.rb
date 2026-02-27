@@ -11,6 +11,7 @@ require_relative 'correctors/subject_method_corrector'
 require_relative 'correctors/dsl_methods_corrector'
 require_relative 'gems'
 require_relative 'pin_factory'
+require_relative 'rspec_configure'
 
 module Solargraph
   module Rspec
@@ -86,8 +87,16 @@ module Solargraph
           root_example_group_namespace_pin: root_example_group_namespace_pin
         )
         pins += annotation_pins
+
+        # Add pins from RSpec.configure blocks
+        rspec_configure = RSpecConfigure.new(
+          config: config,
+          root_namespace_pin: root_example_group_namespace_pin
+        )
+        pins += rspec_configure.pins
+
         # TODO: Include gem requires conditionally based on Gemfile definition
-        requires = Solargraph::Rspec::Gems.gem_names
+        requires = Solargraph::Rspec::Gems.gem_names + rspec_configure.extra_requires
 
         if pins.any?
           Solargraph.logger.debug(
