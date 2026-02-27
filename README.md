@@ -77,27 +77,25 @@ Add `solargraph-rspec` to your `.solargraph.yml` as a plugin.
 ```
 ### Configuration
 
-If you have your own custom `let`-like memoized methods, you can add them to your `.solargraph.yml` file like this:
+You can customize the plugin behavior in your `.solargraph.yml`:
 
 ```yaml
 # .solargraph.yml
 # ...
 rspec:
+  # Custom let-like memoized methods (e.g., from rspec-given, test-prof)
   let_methods:
     - let_it_be
-```
 
-If you have your own custom `example`-like methods like `it`, you can add them to your `.solargraph.yml` file like this:
-
-```yaml
-# .solargraph.yml
-# ...
-rspec:
+  # Custom example-like methods (e.g., from rspec-given)
   example_methods:
     - my_it
-```
 
-This is useful if you use gems like [rspec-given](https://github.com/rspec-given/rspec-given) which introduces its own `let` and `example` methods.
+  # RSpec helper files to analyze for included modules (shared contexts, custom matchers)
+  config_helper_files:
+    - spec/spec_helper.rb
+    - spec/rails_helper.rb
+```
 
 
 ### Gem completions
