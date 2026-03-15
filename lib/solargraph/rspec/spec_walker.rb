@@ -1,6 +1,5 @@
 # frozen_string_literal: true
 
-require_relative 'walker'
 require_relative 'spec_walker/node_types'
 require_relative 'spec_walker/full_constant_name'
 require_relative 'spec_walker/rspec_context_namespace'
@@ -14,7 +13,7 @@ module Solargraph
       def initialize(source_map:, config:)
         @source_map = source_map
         @config = config
-        @walker = Rspec::Walker.new(source_map.source.node)
+        @ast = NodeTypes.to_rubocop_ast(source_map.source.node)
         @handlers = {
           on_described_class: [],
           on_let_method: [],
@@ -26,9 +25,6 @@ module Solargraph
           after_walk: []
         }
       end
-
-      # @return [Walker]
-      attr_reader :walker
 
       # @return [Config]
       attr_reader :config
@@ -97,7 +93,9 @@ module Solargraph
 
       # @return [void]
       def walk!
-        each_context_block(@walker.ast, Rspec::ROOT_NAMESPACE) do |namespace_name, block_ast|
+        return unless @ast
+
+        each_context_block(@ast, Rspec::ROOT_NAMESPACE) do |namespace_name, block_ast|
           desc_node = NodeTypes.context_description_node(block_ast)
 
           @handlers[:on_each_context_block].each do |handler|
@@ -106,73 +104,74 @@ module Solargraph
 
           if NodeTypes.a_constant?(desc_node) # rubocop:disable Style/Next
             @handlers[:on_described_class].each do |handler|
-              class_name_ast = NodeTypes.context_description_node(block_ast)
-              class_name = FullConstantName.from_ast(class_name_ast)
-              handler.call(class_name, PinFactory.build_location_range(class_name_ast))
+              class_name = FullConstantName.from_ast(desc_node)
+              handler.call(class_name, PinFactory.build_location_range(desc_node))
             end
           end
         end
 
-        walker.on :block do |block_ast|
-          next unless NodeTypes.a_let_block?(block_ast, config)
+        each_node(@ast, :block) do |block_ast|
+          if NodeTypes.a_let_block?(block_ast, @config)
+            method_name = NodeTypes.let_method_name(block_ast)
+            next unless method_name
 
-          method_name = NodeTypes.let_method_name(block_ast)
-          next unless method_name
+            fake_method_ast = FakeLetMethod.transform_block(block_ast, method_name)
 
-          fake_method_ast = FakeLetMethod.transform_block(block_ast, method_name)
-
-          @handlers[:on_let_method].each do |handler|
-            handler.call(method_name, PinFactory.build_location_range(block_ast.children[0]), fake_method_ast)
-          end
-        end
-
-        walker.on :block do |block_ast|
-          next unless NodeTypes.a_subject_block?(block_ast)
-
-          method_name = NodeTypes.let_method_name(block_ast)
-          fake_method_ast = FakeLetMethod.transform_block(block_ast, method_name || 'subject')
-
-          @handlers[:on_subject].each do |handler|
-            handler.call(method_name, PinFactory.build_location_range(block_ast.children[0]), fake_method_ast)
-          end
-        end
-
-        walker.on :block do |block_ast|
-          next unless NodeTypes.a_example_block?(block_ast, config)
-
-          @handlers[:on_example_block].each do |handler|
-            handler.call(PinFactory.build_location_range(block_ast))
+            @handlers[:on_let_method].each do |handler|
+              handler.call(method_name, PinFactory.build_location_range(block_ast.children[0]), fake_method_ast)
+            end
           end
 
-          # @param blocks_in_examples [::Parser::AST::Node]
-          each_block(block_ast.children[2]) do |blocks_in_examples|
-            @handlers[:on_blocks_in_examples].each do |handler|
-              handler.call(PinFactory.build_location_range(blocks_in_examples))
+          if NodeTypes.a_subject_block?(block_ast)
+            method_name = NodeTypes.let_method_name(block_ast)
+            fake_method_ast = FakeLetMethod.transform_block(block_ast, method_name || 'subject')
+
+            @handlers[:on_subject].each do |handler|
+              handler.call(method_name, PinFactory.build_location_range(block_ast.children[0]), fake_method_ast)
+            end
+          end
+
+          if NodeTypes.a_example_block?(block_ast, @config)
+            @handlers[:on_example_block].each do |handler|
+              handler.call(PinFactory.build_location_range(block_ast))
+            end
+
+            # @param blocks_in_examples [::Parser::AST::Node]
+            each_block(block_ast.children[2]) do |blocks_in_examples|
+              @handlers[:on_blocks_in_examples].each do |handler|
+                handler.call(PinFactory.build_location_range(blocks_in_examples))
+              end
+            end
+          end
+
+          if NodeTypes.a_hook_block?(block_ast) # rubocop:disable Style/Next
+            @handlers[:on_hook_block].each do |handler|
+              handler.call(PinFactory.build_location_range(block_ast))
+            end
+
+            # @param blocks_in_examples [::Parser::AST::Node]
+            each_block(block_ast.children[2]) do |blocks_in_examples|
+              @handlers[:on_blocks_in_examples].each do |handler|
+                handler.call(PinFactory.build_location_range(blocks_in_examples))
+              end
             end
           end
         end
-
-        walker.on :block do |block_ast|
-          next unless NodeTypes.a_hook_block?(block_ast)
-
-          @handlers[:on_hook_block].each do |handler|
-            handler.call(PinFactory.build_location_range(block_ast))
-          end
-
-          # @param blocks_in_examples [::Parser::AST::Node]
-          each_block(block_ast.children[2]) do |blocks_in_examples|
-            @handlers[:on_blocks_in_examples].each do |handler|
-              handler.call(PinFactory.build_location_range(blocks_in_examples))
-            end
-          end
-        end
-
-        walker.walk
 
         @handlers[:after_walk].each(&:call)
       end
 
       private
+
+      # @param ast [Parser::AST::Node]
+      # @param type [Symbol, nil]
+      # @yieldparam node [::Parser::AST::Node]
+      def each_node(ast, type = nil, &block)
+        return unless ast.is_a?(::Parser::AST::Node)
+
+        yield ast if type.nil? || ast.type == type
+        ast.children.each { |child| each_node(child, type, &block) }
+      end
 
       # @param ast [Parser::AST::Node]
       # @param parent_result [Object]

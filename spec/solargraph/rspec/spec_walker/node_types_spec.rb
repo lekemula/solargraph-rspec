@@ -2,7 +2,7 @@
 
 RSpec.describe Solargraph::Rspec::SpecWalker::NodeTypes do
   def parse(code)
-    Solargraph::Parser.parse(code)
+    Solargraph::Rspec::SpecWalker::NodeTypes.to_rubocop_ast(Solargraph::Parser.parse(code))
   end
 
   describe '.a_block?' do

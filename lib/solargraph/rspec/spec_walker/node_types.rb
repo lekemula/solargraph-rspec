@@ -4,73 +4,90 @@ module Solargraph
   module Rspec
     class SpecWalker
       class NodeTypes
-        # @param ast [::Parser::AST::Node]
-        # @return [Boolean]
-        def self.a_block?(ast)
-          ast.is_a?(::Parser::AST::Node) && ast.type == :block
+        BUILDER = RuboCop::AST::Builder.new
+        private_constant :BUILDER
+
+        BLOCK_METHOD_NAME = RuboCop::AST::NodePattern.new('(block (send _ $_ ...) ...)')
+        CONTEXT_DESCRIPTION_ARG = RuboCop::AST::NodePattern.new('(block (send _ _ $_ ...) ...)')
+        LET_SYMBOL_NAME = RuboCop::AST::NodePattern.new('(block (send _ _ (sym $_)) ...)')
+
+        # Converts a Parser::AST::Node tree to RuboCop::AST::Node using the
+        # RuboCop::AST::Builder, preserving all source locations.
+        # This is needed because NodePattern requires RuboCop::AST::Node.
+        # @param node [::Parser::AST::Node, Object]
+        # @return [RuboCop::AST::Node, Object]
+        def self.to_rubocop_ast(node)
+          return node unless node.is_a?(::Parser::AST::Node)
+          return node if node.is_a?(::RuboCop::AST::Node)
+
+          converted_children = node.children.map { |child| to_rubocop_ast(child) }
+          BUILDER.n(node.type, converted_children, node.loc)
         end
 
-        # @param block_ast [::Parser::AST::Node]
+        # @param ast [RuboCop::AST::Node]
+        # @return [Boolean]
+        def self.a_block?(ast)
+          ast.is_a?(::RuboCop::AST::Node) && ast.block_type?
+        end
+
+        # @param block_ast [RuboCop::AST::Node]
         # @return [Boolean]
         def self.a_context_block?(block_ast)
           Solargraph::Rspec::CONTEXT_METHODS.include?(method_with_block_name(block_ast))
         end
 
-        # @param block_ast [::Parser::AST::Node]
+        # @param block_ast [RuboCop::AST::Node]
         # @return [Boolean]
         def self.a_subject_block?(block_ast)
           Solargraph::Rspec::SUBJECT_METHODS.include?(method_with_block_name(block_ast))
         end
 
-        # @param block_ast [::Parser::AST::Node]
+        # @param block_ast [RuboCop::AST::Node]
         # @param config [Config]
         # @return [Boolean]
         def self.a_example_block?(block_ast, config)
           config.example_methods.map(&:to_s).include?(method_with_block_name(block_ast))
         end
 
-        # @param block_ast [::Parser::AST::Node]
+        # @param block_ast [RuboCop::AST::Node]
         # @param config [Config]
         # @return [Boolean]
         def self.a_let_block?(block_ast, config)
           config.let_methods.map(&:to_s).include?(method_with_block_name(block_ast))
         end
 
-        # @param block_ast [::Parser::AST::Node]
+        # @param block_ast [RuboCop::AST::Node]
         # @return [Boolean]
         def self.a_hook_block?(block_ast)
           Solargraph::Rspec::HOOK_METHODS.include?(method_with_block_name(block_ast))
         end
 
-        # @param [::Parser::AST::Node] ast
+        # @param ast [RuboCop::AST::Node]
         # @return [Boolean]
         def self.a_constant?(ast)
-          ast.type == :const
+          ast.is_a?(::RuboCop::AST::Node) && ast.const_type?
         end
 
-        # @param block_ast [::Parser::AST::Node]
-        # @return [String, nil] The name of the thing you are calling the block on
+        # @param block_ast [RuboCop::AST::Node]
+        # @return [String, nil] the name of the method called with the block
         def self.method_with_block_name(block_ast)
-          return nil unless a_block?(block_ast)
-          return nil unless block_ast.children[0].type == :send
-
-          block_ast.children[0].children[1].to_s
+          BLOCK_METHOD_NAME.match(block_ast)&.to_s
         end
 
-        # @param block_ast [::Parser::AST::Node]
-        # @return [::Parser::AST::Node, nil]
+        # @param block_ast [RuboCop::AST::Node]
+        # @return [RuboCop::AST::Node, nil]
         def self.context_description_node(block_ast)
           return nil unless a_context_block?(block_ast)
 
-          block_ast.children[0].children[2]
+          CONTEXT_DESCRIPTION_ARG.match(block_ast)
         end
 
-        # @param block_ast [::Parser::AST::Node]
+        # @param block_ast [RuboCop::AST::Node]
         # @return [String, nil]
         def self.let_method_name(block_ast)
           return nil unless a_block?(block_ast)
 
-          block_ast.children[0].children[2]&.children&.[](0)&.to_s # rubocop:disable Style/SafeNavigationChainLength
+          LET_SYMBOL_NAME.match(block_ast)&.to_s
         end
       end
     end

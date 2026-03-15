@@ -28,6 +28,7 @@ Gem::Specification.new do |spec|
   spec.executables = spec.files.grep(%r{\Aexe/}) { |f| File.basename(f) }
   spec.require_paths = ['lib']
 
+  spec.add_dependency 'rubocop-ast', '>= 1.0'
   spec.add_dependency 'solargraph', '>= 0.52.0'
 
   # For more information and examples about making a new gem, check out our
