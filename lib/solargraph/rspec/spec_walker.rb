@@ -1,19 +1,31 @@
 # frozen_string_literal: true
 
-require_relative 'spec_walker/node_types'
-require_relative 'spec_walker/full_constant_name'
-require_relative 'spec_walker/rspec_context_namespace'
-require_relative 'spec_walker/fake_let_method'
+require_relative 'walker'
 
 module Solargraph
   module Rspec
+    # Simple wrapper around [Walker] that provides RSpec-specific events and context for [SpecWalker::BaseProcessor]s.
     class SpecWalker
+      require_relative 'spec_walker/node_types'
+      require_relative 'spec_walker/base_processor'
+      require_relative 'spec_walker/full_constant_name'
+      require_relative 'spec_walker/rspec_context_namespace'
+      require_relative 'spec_walker/fake_let_method'
+      require_relative 'spec_walker/node_processors/blocks_in_examples_processor'
+      require_relative 'spec_walker/node_processors/context_block_processor'
+      require_relative 'spec_walker/node_processors/let_method_processor'
+      require_relative 'spec_walker/node_processors/subject_processor'
+      require_relative 'spec_walker/node_processors/example_block_processor'
+      require_relative 'spec_walker/node_processors/hook_block_processor'
+
       # @param source_map [SourceMap]
       # @param config [Config]
       def initialize(source_map:, config:)
         @source_map = source_map
         @config = config
-        @ast = NodeTypes.to_rubocop_ast(source_map.source.node)
+        @walker = Walker.new(NodeTypes.to_rubocop_ast(source_map.source.node))
+        @walker.context[:rspec_walker] = self
+        @in_example_or_hook_depth = 0
         @handlers = {
           on_described_class: [],
           on_let_method: [],
@@ -21,13 +33,17 @@ module Solargraph
           on_each_context_block: [],
           on_example_block: [],
           on_hook_block: [],
-          on_blocks_in_examples: [],
-          after_walk: []
+          on_blocks_in_examples: []
         }
       end
 
       # @return [Config]
       attr_reader :config
+
+      # @return [Array<String>]
+      def namespace_stack
+        @namespace_stack ||= [Rspec::ROOT_NAMESPACE]
+      end
 
       # @param block [Proc]
       # @yieldparam class_name [String]
@@ -88,125 +104,34 @@ module Solargraph
       # @param block [Proc]
       # @return [void]
       def after_walk(&block)
-        @handlers[:after_walk] << block
+        @walker.on_after_walk(&block)
       end
 
       # @return [void]
       def walk!
-        return unless @ast
-
-        each_context_block(@ast, Rspec::ROOT_NAMESPACE) do |namespace_name, block_ast|
-          desc_node = NodeTypes.context_description_node(block_ast)
-
-          @handlers[:on_each_context_block].each do |handler|
-            handler.call(namespace_name, PinFactory.build_location_range(block_ast))
-          end
-
-          if NodeTypes.a_constant?(desc_node) # rubocop:disable Style/Next
-            @handlers[:on_described_class].each do |handler|
-              class_name = FullConstantName.from_ast(desc_node)
-              handler.call(class_name, PinFactory.build_location_range(desc_node))
-            end
-          end
-        end
-
-        each_node(@ast, :block) do |block_ast|
-          if NodeTypes.a_let_block?(block_ast, @config)
-            method_name = NodeTypes.let_method_name(block_ast)
-            next unless method_name
-
-            fake_method_ast = FakeLetMethod.transform_block(block_ast, method_name)
-
-            @handlers[:on_let_method].each do |handler|
-              handler.call(method_name, PinFactory.build_location_range(block_ast.children[0]), fake_method_ast)
-            end
-          end
-
-          if NodeTypes.a_subject_block?(block_ast)
-            method_name = NodeTypes.let_method_name(block_ast)
-            fake_method_ast = FakeLetMethod.transform_block(block_ast, method_name || 'subject')
-
-            @handlers[:on_subject].each do |handler|
-              handler.call(method_name, PinFactory.build_location_range(block_ast.children[0]), fake_method_ast)
-            end
-          end
-
-          if NodeTypes.a_example_block?(block_ast, @config)
-            @handlers[:on_example_block].each do |handler|
-              handler.call(PinFactory.build_location_range(block_ast))
-            end
-
-            # @param blocks_in_examples [::Parser::AST::Node]
-            each_block(block_ast.children[2]) do |blocks_in_examples|
-              @handlers[:on_blocks_in_examples].each do |handler|
-                handler.call(PinFactory.build_location_range(blocks_in_examples))
-              end
-            end
-          end
-
-          if NodeTypes.a_hook_block?(block_ast) # rubocop:disable Style/Next
-            @handlers[:on_hook_block].each do |handler|
-              handler.call(PinFactory.build_location_range(block_ast))
-            end
-
-            # @param blocks_in_examples [::Parser::AST::Node]
-            each_block(block_ast.children[2]) do |blocks_in_examples|
-              @handlers[:on_blocks_in_examples].each do |handler|
-                handler.call(PinFactory.build_location_range(blocks_in_examples))
-              end
-            end
-          end
-        end
-
-        @handlers[:after_walk].each(&:call)
+        @walker.walk!
       end
 
-      private
-
-      # @param ast [Parser::AST::Node]
-      # @param type [Symbol, nil]
-      # @yieldparam node [::Parser::AST::Node]
-      def each_node(ast, type = nil, &block)
-        return unless ast.is_a?(::Parser::AST::Node)
-
-        yield ast if type.nil? || ast.type == type
-        ast.children.each { |child| each_node(child, type, &block) }
+      # @param event [Symbol]
+      # @param args [Array] Arguments to pass to event handlers
+      # @return [void]
+      def fire(event, *args)
+        @handlers.fetch(event, []).each { |h| h.call(*args) }
       end
 
-      # @param ast [Parser::AST::Node]
-      # @param parent_result [Object]
-      def each_block(ast, parent_result = nil, &block)
-        return nil unless ast.is_a?(::Parser::AST::Node)
-
-        if NodeTypes.a_block?(ast)
-          result = block&.call(ast, parent_result)
-          parent_result = result if result
-        end
-
-        ast.children.each { |child| each_block(child, parent_result, &block) }
+      # @return [Boolean]
+      def in_example_or_hook?
+        @in_example_or_hook_depth.positive?
       end
 
-      # Find all describe/context blocks in the AST.
-      # @yield [String, Parser::AST::Node]
-      # @param [Parser::AST::Node] ast
-      # @param [String] root_namespace
-      def each_context_block(ast, root_namespace = Rspec::ROOT_NAMESPACE, &block)
-        each_block(ast, root_namespace) do |block_ast, parent_namespace|
-          is_a_context = NodeTypes.a_context_block?(block_ast)
+      # @return [void]
+      def increment_example_depth!
+        @in_example_or_hook_depth += 1
+      end
 
-          next unless is_a_context
-
-          block_name = RspecContextNamespace.from_block_ast(block_ast)
-          next unless block_name
-
-          # @HACK: When we describe `SomeClass` without a namespace, Solargraph confuses described_class with the
-          # `RSpec::ExampleGroups::SomeClass` constant. To avoid this, we append the root namespace with "Test"
-          block_name = "Test#{block_name}" if parent_namespace == Rspec::ROOT_NAMESPACE
-
-          parent_namespace = namespace_name = "#{parent_namespace}::#{block_name}"
-          block&.call(namespace_name, block_ast)
-          next parent_namespace
-        end
+      # @return [void]
+      def decrement_example_depth!
+        @in_example_or_hook_depth -= 1
       end
     end
   end
