@@ -9,6 +9,7 @@ require_relative 'correctors/described_class_corrector'
 require_relative 'correctors/let_methods_corrector'
 require_relative 'correctors/subject_method_corrector'
 require_relative 'correctors/dsl_methods_corrector'
+require_relative 'generators/code_lens_generator'
 require_relative 'gems'
 require_relative 'pin_factory'
 require_relative 'rspec_configure'
@@ -58,6 +59,11 @@ module Solargraph
       Correctors::ExampleAndHookBlocksBindingCorrector,
       Correctors::LetMethodsCorrector,
       Correctors::SubjectMethodCorrector
+    ].freeze
+
+    # @type [Array<Class<Generators::Base>>]
+    GENERATOR_CLASSES = [
+      Generators::CodeLensGenerator
     ].freeze
 
     # Provides completion for RSpec DSL and helper methods.
@@ -127,8 +133,18 @@ module Solargraph
         pins = []
         # @type [Array<Pin::Namespace>]
         namespace_pins = []
+        # @type [Array<Solargraph::CodeLens>]
+        code_lenses = []
 
         rspec_walker = SpecWalker.new(source_map: source_map, config: config)
+
+        GENERATOR_CLASSES.each do |generator_class|
+          generator_class.new(
+            rspec_walker: rspec_walker,
+            config: config,
+            code_lenses: code_lenses
+          ).generate(source_map)
+        end
 
         CORRECTOR_CLASSES.each do |corrector_class|
           corrector_class.new(
@@ -147,7 +163,7 @@ module Solargraph
           )
         end
 
-        Environ.new(requires: [], pins: pins)
+        Environ.new(requires: [], pins: pins, code_lenses: code_lenses)
       rescue StandardError, SyntaxError => e
         raise e if ENV['SOLARGRAPH_DEBUG']
 

@@ -654,6 +654,17 @@ RSpec.describe Solargraph::Rspec::Convention do
     end
   end
 
+  it 'generates code lenses for each describe/context block' do
+    load_string filename, <<~RUBY
+      RSpec.describe SomeNamespace::Transaction, type: :model do
+        describe 'nested' do
+        end
+      end
+    RUBY
+
+    expect(api_map.source_map(filename).convention_code_lenses.size).to eq(2)
+  end
+
   describe 'configurations' do
     describe 'let_methods' do
       before(:each) do
