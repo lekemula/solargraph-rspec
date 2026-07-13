@@ -433,8 +433,7 @@ RSpec.describe Solargraph::Rspec::Convention do
     end
 
     it 'infers type for some_nil' do
-      skip 'FIXME: Not sure that this inference is necessary'
-      load_and_assert_type('let(:some_nil) { nil }', 'some_nil', 'NilClass')
+      load_and_assert_type('let(:some_nil) { nil }', 'some_nil', 'nil')
     end
 
     it 'infers type for some_float' do
