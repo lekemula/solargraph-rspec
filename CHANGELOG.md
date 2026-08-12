@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.6.0] - 2026-08-12
+
 ### Added
 - Add Rspec included modules support by @ShadiestGoat in #32
 
@@ -14,6 +16,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Chore: Test solargraph prereleases (#31)
 - Chore: More reliable closure and location updates by @apiology in #30
 - Chore: Less limiting of gem pin processing in specs by @apiology in #29
+Avoid inference from literal values by @castwide (#34)
+- Chore: fix failing specs (#35)
 
 
 ## [0.5.5] - 2025-10-05
