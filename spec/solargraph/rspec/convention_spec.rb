@@ -548,7 +548,7 @@ RSpec.describe Solargraph::Rspec::Convention do
       assert_public_instance_method_inferred_type(
         api_map,
         'RSpec::ExampleGroups::TestSomeNamespaceTransaction#some_nil',
-        'NilClass'
+        'nil'
       )
       assert_public_instance_method_inferred_type(
         api_map,
