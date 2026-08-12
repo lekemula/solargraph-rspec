@@ -421,7 +421,7 @@ RSpec.describe Solargraph::Rspec::Convention do
     end
 
     it 'infers type for some_array' do
-      load_and_assert_type('let(:some_array) { [1, 2, 3] }', 'some_array', 'Array<Integer>')
+      load_and_assert_type('let(:some_array) { [1, 2, 3] }', 'some_array', 'Array')
     end
 
     it 'infers type for some_hash' do
@@ -433,7 +433,7 @@ RSpec.describe Solargraph::Rspec::Convention do
     end
 
     it 'infers type for some_nil' do
-      load_and_assert_type('let(:some_nil) { nil }', 'some_nil', 'NilClass')
+      load_and_assert_type('let(:some_nil) { nil }', 'some_nil', 'nil')
     end
 
     it 'infers type for some_float' do
@@ -533,7 +533,7 @@ RSpec.describe Solargraph::Rspec::Convention do
       assert_public_instance_method_inferred_type(
         api_map,
         'RSpec::ExampleGroups::TestSomeNamespaceTransaction#some_array',
-        'Array<Integer>'
+        'Array'
       )
       assert_public_instance_method_inferred_type(
         api_map,
