@@ -53,12 +53,10 @@ module Solargraph
         # @param namespace_pin [Pin::Namespace]
         # @return [Pin::Method]
         def implicit_subject_method(described_class_pin, namespace_pin)
-          described_class = described_class_pin.return_type.first.subtypes.first.name
-
           PinFactory.build_public_method(
             namespace_pin,
             'subject',
-            types: ["::#{described_class}"],
+            types: [described_class_pin.return_type.reduce_class_type.rooted_tags],
             location: described_class_pin.location,
             scope: :instance
           )
