@@ -47,7 +47,7 @@ module Solargraph
         # @see https://github.com/rspec/rspec-rails#what-tests-should-i-write
         # @see https://github.com/rspec/rspec-rails#helpful-rails-matchers
         GemHelpers.new(
-          required_gems: %w[rspec-rails actionmailer activesupport actionpack],
+          required_gems: %w[rspec-rails actionmailer action_mailer activesupport actionpack],
           helper_modules: [
             'RSpec::Rails::Matchers',
             'ActionController::TestCase::Behavior',
