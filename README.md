@@ -21,6 +21,7 @@ This gem aims to provide better support for RSpec in Solargraph and it supports 
     - [rspec-sidekiq](https://github.com/wspurgin/rspec-sidekiq)
     - [airborne](https://github.com/brooklynDev/airborne)
   - Custom DSL extensions support (see [Configuration](#configuration) section)
+  - "▶ Run RSpec" code lenses for the whole file and every `describe`/`context`/example block (requires a Solargraph version with code lens support)
   - and more to come... ⏲️
 
 ![solargraph-rspec-with-types](./doc/images/vim_demo.gif)
@@ -95,6 +96,11 @@ rspec:
   config_helper_files:
     - spec/spec_helper.rb
     - spec/rails_helper.rb
+
+  # Run code lens commands through Bundler, i.e. `bundle exec rspec ...` (default: false)
+  use_bundler: true
+  # Bundler executable used when `use_bundler` is enabled (default: bundle)
+  bundler_path: bin/bundle
 ```
 
 
