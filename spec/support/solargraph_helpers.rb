@@ -33,13 +33,17 @@ module SolargraphHelpers
     yield pin if block_given?
   end
 
+  # return_type may be one accepted inferred-type string, or several -
+  # lets a spec pass against both a Solargraph release and a checkout
+  # with a not-yet-released literal-inference improvement, without
+  # requiring the improvement to be merged first.
   def assert_public_instance_method_inferred_type(map, query, return_type)
     pin = find_pin(query, map)
     expect(pin).to_not be_nil, "Method #{query} not found"
     expect(pin.scope).to eq(:instance)
     inferred_return_type = pin.probe(api_map).simplify_literals.to_s
 
-    expect(inferred_return_type).to eq(return_type)
+    expect(Array(return_type)).to include(inferred_return_type)
 
     yield pin if block_given?
   end
