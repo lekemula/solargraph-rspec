@@ -58,7 +58,15 @@ RSpec.describe Solargraph::Rspec::FactoryBot do
     end
 
     it 'gets traits' do
-      expect(factory(:user).traits.keys).to eql(%i[admin banned])
+      expect(factory(:user).traits.map(&:name)).to eql(%i[admin banned])
+    end
+
+    it 'keeps the comment and location of each trait' do
+      admin = factory(:user).traits.first
+
+      expect(admin.comment).to eql('Grants every permission')
+      expect(admin.location.filename).to eql(File.join(project_root, 'spec/factories/users.rb'))
+      expect(admin.location.range.start.line).to eql(20)
     end
 
     it 'locates each signature at its factory definition' do
@@ -87,7 +95,7 @@ RSpec.describe Solargraph::Rspec::FactoryBot do
 
       it 'inherits the parent attributes and traits' do
         expect(factory(:moderator).kwargs).to include(:first_name, :permissions)
-        expect(factory(:moderator).traits.keys).to eql(%i[admin banned])
+        expect(factory(:moderator).traits.map(&:name)).to eql(%i[admin banned])
       end
 
       it 'does not leak nested factory attributes into the parent' do

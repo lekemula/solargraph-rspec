@@ -21,7 +21,7 @@ module Solargraph
       # @param class_name [String, nil] The class given via the `class:` option
       # @param parent [Symbol, nil] The factory this one inherits from
       # @param modification [Boolean] Whether the factory is re-opened by `FactoryBot.modify`
-      # @param traits [Hash{Symbol => String}] Trait names and their comments
+      # @param traits [Array<Trait>]
       # @param kwargs [Array<Symbol>] Any available kwargs
       # @param docs [YARD::Docstring] The parsed docs
       # @param location [Solargraph::Location] Where the factory is defined
@@ -29,6 +29,11 @@ module Solargraph
         :factory_names, :model_class, :class_name, :parent, :modification, :traits, :kwargs, :docs, :location,
         keyword_init: true
       )
+
+      # @param name [Symbol]
+      # @param comment [String] The comments preceding the trait, on one line
+      # @param location [Solargraph::Location] Where the trait is defined
+      Trait = Struct.new(:name, :comment, :location, keyword_init: true)
 
       UnresolvedAssociation = Struct.new(
         # @return [Symbol] The column name
@@ -111,7 +116,7 @@ module Solargraph
         unless factory.traits.empty?
           sig.parameters << Solargraph::Pin::Parameter.new(
             name: 'traits',
-            return_type: Solargraph::ComplexType.parse(*factory.traits.keys.map { |n| ":#{n}" }),
+            return_type: Solargraph::ComplexType.parse(*factory.traits.map { |trait| ":#{trait.name}" }),
             closure: sig,
             decl: :restarg
           )
@@ -133,8 +138,8 @@ module Solargraph
         docstring = factory.docs.dup
         return docstring if factory.traits.empty?
 
-        traits_doc = factory.traits.map do |name, comment|
-          comment.empty? ? "`:#{name}`" : "`:#{name}` (#{comment})"
+        traits_doc = factory.traits.map do |trait|
+          trait.comment.empty? ? "`:#{trait.name}`" : "`:#{trait.name}` (#{trait.comment})"
         end.join(', ')
         docstring.add_tag(YARD::Tags::Tag.new(:param, traits_doc, nil, 'traits'))
         docstring
@@ -220,7 +225,7 @@ module Solargraph
             merged.class_name ||= definition.class_name
             merged.parent ||= definition.parent
             merged.kwargs |= definition.kwargs
-            merged.traits = definition.traits.merge(merged.traits)
+            merged.traits = merge_traits(definition.traits, merged.traits)
             add_missing_param_tags(merged.docs, definition.docs)
             merged
           end
@@ -249,7 +254,7 @@ module Solargraph
           ancestors(factory, factories).each do |ancestor|
             kwargs, traits, docs = own[ancestor]
             factory.kwargs = kwargs | factory.kwargs
-            factory.traits = traits.merge(factory.traits)
+            factory.traits = merge_traits(traits, factory.traits)
             add_missing_param_tags(factory.docs, docs)
           end
         end
@@ -270,6 +275,14 @@ module Solargraph
         end
 
         result
+      end
+
+      # @param traits [Array<Trait>]
+      # @param overriding_traits [Array<Trait>]
+      # @return [Array<Trait>] The traits, with those of the same name replaced by the overriding ones
+      def merge_traits(traits, overriding_traits)
+        names = overriding_traits.map(&:name)
+        traits.reject { |trait| names.include?(trait.name) } + overriding_traits
       end
 
       # @param docs [YARD::Docstring]
@@ -301,7 +314,7 @@ module Solargraph
             modification: factory.modification,
             location: Solargraph::Location.new(File.expand_path(source.filename), factory.location_range),
             kwargs: [],
-            traits: {}
+            traits: []
           )
           factories[factory] = data
           comments[data] = factory.comments
@@ -319,8 +332,13 @@ module Solargraph
           unresolved_associations << UnresolvedAssociation.new(attribute_name, factory.name, target_factory_name)
         end
 
-        walker.on_trait do |factory, trait_name, trait_comments, _location_range|
-          factories[factory].traits[trait_name] = trait_comments.tr("\n", ' ')
+        walker.on_trait do |factory, trait_name, trait_comments, location_range|
+          trait = Trait.new(
+            name: trait_name,
+            comment: trait_comments.tr("\n", ' '),
+            location: Solargraph::Location.new(File.expand_path(source.filename), location_range)
+          )
+          factories[factory].traits = merge_traits(factories[factory].traits, [trait])
         end
 
         walker.walk!
