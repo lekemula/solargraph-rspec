@@ -61,6 +61,13 @@ RSpec.describe Solargraph::Rspec::FactoryBot do
       expect(factory(:user).traits.keys).to eql(%i[admin banned])
     end
 
+    it 'locates each signature at its factory definition' do
+      location = find_factory_sig(:post).location
+
+      expect(location.filename).to eql(File.join(project_root, 'spec/factories/posts.rb'))
+      expect(location.range.start.line).to eql(6)
+    end
+
     it 'returns a list of models from _list methods' do
       list = pins.find { |p| p.is_a?(Solargraph::Pin::Method) && p.name == 'create_list' }
       sig = list.signatures.find { |s| s.parameters.first.return_type.to_s == ':post' }

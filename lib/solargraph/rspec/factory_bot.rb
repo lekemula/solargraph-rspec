@@ -24,8 +24,9 @@ module Solargraph
       # @param traits [Hash{Symbol => String}] Trait names and their comments
       # @param kwargs [Array<Symbol>] Any available kwargs
       # @param docs [YARD::Docstring] The parsed docs
+      # @param location [Solargraph::Location] Where the factory is defined
       FactoryData = Struct.new(
-        :factory_names, :model_class, :class_name, :parent, :modification, :traits, :kwargs, :docs,
+        :factory_names, :model_class, :class_name, :parent, :modification, :traits, :kwargs, :docs, :location,
         keyword_init: true
       )
 
@@ -89,6 +90,7 @@ module Solargraph
           return_type: Solargraph::ComplexType.parse(list ? "Array<#{factory.model_class}>" : factory.model_class),
           closure: method,
           docstring: signature_docstring(factory),
+          location: factory.location,
           parameters: []
         )
 
@@ -297,6 +299,7 @@ module Solargraph
             class_name: factory.class_name,
             parent: factory.parent,
             modification: factory.modification,
+            location: Solargraph::Location.new(File.expand_path(source.filename), factory.location_range),
             kwargs: [],
             traits: {}
           )
