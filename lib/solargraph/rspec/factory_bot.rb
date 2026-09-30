@@ -1,5 +1,7 @@
 # frozen_string_literal: true
 
+require_relative 'factory_bot_walker'
+
 module Solargraph
   module Rspec
     class FactoryBot
@@ -11,9 +13,6 @@ module Solargraph
         'spec/factories.rb',
         'spec/factories/**/*.rb'
       ].freeze
-
-      ALWAYS_IGNORE = %i[after before callbacks to_create].freeze
-      SPECIAL_CALLBACKS = %i[add_attribute sequence association trait].freeze
 
       # @param factory_names [Array<Symbol>] Names & aliases. The first name is the "official" factory name
       # @param model_class [String] The class that this factory should uses
@@ -28,9 +27,7 @@ module Solargraph
         # @return [Symbol] The factory from which this is being made
         :source_factory,
         # @return [Symbol] The factory to which this association associates to
-        :target_factory,
-        # @return [::Parser::AST::Node] The node that does the association
-        :node
+        :target_factory
       )
 
       def self.instance
@@ -178,109 +175,72 @@ module Solargraph
         factories
       end
 
-      # @param src [Solargraph::Source]
+      # @param source [Solargraph::Source]
       # @return [Array(Array<FactoryData>, Array<UnresolvedAssociation>)]
-      def extract_factories_from_source(src)
-        walker = Walker.new(src.node)
-        # @type [Array<FactoryData>]
-        factories = []
+      def extract_factories_from_source(source)
+        walker = FactoryBotWalker.new(source)
+        # @type [Hash{FactoryBotWalker::Factory => FactoryData}]
+        factories = {}.compare_by_identity
+        # @type [Hash{FactoryData => String}]
+        comments = {}.compare_by_identity
         unresolved_associations = []
 
-        walker.on :block, [:send, nil, :factory] do |ast|
-          factory_cfg = ast.children.first.children
-          next if factory_cfg.length < 3
-          next unless factory_cfg[2].type == :sym
-
-          # @type [Array<Symbol>]
-          factory_names = [factory_cfg[2].children[0]]
-          model_class = factory_names[0].to_s.split('_').collect(&:capitalize).join
-
-          if factory_cfg.length > 3 && factory_cfg[3].type == :hash
-            factory_cfg[3].children.each do |pair|
-              case pair.children[0].children[0]
-              when :aliases
-                if pair.children[1].type == :array
-                  pair.children[1].children.each do |n|
-                    factory_names << n.children[0] if n.type == :sym
-                  end
-                end
-              when :class
-                if pair.children[1].type == :str
-                  model_class = pair.children[1].children[0]
-                elsif pair.children[1].type == :const
-                  model_class = pair.children[1].children[1].to_s
-                end
-              end
-            end
-          end
-
-          kwargs = []
-          traits = []
-          comments = src.comments_for(ast) || ''
-
-          unless ast.children[2].nil?
-            w = Walker.new(ast.children[2])
-
-            w.on :send do |ast|
-              col = ast.children[1]
-              next if ALWAYS_IGNORE.include? col
-
-              if SPECIAL_CALLBACKS.include? col
-                # these lads need an arg or more
-                next if ast.children.length < 3
-                next unless ast.children[2].type == :sym
-
-                mod = col
-                col = ast.children[2].children.first
-
-                if mod == :trait
-                  # Traits can't have docs so
-                  traits << col
-                  next
-                elsif mod == :association
-                  unresolved_associations << UnresolvedAssociation.new(col, factory_names.first,
-                                                                       extract_association_name_from_ast(col, ast), ast)
-                end
-              end
-
-              comment = comment_for_attribute(src, col, ast)
-              comments += "#{comment}\n" unless comment.nil?
-              kwargs << col
-            end
-
-            w.walk
-          end
-
-          # Fun fact: solargraph captures errors & guarantees a parser to be returned
-          docstring = Solargraph::Source.parse_docstring(comments).to_docstring
-
-          return_tags = docstring.tags(:return)
-          unless return_tags.empty?
-            # goal is to keep comments but ignore types, so that we can have stuff like create_list
-            docstring.delete_tags(:return)
-            tag = return_tags.first
-            tag.types = nil
-            docstring.add_tag(tag)
-          end
-
-          factories << FactoryData.new(
-            factory_names: factory_names,
-            model_class: model_class,
-            kwargs: kwargs,
-            traits: traits,
-            docs: docstring
+        walker.on_factory do |factory|
+          data = FactoryData.new(
+            factory_names: factory.names,
+            model_class: factory.class_name || factory.name.to_s.split('_').collect(&:capitalize).join,
+            kwargs: [],
+            traits: []
           )
+          factories[factory] = data
+          comments[data] = factory.comments
         end
 
-        walker.walk
+        walker.on_attribute do |factory, attribute_name, attribute_comments, _location_range|
+          data = factories[factory]
+          data.kwargs << attribute_name
 
-        [factories, unresolved_associations]
+          comment = comment_for_attribute(attribute_name, attribute_comments)
+          comments[data] += "\n#{comment}" unless comment.nil?
+        end
+
+        walker.on_association do |factory, attribute_name, target_factory_name, _location_range|
+          unresolved_associations << UnresolvedAssociation.new(attribute_name, factory.name, target_factory_name)
+        end
+
+        walker.on_trait do |factory, trait_name, _comments, _location_range|
+          factories[factory].traits << trait_name
+        end
+
+        walker.walk!
+
+        factories.each_value { |data| data.docs = parse_docstring(comments[data]) }
+
+        [factories.values, unresolved_associations]
       end
 
-      def comment_for_attribute(src, name, node)
-        comment = src.comments_for(node)
-        return nil if comment.nil?
+      # @param comments [String]
+      # @return [YARD::Docstring]
+      def parse_docstring(comments)
+        # Fun fact: solargraph captures errors & guarantees a parser to be returned
+        docstring = Solargraph::Source.parse_docstring(comments).to_docstring
 
+        return_tags = docstring.tags(:return)
+        unless return_tags.empty?
+          # goal is to keep comments but ignore types, so that we can have stuff like create_list
+          docstring.delete_tags(:return)
+          tag = return_tags.first
+          tag.types = nil
+          docstring.add_tag(tag)
+        end
+
+        docstring
+      end
+
+      # @param name [Symbol]
+      # @param comment [String]
+      # @return [String, nil]
+      def comment_for_attribute(name, comment)
         if comment.start_with?('@return ')
           comment = comment[7..]
         elsif comment.start_with?('@type ')
@@ -290,29 +250,6 @@ module Solargraph
         end
 
         "@param #{name}#{comment}"
-      end
-
-      # @param col [Symbol]
-      # @param ast [::Parser::AST::Node]
-      def extract_association_name_from_ast(col, ast)
-        return col if ast.children.last&.type != :hash
-
-        factory_pair = ast.children.last.children.find do |n|
-          n.type == :pair && n.children[0].type == :sym && n.children[0].children[0] == :factory
-        end
-        return col if factory_pair.nil?
-
-        if factory_pair.children[1].type == :array
-          return col if factory_pair.children[1].children.empty?
-
-          name = factory_pair.children[1].children.first
-        else
-          name = factory_pair.children[1]
-        end
-
-        return col if name.type != :sym
-
-        name.children[0]
       end
     end
   end
