@@ -108,6 +108,10 @@ RSpec.describe Solargraph::Rspec::FactoryBot do
         expect(factory(:user).kwargs).to include(:posts_count)
       end
 
+      it 'lists attributes redefined in traits once' do
+        expect(factory(:admin_account).kwargs).to eql(%i[plan])
+      end
+
       it 'gets kw args defined in traits' do
         expect(factory(:user).kwargs).to include(:role)
       end

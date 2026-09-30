@@ -306,7 +306,7 @@ module Solargraph
 
         walker.on_attribute do |factory, attribute_name, attribute_comments, _location_range|
           data = factories[factory]
-          data.kwargs << attribute_name
+          data.kwargs << attribute_name unless data.kwargs.include?(attribute_name)
 
           tag = param_tag_for_attribute(attribute_name, attribute_comments)
           attribute_tags[data] << tag if tag
