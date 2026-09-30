@@ -7,9 +7,13 @@ FactoryBot.define do
     first_name { 'John' }
     last_name { 'Doe' }
     sequence(:email) { |n| "user#{n}@example.com" }
+    token { SecureRandom.hex }
+    # @return [String] Ignored, the associated factory wins
+    association :account, factory: :admin_account
 
     transient do
-      # @return [Integer]
+      # @return [Integer] Number of posts to create
+      #   along with the user
       posts_count { 0 }
     end
 
