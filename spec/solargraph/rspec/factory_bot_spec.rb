@@ -268,5 +268,33 @@ RSpec.describe Solargraph::Rspec::FactoryBot do
         'Admin::Account', 'Admin::Account', 'Post', 'Post', 'User', 'User'
       )
     end
+
+    it 'prefers the factory methods over the ones documented by the factory_bot gem' do
+      # A trimmed copy of factory_bot/syntax/methods.rb
+      gem_source = parse_string('factory_bot/syntax/methods.rb', <<~RUBY)
+        module FactoryBot
+          module Syntax
+            module Methods
+              # @!method build(name, *traits_and_overrides, &block)
+              #   @return [Object]
+              # @!method create(name, *traits_and_overrides, &block)
+              #   @return [Object]
+              # @!method build_list(name, amount, *traits_and_overrides, &block)
+              #   @return [Array]
+              # @!method create_list(name, amount, *traits_and_overrides, &block)
+              #   @return [Array]
+            end
+          end
+        end
+      RUBY
+      models = Dir['app/models/**/*.rb'].map { |file| parse_string(File.expand_path(file), File.read(file)) }
+      load_sources(gem_source, *models, parse_string(spec_file, "RSpec.describe User do\nend\n"))
+
+      %w[build create build_list create_list].each do |method_name|
+        first = api_map.get_method_stack('FactoryBot::Syntax::Methods', method_name).first
+
+        expect(first.signatures.size).to be > 1, "expected the factory pin for #{method_name} first"
+      end
+    end
   end
 end

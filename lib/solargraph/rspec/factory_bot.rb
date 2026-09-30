@@ -38,20 +38,31 @@ module Solargraph
         :target_factory
       )
 
+      # @return [Array<Solargraph::Pin::Base>]
       def pins
+        namespace_pins + SYNTAX_MODULES.flat_map { |namespace| method_pins(namespace) }
+      end
+
+      # @return [Array<Solargraph::Pin::Namespace>] The syntax modules and their enclosing modules
+      def namespace_pins
         return [] if factories.empty?
 
-        namespace_pins = SYNTAX_MODULES.flat_map { |name| build_module_chain(name) }
-        syntax_pins = namespace_pins.select { |pin| SYNTAX_MODULES.include?(pin.path) }
+        @namespace_pins ||= SYNTAX_MODULES.flat_map { |name| build_module_chain(name) }
+      end
 
-        namespace_pins + syntax_pins.flat_map do |namespace|
-          [
-            build_method('create', namespace),
-            build_method('build', namespace),
-            build_method('create_list', namespace, list: true),
-            build_method('build_list', namespace, list: true)
-          ]
-        end
+      # @param namespace [String] e.g. `FactoryBot::Syntax::Methods`
+      # @return [Array<Solargraph::Pin::Method>]
+      def method_pins(namespace)
+        syntax_pin = namespace_pins.find { |pin| pin.path == namespace }
+        return [] unless syntax_pin
+
+        @method_pins ||= {}
+        @method_pins[namespace] ||= [
+          build_method('create', syntax_pin),
+          build_method('build', syntax_pin),
+          build_method('create_list', syntax_pin, list: true),
+          build_method('build_list', syntax_pin, list: true)
+        ]
       end
 
       private

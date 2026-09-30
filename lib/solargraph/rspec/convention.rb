@@ -159,6 +159,29 @@ module Solargraph
         EMPTY_ENVIRON
       end
 
+      # The factory methods are provided per object rather than globally: methods a convention provides for a
+      # namespace come before the store's, so they win over the factory_bot gem's own `create`/`build` pins.
+      #
+      # @param _api_map [ApiMap]
+      # @param rooted_tag [String]
+      # @param scope [Symbol]
+      # @param _visibility [Array<Symbol>]
+      # @param _deep [Boolean]
+      # @param _skip [Set<String>]
+      # @param _no_core [Boolean]
+      # @return [Environ]
+      def object(_api_map, rooted_tag, scope, _visibility, _deep, _skip, _no_core)
+        return EMPTY_ENVIRON unless @factory_bot && scope == :instance
+
+        pins = @factory_bot.method_pins(rooted_tag.delete_prefix('::'))
+        pins.empty? ? EMPTY_ENVIRON : Environ.new(pins: pins)
+      rescue StandardError => e
+        raise e if ENV['SOLARGRAPH_DEBUG']
+
+        Solargraph.logger.warn("[RSpec] Error processing factory pins for #{rooted_tag}: #{e.message}")
+        EMPTY_ENVIRON
+      end
+
       private
 
       # @return [Config]
@@ -168,7 +191,8 @@ module Solargraph
 
       # @return [Array<Pin::Base>]
       def factory_bot_pins
-        FactoryBot.new.pins
+        @factory_bot = FactoryBot.new
+        @factory_bot.namespace_pins
       rescue StandardError => e
         raise e if ENV['SOLARGRAPH_DEBUG']
 
