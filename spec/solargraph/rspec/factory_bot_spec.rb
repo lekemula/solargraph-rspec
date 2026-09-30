@@ -220,6 +220,45 @@ RSpec.describe Solargraph::Rspec::FactoryBot do
       expect(completion_at(spec_file, [2, 8])).to include('create', 'create_list')
     end
 
+    # Released Solargraph versions pick the first overload whose arity matches, whatever the literal argument
+    #
+    # @return [Boolean]
+    def literal_overloads_supported?
+      map = Solargraph::ApiMap.new
+      map.map(parse_string('overloads.rb', <<~RUBY))
+        # @overload pick(name)
+        #   @param name [:a]
+        #   @return [Integer]
+        # @overload pick(name)
+        #   @param name [:b]
+        #   @return [String]
+        def pick(name); end
+        value = pick(:b)
+      RUBY
+      map.source_map('overloads.rb').locals.find { |l| l.name == 'value' }.probe(map).to_s == 'String'
+    end
+
+    it 'infers the model built by the named factory' do
+      pending 'Solargraph matching overloads by literal argument' unless literal_overloads_supported?
+
+      load_spec(<<~RUBY)
+        RSpec.describe User do
+          let(:user) { create(:user, :admin, first_name: 'Jane') }
+          let(:posts) { create_list(:post, 2) }
+
+          it 'works' do
+            user.full
+            posts.first.publ
+            create(:admin_account).susp
+          end
+        end
+      RUBY
+
+      expect(completion_at(spec_file, [5, 13])).to include('full_name')
+      expect(completion_at(spec_file, [6, 20])).to include('publish!')
+      expect(completion_at(spec_file, [7, 30])).to include('suspend!')
+    end
+
     it 'offers one create signature per factory' do
       load_spec("RSpec.describe User do\nend\n")
 
