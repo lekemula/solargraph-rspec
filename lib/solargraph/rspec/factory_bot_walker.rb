@@ -32,9 +32,14 @@ module Solargraph
       #   @return [Symbol, nil] The enclosing factory's name, or the `parent:` option
       # @!attribute [r] comments
       #   @return [String] The comments preceding the factory definition
+      # @!attribute [r] modification
+      #   @return [Boolean] Whether the factory is re-opened by `FactoryBot.modify`
       # @!attribute [r] location_range
       #   @return [Solargraph::Range]
-      Factory = Struct.new(:names, :class_name, :parent, :comments, :location_range, keyword_init: true) do
+      Factory = Struct.new(
+        :names, :class_name, :parent, :comments, :modification, :location_range,
+        keyword_init: true
+      ) do
         # @return [Symbol]
         def name
           names.first
@@ -105,8 +110,9 @@ module Solargraph
         @walker.on :block do |block_ast|
           next unless define_block?(block_ast)
 
+          modification = block_ast.children[0].children[1] == :modify
           each_statement(block_ast.children[2]) do |statement|
-            visit_factory(statement) if call_name(statement) == :factory
+            visit_factory(statement, modification: modification) if call_name(statement) == :factory
           end
         end
 
@@ -132,8 +138,9 @@ module Solargraph
 
       # @param node [::Parser::AST::Node] `factory` call, with or without a block
       # @param parent [Factory, nil]
+      # @param modification [Boolean]
       # @return [void]
-      def visit_factory(node, parent = nil)
+      def visit_factory(node, parent = nil, modification: parent&.modification || false)
         name = symbol_value(call_args(node).first)
         return unless name
 
@@ -143,6 +150,7 @@ module Solargraph
           class_name: class_name_value(options[:class]),
           parent: symbol_value(options[:parent]) || parent&.name,
           comments: comments_for(node),
+          modification: modification,
           location_range: Solargraph::Parser.node_range(node)
         )
 

@@ -17,11 +17,17 @@ module Solargraph
       SYNTAX_MODULES = %w[FactoryBot::Syntax::Methods FactoryGirl::Syntax::Methods].freeze
 
       # @param factory_names [Array<Symbol>] Names & aliases. The first name is the "official" factory name
-      # @param model_class [String] The class that this factory should uses
+      # @param model_class [String] The class that this factory builds
+      # @param class_name [String, nil] The class given via the `class:` option
+      # @param parent [Symbol, nil] The factory this one inherits from
+      # @param modification [Boolean] Whether the factory is re-opened by `FactoryBot.modify`
       # @param traits [Array<Symbol>] A list of trait names
       # @param kwargs [Array<Symbol>] Any available kwargs
       # @param docs [YARD::Docstring] The parsed docs
-      FactoryData = Struct.new(:factory_names, :model_class, :traits, :kwargs, :docs, keyword_init: true)
+      FactoryData = Struct.new(
+        :factory_names, :model_class, :class_name, :parent, :modification, :traits, :kwargs, :docs,
+        keyword_init: true
+      )
 
       UnresolvedAssociation = Struct.new(
         # @return [Symbol] The column name
@@ -148,6 +154,9 @@ module Solargraph
           end
         end
 
+        factories = merge_modified_factories(factories)
+        factories.each { |factory| factory.model_class = resolve_model_class(factory, factories) }
+
         associations.each do |cfg|
           cfg[1].each do |ass|
             target = factories.find { |f| f.factory_names.include? ass.target_factory }
@@ -171,7 +180,81 @@ module Solargraph
           end
         end
 
+        inherit_from_parents(factories)
+
         factories
+      end
+
+      # `FactoryBot.modify` re-opens a factory, so definitions sharing a name are merged into the first one
+      #
+      # @param factories [Array<FactoryData>]
+      # @return [Array<FactoryData>]
+      def merge_modified_factories(factories)
+        factories.group_by { |factory| factory.factory_names.first }.values.map do |definitions|
+          definitions.sort_by { |definition| definition.modification ? 1 : 0 }.reduce do |merged, definition|
+            merged.factory_names |= definition.factory_names
+            merged.class_name ||= definition.class_name
+            merged.parent ||= definition.parent
+            merged.kwargs |= definition.kwargs
+            merged.traits |= definition.traits
+            add_missing_param_tags(merged.docs, definition.docs)
+            merged
+          end
+        end
+      end
+
+      # @param factory [FactoryData]
+      # @param factories [Array<FactoryData>]
+      # @return [String]
+      def resolve_model_class(factory, factories)
+        return factory.class_name if factory.class_name
+
+        parent = ancestors(factory, factories).find(&:class_name)
+        return parent.class_name if parent
+
+        root = ancestors(factory, factories).last || factory
+        root.factory_names.first.to_s.split('_').collect(&:capitalize).join
+      end
+
+      # @param factories [Array<FactoryData>]
+      # @return [void]
+      def inherit_from_parents(factories)
+        own = factories.to_h { |factory| [factory, [factory.kwargs, factory.traits, factory.docs]] }
+
+        factories.each do |factory|
+          ancestors(factory, factories).each do |ancestor|
+            kwargs, traits, docs = own[ancestor]
+            factory.kwargs = kwargs | factory.kwargs
+            factory.traits = traits | factory.traits
+            add_missing_param_tags(factory.docs, docs)
+          end
+        end
+      end
+
+      # @param factory [FactoryData]
+      # @param factories [Array<FactoryData>]
+      # @return [Array<FactoryData>] The parent, grand-parent and so on
+      def ancestors(factory, factories)
+        result = []
+        current = factory
+
+        while current.parent
+          current = factories.find { |f| f.factory_names.include?(current.parent) }
+          break if current.nil? || result.include?(current) || current.equal?(factory)
+
+          result << current
+        end
+
+        result
+      end
+
+      # @param docs [YARD::Docstring]
+      # @param other_docs [YARD::Docstring]
+      # @return [void]
+      def add_missing_param_tags(docs, other_docs)
+        other_docs.tags(:param).each do |tag|
+          docs.add_tag(tag) unless docs.tags(:param).any? { |t| t.name == tag.name }
+        end
       end
 
       # @param source [Solargraph::Source]
@@ -187,7 +270,9 @@ module Solargraph
         walker.on_factory do |factory|
           data = FactoryData.new(
             factory_names: factory.names,
-            model_class: factory.class_name || factory.name.to_s.split('_').collect(&:capitalize).join,
+            class_name: factory.class_name,
+            parent: factory.parent,
+            modification: factory.modification,
             kwargs: [],
             traits: []
           )

@@ -12,4 +12,8 @@ FactoryBot.define do
     association :user
     author
   end
+
+  factory :draft, parent: :post do
+    reason { 'WIP' }
+  end
 end

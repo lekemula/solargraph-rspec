@@ -37,7 +37,7 @@ RSpec.describe Solargraph::Rspec::FactoryBot do
 
     it 'reads factories from the conventional locations' do
       expect(factories.map { |f| f.factory_names.first }).to contain_exactly(
-        :admin_account, :guest_account, :post, :user
+        :admin_account, :guest_account, :draft, :moderator, :post, :user
       )
     end
 
@@ -59,6 +59,36 @@ RSpec.describe Solargraph::Rspec::FactoryBot do
 
     it 'gets traits' do
       expect(factory(:user).traits).to eql(%i[admin banned])
+    end
+
+    describe 'inheritance' do
+      it 'builds the parent class in nested factories' do
+        expect(factory(:moderator).model_class).to eql('User')
+      end
+
+      it 'builds the parent class with parent: option' do
+        expect(factory(:draft).model_class).to eql('Post')
+      end
+
+      it 'inherits the parent attributes and traits' do
+        expect(factory(:moderator).kwargs).to include(:first_name, :permissions)
+        expect(factory(:moderator).traits).to eql(%i[admin banned])
+      end
+
+      it 'does not leak nested factory attributes into the parent' do
+        expect(factory(:user).kwargs).not_to include(:permissions)
+      end
+
+      it 'inherits the parent attribute docs' do
+        expect(find_factory_arg(:draft, :title).return_type.to_s).to eql('String')
+      end
+    end
+
+    describe 'FactoryBot.modify' do
+      it 'adds attributes to the modified factory' do
+        expect(factory(:post).kwargs).to include(:title, :published)
+        expect(find_factory_arg(:post, :published).return_type.to_s).to eql('Boolean')
+      end
     end
 
     describe 'getting kw args' do
@@ -169,7 +199,7 @@ RSpec.describe Solargraph::Rspec::FactoryBot do
       create = api_map.get_method_stack('FactoryBot::Syntax::Methods', 'create').first
 
       expect(create.signatures.map { |sig| sig.return_type.to_s }).to contain_exactly(
-        'Admin::Account', 'Admin::Account', 'Post', 'User'
+        'Admin::Account', 'Admin::Account', 'Post', 'Post', 'User', 'User'
       )
     end
   end

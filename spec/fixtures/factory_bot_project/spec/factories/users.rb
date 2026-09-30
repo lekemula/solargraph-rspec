@@ -24,6 +24,11 @@ FactoryBot.define do
 
     trait :banned
 
+    # A user moderating posts
+    factory :moderator do
+      permissions { %w[edit] }
+    end
+
     after(:create) do |user, evaluator|
       create_list(:post, evaluator.posts_count, author: user)
     end

@@ -46,6 +46,7 @@ RSpec.describe Solargraph::Rspec::FactoryBotWalker do
       RUBY
 
       expect(factories.map(&:names)).to eq([[:user], [:post]])
+      expect(factories.map(&:modification)).to eq([false, false])
     end
 
     it 'yields factories in modify blocks' do
@@ -57,6 +58,7 @@ RSpec.describe Solargraph::Rspec::FactoryBotWalker do
       RUBY
 
       expect(factories.map(&:name)).to eq([:user])
+      expect(factories.map(&:modification)).to eq([true])
     end
 
     it 'ignores factory calls outside define blocks' do
