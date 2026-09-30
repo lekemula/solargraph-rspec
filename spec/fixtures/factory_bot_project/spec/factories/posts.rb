@@ -6,6 +6,7 @@ FactoryBot.define do
   # @param title [String] The headline
   factory :post do
     title { 'Hello' }
+    # @type [String] Markdown content
     add_attribute(:body) { 'Lorem ipsum' }
     association :reviewer, factory: :author
     association :editor, factory: %i[user admin]

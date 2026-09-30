@@ -21,7 +21,7 @@ module Solargraph
       # @param class_name [String, nil] The class given via the `class:` option
       # @param parent [Symbol, nil] The factory this one inherits from
       # @param modification [Boolean] Whether the factory is re-opened by `FactoryBot.modify`
-      # @param traits [Array<Symbol>] A list of trait names
+      # @param traits [Hash{Symbol => String}] Trait names and their comments
       # @param kwargs [Array<Symbol>] Any available kwargs
       # @param docs [YARD::Docstring] The parsed docs
       FactoryData = Struct.new(
@@ -77,7 +77,7 @@ module Solargraph
         sig = Solargraph::Pin::Signature.new(
           return_type: Solargraph::ComplexType.parse(list ? "Array<#{factory.model_class}>" : factory.model_class),
           closure: method,
-          docstring: factory.docs,
+          docstring: signature_docstring(factory),
           parameters: []
         )
 
@@ -98,7 +98,7 @@ module Solargraph
         unless factory.traits.empty?
           sig.parameters << Solargraph::Pin::Parameter.new(
             name: 'traits',
-            return_type: Solargraph::ComplexType.parse(*factory.traits.map { |n| ":#{n}" }),
+            return_type: Solargraph::ComplexType.parse(*factory.traits.keys.map { |n| ":#{n}" }),
             closure: sig,
             decl: :restarg
           )
@@ -112,6 +112,19 @@ module Solargraph
         end
 
         sig
+      end
+
+      # @param factory [FactoryData]
+      # @return [YARD::Docstring]
+      def signature_docstring(factory)
+        docstring = factory.docs.dup
+        return docstring if factory.traits.empty?
+
+        traits_doc = factory.traits.map do |name, comment|
+          comment.empty? ? "`:#{name}`" : "`:#{name}` (#{comment})"
+        end.join(', ')
+        docstring.add_tag(YARD::Tags::Tag.new(:param, traits_doc, nil, 'traits'))
+        docstring
       end
 
       # @param method_name [String]
@@ -194,7 +207,7 @@ module Solargraph
             merged.class_name ||= definition.class_name
             merged.parent ||= definition.parent
             merged.kwargs |= definition.kwargs
-            merged.traits |= definition.traits
+            merged.traits = definition.traits.merge(merged.traits)
             add_missing_param_tags(merged.docs, definition.docs)
             merged
           end
@@ -223,7 +236,7 @@ module Solargraph
           ancestors(factory, factories).each do |ancestor|
             kwargs, traits, docs = own[ancestor]
             factory.kwargs = kwargs | factory.kwargs
-            factory.traits = traits | factory.traits
+            factory.traits = traits.merge(factory.traits)
             add_missing_param_tags(factory.docs, docs)
           end
         end
@@ -263,6 +276,8 @@ module Solargraph
         factories = {}.compare_by_identity
         # @type [Hash{FactoryData => String}]
         comments = {}.compare_by_identity
+        # @type [Hash{FactoryData => Array<YARD::Tags::Tag>}]
+        attribute_tags = Hash.new { |h, k| h[k] = [] }.compare_by_identity
         unresolved_associations = []
 
         walker.on_factory do |factory|
@@ -272,7 +287,7 @@ module Solargraph
             parent: factory.parent,
             modification: factory.modification,
             kwargs: [],
-            traits: []
+            traits: {}
           )
           factories[factory] = data
           comments[data] = factory.comments
@@ -282,21 +297,26 @@ module Solargraph
           data = factories[factory]
           data.kwargs << attribute_name
 
-          comment = comment_for_attribute(attribute_name, attribute_comments)
-          comments[data] += "\n#{comment}" unless comment.nil?
+          tag = param_tag_for_attribute(attribute_name, attribute_comments)
+          attribute_tags[data] << tag if tag
         end
 
         walker.on_association do |factory, attribute_name, target_factory_name, _location_range|
           unresolved_associations << UnresolvedAssociation.new(attribute_name, factory.name, target_factory_name)
         end
 
-        walker.on_trait do |factory, trait_name, _comments, _location_range|
-          factories[factory].traits << trait_name
+        walker.on_trait do |factory, trait_name, trait_comments, _location_range|
+          factories[factory].traits[trait_name] = trait_comments.tr("\n", ' ')
         end
 
         walker.walk!
 
-        factories.each_value { |data| data.docs = parse_docstring(comments[data]) }
+        factories.each_value do |data|
+          data.docs = parse_docstring(comments[data])
+          attribute_tags[data].each do |tag|
+            data.docs.add_tag(tag) unless data.docs.tags(:param).any? { |t| t.name == tag.name }
+          end
+        end
 
         [factories.values, unresolved_associations]
       end
@@ -320,18 +340,16 @@ module Solargraph
       end
 
       # @param name [Symbol]
-      # @param comment [String]
-      # @return [String, nil]
-      def comment_for_attribute(name, comment)
-        if comment.start_with?('@return ')
-          comment = comment[7..]
-        elsif comment.start_with?('@type ')
-          comment = comment[5..]
-        else
-          return nil
-        end
+      # @param comment [String] e.g. `Given name` or `@return [String] Given name`
+      # @return [YARD::Tags::Tag, nil]
+      def param_tag_for_attribute(name, comment)
+        # `@type` takes a variable name in Solargraph, so read it as `@return` to keep the text
+        docstring = Solargraph::Source.parse_docstring(comment.gsub(/^@type /, '@return ')).to_docstring
+        tag = docstring.tag(:return)
+        text = [docstring.to_s, tag&.text].compact.reject(&:empty?).join("\n")
+        return if text.empty? && tag&.types.nil?
 
-        "@param #{name}#{comment}"
+        YARD::Tags::Tag.new(:param, text, tag&.types, name.to_s)
       end
     end
   end

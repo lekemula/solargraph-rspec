@@ -26,6 +26,7 @@ FactoryBot.define do
 
     # A user moderating posts
     factory :moderator do
+      # What the moderator may do
       permissions { %w[edit] }
     end
 

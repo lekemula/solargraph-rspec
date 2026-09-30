@@ -58,7 +58,7 @@ RSpec.describe Solargraph::Rspec::FactoryBot do
     end
 
     it 'gets traits' do
-      expect(factory(:user).traits).to eql(%i[admin banned])
+      expect(factory(:user).traits.keys).to eql(%i[admin banned])
     end
 
     it 'returns a list of models from _list methods' do
@@ -80,7 +80,7 @@ RSpec.describe Solargraph::Rspec::FactoryBot do
 
       it 'inherits the parent attributes and traits' do
         expect(factory(:moderator).kwargs).to include(:first_name, :permissions)
-        expect(factory(:moderator).traits).to eql(%i[admin banned])
+        expect(factory(:moderator).traits.keys).to eql(%i[admin banned])
       end
 
       it 'does not leak nested factory attributes into the parent' do
@@ -163,6 +163,25 @@ RSpec.describe Solargraph::Rspec::FactoryBot do
 
           expect(param.return_type.to_s).to eql('Integer')
           expect(param.documentation).to eql("Number of posts to create\nalong with the user")
+        end
+
+        it 'documents attributes from plain comments' do
+          param = find_factory_arg(:moderator, :permissions)
+
+          expect(param.documentation).to eql('What the moderator may do')
+        end
+
+        it 'documents attributes from @type tags' do
+          param = find_factory_arg(:post, :body)
+
+          expect(param.return_type.to_s).to eql('String')
+          expect(param.documentation).to eql('Markdown content')
+        end
+
+        it 'documents traits' do
+          param = find_factory_arg(:user, :traits)
+
+          expect(param.documentation).to eql('`:admin` (Grants every permission), `:banned`')
         end
 
         it 'keeps the factory comments' do
