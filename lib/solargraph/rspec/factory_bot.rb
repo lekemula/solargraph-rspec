@@ -48,8 +48,8 @@ module Solargraph
           [
             build_method('create', namespace),
             build_method('build', namespace),
-            build_list_method('create', namespace),
-            build_list_method('build', namespace)
+            build_method('create_list', namespace, list: true),
+            build_method('build_list', namespace, list: true)
           ]
         end
       end
@@ -71,9 +71,11 @@ module Solargraph
 
       # @param factory [FactoryData]
       # @param method [Solargraph::Pin::Method]
-      def signature_for_factory(factory, method)
+      # @param list [Boolean] Whether the method builds a list of models, e.g. `create_list`
+      # @return [Solargraph::Pin::Signature]
+      def signature_for_factory(factory, method, list: false)
         sig = Solargraph::Pin::Signature.new(
-          return_type: Solargraph::ComplexType.parse(factory.model_class),
+          return_type: Solargraph::ComplexType.parse(list ? "Array<#{factory.model_class}>" : factory.model_class),
           closure: method,
           docstring: factory.docs,
           parameters: []
@@ -84,6 +86,14 @@ module Solargraph
           return_type: Solargraph::ComplexType.parse(*factory.factory_names.map { |n| ":#{n}" }),
           closure: sig
         )
+
+        if list
+          sig.parameters << Solargraph::Pin::Parameter.new(
+            name: 'amount',
+            return_type: Solargraph::ComplexType.parse('Integer'),
+            closure: sig
+          )
+        end
 
         unless factory.traits.empty?
           sig.parameters << Solargraph::Pin::Parameter.new(
@@ -104,30 +114,18 @@ module Solargraph
         sig
       end
 
-      def build_list_method(method_prefix, namespace)
-        m = build_method("#{method_prefix}_list", namespace)
-        m.signatures.each do |sig|
-          sig.parameters.insert(
-            1,
-            Solargraph::Pin::Parameter.new(
-              name: 'amount',
-              closure: sig,
-              return_type: Solargraph::ComplexType.parse('Integer')
-            )
-          )
-        end
-
-        m
-      end
-
-      def build_method(method_name, namespace)
+      # @param method_name [String]
+      # @param namespace [Solargraph::Pin::Namespace]
+      # @param list [Boolean]
+      # @return [Solargraph::Pin::Method]
+      def build_method(method_name, namespace, list: false)
         method = Solargraph::Pin::Method.new(
           name: method_name,
           scope: :instance,
           closure: namespace
         )
 
-        method.signatures = factories.map { |f| signature_for_factory(f, method) }
+        method.signatures = factories.map { |f| signature_for_factory(f, method, list: list) }
 
         method
       end

@@ -61,6 +61,14 @@ RSpec.describe Solargraph::Rspec::FactoryBot do
       expect(factory(:user).traits).to eql(%i[admin banned])
     end
 
+    it 'returns a list of models from _list methods' do
+      list = pins.find { |p| p.is_a?(Solargraph::Pin::Method) && p.name == 'create_list' }
+      sig = list.signatures.find { |s| s.parameters.first.return_type.to_s == ':post' }
+
+      expect(sig.return_type.to_s).to eql('Array<Post>')
+      expect(sig.parameters.map(&:name).first(2)).to eql(%w[name amount])
+    end
+
     describe 'inheritance' do
       it 'builds the parent class in nested factories' do
         expect(factory(:moderator).model_class).to eql('User')
