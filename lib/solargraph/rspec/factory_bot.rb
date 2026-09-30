@@ -15,6 +15,8 @@ module Solargraph
       ].freeze
 
       SYNTAX_MODULES = %w[FactoryBot::Syntax::Methods FactoryGirl::Syntax::Methods].freeze
+      # Method names, and whether they build a list of models
+      FACTORY_METHODS = { 'create' => false, 'build' => false, 'create_list' => true, 'build_list' => true }.freeze
 
       # @param factory_names [Array<Symbol>] Names & aliases. The first name is the "official" factory name
       # @param model_class [String] The class that this factory builds
@@ -63,15 +65,64 @@ module Solargraph
         return [] unless syntax_pin
 
         @method_pins ||= {}
-        @method_pins[namespace] ||= [
-          build_method('create', syntax_pin),
-          build_method('build', syntax_pin),
-          build_method('create_list', syntax_pin, list: true),
-          build_method('build_list', syntax_pin, list: true)
-        ]
+        @method_pins[namespace] ||= FACTORY_METHODS.map do |method_name, list|
+          build_method(method_name, syntax_pin, list: list)
+        end
+      end
+
+      # Factory names and traits as the literal values of the factory methods' parameters, so going to the definition
+      # of `:user` in `create(:user, :admin)` jumps to the factory, and of `:admin` to its trait. Needs a Solargraph
+      # version with `Pin::FactoryParameter`.
+      #
+      # @return [Array<Solargraph::Pin::Base>]
+      def factory_parameter_pins
+        return [] unless defined?(Solargraph::Pin::FactoryParameter) && namespace_pins.any?
+
+        # nested factories inherit their parent's traits
+        @factory_parameter_pins ||= build_factory_parameter_pins.uniq do |pin|
+          [pin.method_path, pin.param_name, pin.value, pin.location]
+        end
       end
 
       private
+
+      # @return [Array<Solargraph::Pin::Base>]
+      def build_factory_parameter_pins
+        SYNTAX_MODULES.product(FACTORY_METHODS.keys).flat_map do |namespace, method_name|
+          list = FACTORY_METHODS[method_name]
+          factories.flat_map do |factory|
+            model_type = Solargraph::ComplexType.parse(list ? "Array<#{factory.model_class}>" : factory.model_class)
+            names = factory.factory_names.map do |name|
+              build_factory_parameter(namespace, method_name, 'name', name, factory.location, model_type)
+            end
+            traits = factory.traits.map do |trait|
+              build_factory_parameter(namespace, method_name, 'traits', trait.name, trait.location, nil, decl: :restarg)
+            end
+            names + traits
+          end
+        end
+      end
+
+      # @param namespace [String]
+      # @param method_name [String]
+      # @param param_name [String]
+      # @param value [Symbol]
+      # @param location [Solargraph::Location]
+      # @param return_type [Solargraph::ComplexType, nil]
+      # @param decl [Symbol]
+      # @return [Solargraph::Pin::Base]
+      def build_factory_parameter(namespace, method_name, param_name, value, location, return_type, decl: :arg)
+        Solargraph::Pin::FactoryParameter.new(
+          method_name: method_name,
+          method_namespace: namespace,
+          method_scope: :instance,
+          param_name: param_name,
+          value: value,
+          decl: decl,
+          return_type: return_type,
+          location: location
+        )
+      end
 
       # @param name [String] e.g. `FactoryBot::Syntax::Methods`
       # @return [Array<Solargraph::Pin::Namespace>] The module and each of its enclosing modules
@@ -248,7 +299,9 @@ module Solargraph
       # @param factories [Array<FactoryData>]
       # @return [void]
       def inherit_from_parents(factories)
-        own = factories.to_h { |factory| [factory, [factory.kwargs, factory.traits, factory.docs]] }
+        own = factories.to_h do |factory|
+          [factory, [factory.kwargs, factory.traits, factory.docs]]
+        end
 
         factories.each do |factory|
           ancestors(factory, factories).each do |ancestor|

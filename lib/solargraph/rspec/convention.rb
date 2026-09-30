@@ -192,7 +192,7 @@ module Solargraph
       # @return [Array<Pin::Base>]
       def factory_bot_pins
         @factory_bot = FactoryBot.new
-        @factory_bot.namespace_pins
+        @factory_bot.namespace_pins + @factory_bot.factory_parameter_pins
       rescue StandardError => e
         raise e if ENV['SOLARGRAPH_DEBUG']
 

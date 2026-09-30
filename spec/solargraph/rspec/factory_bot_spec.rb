@@ -210,6 +210,35 @@ RSpec.describe Solargraph::Rspec::FactoryBot do
     end
   end
 
+  describe '#factory_parameter_pins' do
+    let(:pins) { described_class.new.factory_parameter_pins }
+
+    before do
+      skip 'Solargraph without Pin::FactoryParameter' unless defined?(Solargraph::Pin::FactoryParameter)
+    end
+
+    # @return [Solargraph::Pin::FactoryParameter, nil]
+    def factory_parameter(method_path, param_name, value)
+      pins.find { |p| p.method_path == method_path && p.param_name == param_name && p.value == value }
+    end
+
+    it 'locates factory names and aliases at the factory definition' do
+      %i[user author].each do |name|
+        pin = factory_parameter('FactoryBot::Syntax::Methods#create', 'name', name)
+
+        expect(pin.location.filename).to end_with('spec/factories/users.rb')
+        expect(pin.location.range.start.line).to eq(4)
+      end
+    end
+
+    it 'locates traits at the trait definition' do
+      pin = factory_parameter('FactoryBot::Syntax::Methods#create_list', 'traits', :admin)
+
+      expect(pin.decl).to eq(:restarg)
+      expect(pin.location.range.start.line).to eq(20)
+    end
+  end
+
   describe 'in spec files' do
     let(:api_map) { Solargraph::ApiMap.new }
     let(:spec_file) { File.join(project_root, 'spec/models/user_spec.rb') }
@@ -276,6 +305,26 @@ RSpec.describe Solargraph::Rspec::FactoryBot do
       expect(completion_at(spec_file, [5, 13])).to include('full_name')
       expect(completion_at(spec_file, [6, 20])).to include('publish!')
       expect(completion_at(spec_file, [7, 30])).to include('suspend!')
+    end
+
+    it 'goes to the definition of factory names and traits' do
+      skip 'Solargraph without Pin::FactoryParameter' unless defined?(Solargraph::Pin::FactoryParameter)
+
+      load_spec(<<~RUBY)
+        RSpec.describe User do
+          let(:user) { create(:author, :banned, :admin) }
+        end
+      RUBY
+
+      definition = lambda { |column|
+        api_map.clip_at(spec_file, [1, column]).define.map do |pin|
+          pin.location.range.start.line
+        end
+      }
+
+      expect(definition.call(24)).to eq([4])
+      expect(definition.call(33)).to eq([24])
+      expect(definition.call(41)).to eq([20])
     end
 
     it 'offers one create signature per factory' do
