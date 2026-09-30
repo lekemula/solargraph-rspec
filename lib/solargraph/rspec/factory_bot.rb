@@ -14,6 +14,8 @@ module Solargraph
         'spec/factories/**/*.rb'
       ].freeze
 
+      SYNTAX_MODULES = %w[FactoryBot::Syntax::Methods FactoryGirl::Syntax::Methods].freeze
+
       # @param factory_names [Array<Symbol>] Names & aliases. The first name is the "official" factory name
       # @param model_class [String] The class that this factory should uses
       # @param traits [Array<Symbol>] A list of trait names
@@ -30,29 +32,13 @@ module Solargraph
         :target_factory
       )
 
-      def self.instance
-        @instance ||= new
-      end
-
-      def self.reset
-        @instance = nil
-      end
-
       def pins
         return [] if factories.empty?
 
-        namespaces = [
-          Solargraph::Pin::Namespace.new(
-            name: 'FactoryGirl::Syntax::Methods',
-            location: PinFactory.dummy_location('spec/factories.rb')
-          ),
-          Solargraph::Pin::Namespace.new(
-            name: 'FactoryBot::Syntax::Methods',
-            location: PinFactory.dummy_location('spec/factories.rb')
-          )
-        ]
+        namespace_pins = SYNTAX_MODULES.flat_map { |name| build_module_chain(name) }
+        syntax_pins = namespace_pins.select { |pin| SYNTAX_MODULES.include?(pin.path) }
 
-        namespaces.flat_map do |namespace|
+        namespace_pins + syntax_pins.flat_map do |namespace|
           [
             build_method('create', namespace),
             build_method('build', namespace),
@@ -63,6 +49,19 @@ module Solargraph
       end
 
       private
+
+      # @param name [String] e.g. `FactoryBot::Syntax::Methods`
+      # @return [Array<Solargraph::Pin::Namespace>] The module and each of its enclosing modules
+      def build_module_chain(name)
+        parts = name.split('::')
+        parts.each_index.map do |index|
+          Solargraph::Pin::Namespace.new(
+            name: parts[0..index].join('::'),
+            type: :module,
+            location: PinFactory.dummy_location('spec/factories.rb')
+          )
+        end
+      end
 
       # @param factory [FactoryData]
       # @param method [Solargraph::Pin::Method]

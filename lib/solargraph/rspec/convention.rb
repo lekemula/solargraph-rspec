@@ -95,6 +95,7 @@ module Solargraph
           root_namespace_pin: root_example_group_namespace_pin
         )
         pins += rspec_configure.pins
+        pins += factory_bot_pins
 
         # TODO: Include gem requires conditionally based on Gemfile definition
         requires = Solargraph::Rspec::Gems.gem_names + rspec_configure.extra_requires
@@ -141,12 +142,6 @@ module Solargraph
 
         rspec_walker.walk!
         pins += namespace_pins
-        pins += begin
-          FactoryBot.instance.pins
-        rescue StandardError => e
-          Solargraph.logger.error("[solargraph-rspec] [factory bot] Can't add pins: #{e}")
-          []
-        end
 
         if pins.any?
           Solargraph.logger.debug(
@@ -169,6 +164,16 @@ module Solargraph
       # @return [Config]
       def config
         self.class.config
+      end
+
+      # @return [Array<Pin::Base>]
+      def factory_bot_pins
+        FactoryBot.new.pins
+      rescue StandardError => e
+        raise e if ENV['SOLARGRAPH_DEBUG']
+
+        Solargraph.logger.warn("[RSpec] Error processing factory pins: #{e.message}")
+        []
       end
 
       # @return [Pin::Namespace]

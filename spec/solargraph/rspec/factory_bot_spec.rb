@@ -65,13 +65,13 @@ RSpec.describe Solargraph::Rspec::FactoryBot do
     end
 
     before do
-      Solargraph::Rspec::FactoryBot.reset
       allow(Dir).to receive(:glob).and_return(['factories.rb'])
       allow(File).to receive(:read).and_return(source_code)
     end
 
-    let(:factories) { Solargraph::Rspec::FactoryBot.instance.send(:factories) }
-    let(:pins) { Solargraph::Rspec::FactoryBot.instance.pins }
+    let(:factory_bot) { described_class.new }
+    let(:factories) { factory_bot.send(:factories) }
+    let(:pins) { factory_bot.pins }
 
     # @return [Solargraph::Pin::Signature, nil]
     def find_factory_sig(factory_name)
@@ -222,6 +222,49 @@ RSpec.describe Solargraph::Rspec::FactoryBot do
 
     it 'gets traits' do
       expect(factories[0].traits).to include(*%i[some_trait])
+    end
+  end
+
+  describe 'in spec files' do
+    let(:api_map) { Solargraph::ApiMap.new }
+    let(:project_root) { File.expand_path('../../fixtures/factory_bot_project', __dir__) }
+    let(:spec_file) { File.join(project_root, 'spec/models/user_spec.rb') }
+
+    around do |example|
+      Dir.chdir(project_root) { example.run }
+    end
+
+    before do
+      # For performance reasons, avoid solargraph loading all installed gems' YARDoc and RBS gem pins.
+      allow(Solargraph::Rspec::Gems).to receive(:gem_names).and_return(%w[rspec])
+    end
+
+    # @param code [String]
+    # @return [void]
+    def load_spec(code)
+      models = Dir['app/models/*.rb'].map { |file| parse_string(File.expand_path(file), File.read(file)) }
+
+      load_sources(*models, parse_string(spec_file, code))
+    end
+
+    it 'completes factory methods in examples' do
+      load_spec(<<~RUBY)
+        RSpec.describe User do
+          it 'works' do
+            crea
+          end
+        end
+      RUBY
+
+      expect(completion_at(spec_file, [2, 8])).to include('create', 'create_list')
+    end
+
+    it 'offers one create signature per factory' do
+      load_spec("RSpec.describe User do\nend\n")
+
+      create = api_map.get_method_stack('FactoryBot::Syntax::Methods', 'create').first
+
+      expect(create.signatures.map { |sig| sig.return_type.to_s }).to contain_exactly('Post', 'User')
     end
   end
 end
