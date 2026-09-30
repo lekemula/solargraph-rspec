@@ -28,7 +28,7 @@ module SolargraphHelpers
     pin = find_pin(query, map)
     expect(pin).to_not be_nil, "Method #{query} not found"
     expect(pin.scope).to eq(:instance)
-    expect(pin.return_type.map(&:tag)).to eq(return_type)
+    expect(pin.return_type.to_s).to eq(return_type.join(', '))
 
     yield pin if block_given?
   end
@@ -52,7 +52,7 @@ module SolargraphHelpers
     pin = find_pin(query, map)
     expect(pin).to_not be_nil
     expect(pin.scope).to eq(:class)
-    expect(pin.return_type.map(&:tag)).to eq(return_type)
+    expect(pin.return_type.to_s).to eq(return_type.join(', '))
 
     yield pin if block_given?
   end
@@ -61,7 +61,7 @@ module SolargraphHelpers
     pin = find_pin(query, map)
     expect(pin).to_not be_nil
     expect(pin.scope).to eq(:class)
-    expect(pin.return_type.map(&:tag)).to eq(["Class<#{query}>"])
+    expect(pin.return_type.to_s).to eq("Class<#{query}>")
 
     yield pin if block_given?
   end
