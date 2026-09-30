@@ -26,6 +26,7 @@ module Solargraph
             )
 
             override_closure(original_block_pin, namespace_pin)
+            override_block_location(original_block_pin, source_map)
 
             # Include DSL methods in the example group block
             # TODO: This does not work on solagraph! Class methods are not included from parent class.

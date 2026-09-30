@@ -12,7 +12,7 @@ module Solargraph
         # @return [Solargraph::Rspec::SpecWalker]
         attr_reader :rspec_walker
 
-        # @return [Array<Solargraph::Pin::Base]
+        # @return [Array<Solargraph::Pin::Base>]
         attr_reader :added_pins
 
         # @param namespace_pins [Array<Solargraph::Pin::Base>]
@@ -68,10 +68,60 @@ module Solargraph
         # @param pin [Solargraph::Pin::Base]
         # @param new_closure [Solargraph::Pin::Closure]
         def override_closure(pin, new_closure)
+          if pin.respond_to?(:closure=)
+            pin.closure = new_closure
+            return
+          end
+
+          # work around older version of Solargraph
           pin.instance_variable_set('@closure', new_closure)
           pin.reset_generated!
 
           pin.remove_instance_variable(:@path) if pin.instance_variables.include? :@path
+        end
+
+        # Given the following code, Solargraph::Parser.node_range returns the following range for block ast:
+        #
+        # ```ruby
+        #   some_method_with_block do
+        #   ^ - block start
+        #   end
+        #   ^ - block end
+        # ```
+        #
+        # Instead we want the range to be:
+        #
+        # ```ruby
+        #   some_method_with_block do
+        #                          ^ - block start
+        #   end
+        #   ^ - block end
+        # ```
+        #
+        # @param closure [Solargraph::Pin::Closure]
+        # @param source_map [Solargraph::SourceMap]
+        # @return [void]
+        def override_block_location(closure, source_map)
+          range = closure.location.range
+          block_ast = source_map.source.node_at(range.ending.line, range.ending.column)
+          new_location = PinFactory.build_location(
+            PinFactory.build_location_range(block_ast),
+            closure.location.filename
+          )
+
+          if closure.respond_to?(:location=)
+            closure.location = new_location
+          else
+            # work around older version of Solargraph
+            closure.instance_variable_set('@location', new_location)
+            closure.reset_generated!
+          end
+
+          # find children of this pin and reset them, as they may have
+          # cached their binder or context based on the old closure
+          source_map.pins.select { |child_pin| child_pin.closure == closure }.each do |child_pin|
+            child_pin.reset_generated!
+          end
         end
       end
     end

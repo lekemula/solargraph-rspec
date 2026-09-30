@@ -10,38 +10,40 @@ module Solargraph
           ast.is_a?(::Parser::AST::Node) && ast.type == :block
         end
 
-        # @param ast [::Parser::AST::Node]
+        # @param block_ast [::Parser::AST::Node]
         # @return [Boolean]
         def self.a_context_block?(block_ast)
           Solargraph::Rspec::CONTEXT_METHODS.include?(method_with_block_name(block_ast))
         end
 
-        # @param ast [::Parser::AST::Node]
+        # @param block_ast [::Parser::AST::Node]
         # @return [Boolean]
         def self.a_subject_block?(block_ast)
           Solargraph::Rspec::SUBJECT_METHODS.include?(method_with_block_name(block_ast))
         end
 
-        # @param ast [::Parser::AST::Node]
+        # @param block_ast [::Parser::AST::Node]
         # @param config [Config]
         # @return [Boolean]
         def self.a_example_block?(block_ast, config)
           config.example_methods.map(&:to_s).include?(method_with_block_name(block_ast))
         end
 
-        # @param ast [::Parser::AST::Node]
+        # @param block_ast [::Parser::AST::Node]
         # @param config [Config]
         # @return [Boolean]
         def self.a_let_block?(block_ast, config)
           config.let_methods.map(&:to_s).include?(method_with_block_name(block_ast))
         end
 
-        # @param ast [::Parser::AST::Node]
+        # @param block_ast [::Parser::AST::Node]
         # @return [Boolean]
         def self.a_hook_block?(block_ast)
           Solargraph::Rspec::HOOK_METHODS.include?(method_with_block_name(block_ast))
         end
 
+        # @param [::Parser::AST::Node] ast
+        # @return [Boolean]
         def self.a_constant?(ast)
           ast.type == :const
         end
@@ -56,7 +58,7 @@ module Solargraph
         end
 
         # @param block_ast [::Parser::AST::Node]
-        # @return [::Parser::AST::Node]
+        # @return [::Parser::AST::Node, nil]
         def self.context_description_node(block_ast)
           return nil unless a_context_block?(block_ast)
 
@@ -64,7 +66,7 @@ module Solargraph
         end
 
         # @param block_ast [::Parser::AST::Node]
-        # @return [String]
+        # @return [String, nil]
         def self.let_method_name(block_ast)
           return nil unless a_block?(block_ast)
 

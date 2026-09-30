@@ -7,7 +7,7 @@ module Solargraph
     module Correctors
       # Defines let-like methods in the example group block
       class LetMethodsCorrector < Base
-        # @param source_map [Solargraph::SourceMap]
+        # @param _source_map [Solargraph::SourceMap]
         # @return [void]
         def correct(_source_map)
           rspec_walker.on_let_method do |let_name, location_range, fake_method_ast|
@@ -23,6 +23,7 @@ module Solargraph
 
         # @param namespace [Pin::Namespace]
         # @param method_name [String]
+        # @param location_range [Range]
         # @param node [::Parser::AST::Node, nil]
         # @param types [Array<String>, nil]
         # @return [Pin::Method, nil]

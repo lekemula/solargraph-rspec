@@ -11,6 +11,8 @@ module Solargraph
             return unless block_ast.is_a?(::Parser::AST::Node)
 
             ast = NodeTypes.context_description_node(block_ast)
+            return unless ast
+
             if ast.type == :str
               string_to_const_name(ast)
             elsif NodeTypes.a_constant?(ast)
@@ -24,7 +26,7 @@ module Solargraph
           private
 
           # @see https://github.com/rspec/rspec-core/blob/1eeadce5aa7137ead054783c31ff35cbfe9d07cc/lib/rspec/core/example_group.rb#L862
-          # @param ast [Parser::AST::Node]
+          # @param string_ast [Parser::AST::Node]
           # @return [String]
           def string_to_const_name(string_ast)
             return unless string_ast.type == :str

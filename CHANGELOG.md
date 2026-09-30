@@ -7,6 +7,41 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.6.0] - 2026-08-12
+
+### Added
+- Add Rspec included modules support by @ShadiestGoat in #32
+
+### Changed
+- Chore: Test solargraph prereleases (#31)
+- Chore: More reliable closure and location updates by @apiology in #30
+- Chore: Less limiting of gem pin processing in specs by @apiology in #29
+Avoid inference from literal values by @castwide (#34)
+- Chore: fix failing specs (#35)
+
+
+## [0.5.5] - 2025-10-05
+
+### Fixed
+- Go-to-defintion/Hover for RSpec DSL methods (eg. context or it)
+
+### Other Changes
+- Chore: Add rubocop-yard by @lekemula in #20
+- Chore: Add CI solargraph typecheck step by @lekemula in #21
+- Chore: Adjust specs/CI for next solargraph release after 0.56.2 by @lekemula in #22
+- Chore: Improve CI speed by @lekemula in #23
+- Chore: Improve tests speed by @lekemula in #24
+- Chore: Update testing steps in developer documentation by @apiology in #25
+- Chore: Move 3rd party gems to Appraisals by @lekemula in #27
+
+### Changed
+- Update testing steps in developer documentation
+
+## [0.5.4] - 2025-09-06
+
+### Fixed
+- Fix breaking of solargraph rubocop diagnostics by @lekemula in #19
+
 ## [0.5.3] - 2025-09-02
 
 ### Fixed
@@ -125,7 +160,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 
 - `describe` and `it` methods completion
-- memoized `let` and `let!` methods completion 
+- memoized `let` and `let!` methods completion
 - implicit and explicit `subject` methods
 - `described_class` with appropriate type inference
 - `RSpec::Matchers` methods completion

@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-# Credits: This file is a copy of the file from the solargraph-rspec gem
+# Credits: This file was originally copied and adapted from the solargraph-rails gem.
 
 module Solargraph
   module Rspec
@@ -8,11 +8,12 @@ module Solargraph
     module PinFactory
       # @param namespace [Solargraph::Pin::Namespace]
       # @param name [String]
-      # @param types [Array<String>]
-      # @param location [Solargraph::Location]
+      # @param types [Array<String>, nil]
+      # @param [Parser::AST::Node, nil] node
+      # @param location [Solargraph::Location, nil]
       # @param comments [Array<String>]
       # @param attribute [Boolean]
-      # @param scope [:instance, :class]
+      # @param scope [:instance, :class] # rubocop:disable YARD/TagTypeSyntax
       # @return [Solargraph::Pin::Method]
       def self.build_public_method(
         namespace,
@@ -42,7 +43,7 @@ module Solargraph
       end
 
       # @param namespace [Solargraph::Pin::Namespace]
-      # @param name [String]
+      # @param module_name [String]
       # @param location [Solargraph::Location]
       # @return [Solargraph::Pin::Reference::Include]
       def self.build_module_include(namespace, module_name, location)
@@ -74,10 +75,36 @@ module Solargraph
         )
       end
 
+      # Given the following code, Solargraph::Parser.node_range returns the following range for block ast:
+      #
+      # some_method_with_block do
+      # ^ - block start
+      # end
+      # ^ - block end
+      #
+      # Instead we want the range to be:
+      #
+      # some_method_with_block do
+      #                        ^ - block start
+      # end
+      # ^ - block end
+      #
       # @param ast [::Parser::AST::Node]
       # @return [Solargraph::Range]
       def self.build_location_range(ast)
-        Solargraph::Parser.node_range(ast)
+        if ast.type == :block
+          method_range = Solargraph::Parser.node_range(ast.children[0])
+          full_block_range = Solargraph::Parser.node_range(ast)
+
+          Solargraph::Range.from_to(
+            method_range.ending.line,
+            method_range.ending.character,
+            full_block_range.ending.line,
+            full_block_range.ending.character
+          )
+        else
+          Solargraph::Parser.node_range(ast)
+        end
       end
 
       # @param location_range [Solargraph::Range]

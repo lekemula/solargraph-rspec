@@ -6,6 +6,9 @@ module Solargraph
     #   rspec:
     #     let_methods:
     #       - let_it_be
+    #     config_helper_files:
+    #       - spec/spec_helper.rb
+    #       - spec/rails_helper.rb
     class Config
       def initialize(solargraph_config = Solargraph::Workspace::Config.new('./'))
         @solargraph_config = solargraph_config
@@ -25,7 +28,17 @@ module Solargraph
         (Rspec::EXAMPLE_METHODS + additional_example_methods).map(&:to_sym)
       end
 
+      # @return [Array<String>]
+      def config_helper_files
+        DEFAULT_CONFIG_HELPER_FILES + additional_config_helper_files
+      end
+
       private
+
+      DEFAULT_CONFIG_HELPER_FILES = [
+        'spec/spec_helper.rb',
+        'spec/rails_helper.rb'
+      ].freeze
 
       # @return [Hash]
       def rspec_raw_data
@@ -34,12 +47,23 @@ module Solargraph
 
       # @return [Array<Symbol>]
       def additional_let_methods
-        (rspec_raw_data['let_methods'] || []).map(&:to_sym)
+        # @type [Array<String>, nil]
+        let_methods = rspec_raw_data['let_methods']
+        (let_methods || []).map(&:to_sym)
       end
 
       # @return [Array<Symbol>]
       def additional_example_methods
-        (rspec_raw_data['example_methods'] || []).map(&:to_sym)
+        # @type [Array<String>, nil]
+        example_methods = rspec_raw_data['example_methods']
+        (example_methods || []).map(&:to_sym)
+      end
+
+      # @return [Array<String>]
+      def additional_config_helper_files
+        # @type [Array<String>, nil]
+        config_files = rspec_raw_data['config_helper_files']
+        config_files || []
       end
 
       # @return [Hash]

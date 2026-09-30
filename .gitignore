@@ -8,6 +8,8 @@
 /pkg/
 /spec/reports/
 /tmp/
+/.gem_rbs_collection
+/rbs_collection.lock.yaml
 
 # rspec failure tracking
 .rspec_status

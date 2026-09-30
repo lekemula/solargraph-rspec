@@ -1,0 +1,47 @@
+# This workflow uses actions that are not certified by GitHub.
+# They are provided by a third-party and are governed by
+# separate terms of service, privacy policy, and support
+# documentation.
+# This workflow will download a prebuilt Ruby version, install dependencies and run tests with rspec.
+# For more information see: https://github.com/marketplace/actions/setup-ruby-jruby-and-truffleruby
+
+name: Typecheck
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+permissions:
+  contents: read
+
+env:
+  SOLARGRAPH_CACHE: ${{ github.workspace }}/vendor/solargraph/cache
+  RUBY_VERSION: 3.4
+
+jobs:
+  solargraph_typed:
+    name: Solargraph / typed
+
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v3
+      - name: Set up Ruby
+        uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: ${{ env.RUBY_VERSION }}
+          bundler-cache: true # runs bundle install and caches the gems
+      - name: Cache Solargraph YARD and RBS pins for gems
+        uses: actions/cache@v4
+        with:
+          path: ${{ env.SOLARGRAPH_CACHE  }}
+          key: os-${{ runner.os }}-ruby-${{ env.RUBY_VERSION }}-solargraph-${{ hashFiles('**/Gemfile.lock') }}
+      - name: Install gems
+        run: |
+          bundle update rbs # use latest available for this Ruby version
+      - name: Install gem types
+        run: bundle exec rbs collection install
+      - name: Typecheck self
+        run: bundle exec solargraph typecheck --level typed

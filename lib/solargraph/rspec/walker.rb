@@ -1,5 +1,8 @@
 # frozen_string_literal: true
 
+#
+# Credits: This file was originally copied and adapted from the solargraph-rails gem
+
 module Solargraph
   module Rspec
     class Walker
@@ -51,6 +54,7 @@ module Solargraph
         end
 
         # @param children [Array<::Parser::AST::Node>]
+        # @param args [Array]
         def match_children(children, args = @args)
           args.each_with_index.all? do |arg, i|
             if arg == :any

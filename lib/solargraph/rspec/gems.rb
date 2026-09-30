@@ -2,16 +2,15 @@
 
 module Solargraph
   module Rspec
-    class TestHelpers
-      class GemHelpers < Struct.new(:required_gems, :helper_modules, keyword_init: true)
-        # @!attribute [r] required_gems
-        #   @return [Array<String>]
-        # @!attribute [r] helper_modules
-        #   @return [Array<String>]
-      end
+    class Gems
+      # rubocop:disable YARD/MeaninglessTag
+      # @param required_gems [Array<String>]
+      # @param helper_modules [Array<String>]
+      # rubocop:enable YARD/MeaninglessTag
+      GemHelpers = Struct.new(:required_gems, :helper_modules, keyword_init: true)
 
       class << self
-        # @return [String]
+        # @return [Array<String>]
         def gem_names
           GEM_HELPERS.flat_map(&:required_gems)
         end
@@ -37,7 +36,7 @@ module Solargraph
 
       GEM_HELPERS = [
         GemHelpers.new(
-          required_gems: %w[rspec],
+          required_gems: %w[rspec rspec-expectations rspec-core],
           helper_modules: %w[RSpec::Matchers]
         ),
         # https://github.com/rspec/rspec-mocks
@@ -48,7 +47,7 @@ module Solargraph
         # @see https://github.com/rspec/rspec-rails#what-tests-should-i-write
         # @see https://github.com/rspec/rspec-rails#helpful-rails-matchers
         GemHelpers.new(
-          required_gems: %w[rspec-rails actionmailer activesupport activerecord],
+          required_gems: %w[rspec-rails actionmailer action_mailer activesupport actionpack],
           helper_modules: [
             'RSpec::Rails::Matchers',
             'ActionController::TestCase::Behavior',
