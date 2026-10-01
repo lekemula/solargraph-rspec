@@ -83,6 +83,7 @@ module SolargraphHelpers
     cursor = clip.send(:cursor)
     word = cursor.chain.links.first.word
 
+    # puts "Completion: word=#{word}, links=#{cursor.chain.links}"
     Solargraph.logger.debug(
       "Complete: word=#{word}, links=#{cursor.chain.links}"
     )
@@ -92,6 +93,20 @@ module SolargraphHelpers
 
   def completion_at(filename, position, map = api_map)
     completion_pins_at(filename, position, map).map(&:name)
+  end
+
+  def defintion_pins_at(filename, position, map = api_map)
+    # @type [Solargraph::SourceMap::Clip]
+    clip = map.clip_at(filename, position)
+    cursor = clip.send(:cursor)
+    word = cursor.chain.links.first.word
+
+    # puts "Definition: word=#{word}, links=#{cursor.chain.links}"
+    Solargraph.logger.debug(
+      "Definition: word=#{word}, links=#{cursor.chain.links}"
+    )
+
+    clip.define
   end
 
   # @param filename [String]

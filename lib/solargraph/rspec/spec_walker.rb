@@ -23,6 +23,7 @@ module Solargraph
           on_example_block: [],
           on_hook_block: [],
           on_blocks_in_examples: [],
+          on_shared_example_definition: [],
           after_walk: []
         }
       end
@@ -87,6 +88,14 @@ module Solargraph
       # @return [void]
       def on_blocks_in_examples(&block)
         @handlers[:on_blocks_in_examples] << block
+      end
+
+      # @param block [Proc]
+      # @yieldparam name [String]
+      # @yieldparam location_range [Solargraph::Range]
+      # @return [void]
+      def on_shared_example_definition(&block)
+        @handlers[:on_shared_example_definition] << block
       end
 
       # @param block [Proc]
@@ -164,6 +173,17 @@ module Solargraph
             @handlers[:on_blocks_in_examples].each do |handler|
               handler.call(PinFactory.build_location_range(blocks_in_examples))
             end
+          end
+        end
+
+        walker.on :block do |block_ast|
+          next unless NodeTypes.a_shared_example_definition?(block_ast)
+
+          name = NodeTypes.shared_example_name(block_ast)
+          next unless name
+
+          @handlers[:on_shared_example_definition].each do |handler|
+            handler.call(name, PinFactory.build_location_range(block_ast))
           end
         end
 
