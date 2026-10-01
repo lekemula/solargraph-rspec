@@ -98,6 +98,33 @@ rspec:
 ```
 
 
+### FactoryBot
+
+Factories defined in `spec/factories.rb`, `spec/factories/**/*.rb` (or the `test/` and root equivalents) are completed in `create`, `build`, `create_list` and `build_list` calls, including their traits and attribute overrides. Include the syntax methods in your spec helper for them to be available in examples:
+
+```ruby
+RSpec.configure do |config|
+  config.include FactoryBot::Syntax::Methods
+end
+```
+
+Comments on factories, attributes and traits show up as documentation, and `@return`/`@type` tags on attributes type the overrides:
+
+```ruby
+FactoryBot.define do
+  # A registered user
+  factory :user do
+    # @return [String] Given name
+    first_name { 'John' }
+
+    # Grants every permission
+    trait :admin do
+      role { 'admin' }
+    end
+  end
+end
+```
+
 ### Gem completions
 
 Solargraph utilizes the YARD documentation to provide code completion. If you want to have completion for gems in your project, you can generate YARD documentation for them ([Read more](https://solargraph.org/guides/yard)).

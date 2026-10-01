@@ -9,6 +9,7 @@ require_relative 'correctors/described_class_corrector'
 require_relative 'correctors/let_methods_corrector'
 require_relative 'correctors/subject_method_corrector'
 require_relative 'correctors/dsl_methods_corrector'
+require_relative 'factory_bot'
 require_relative 'gems'
 require_relative 'pin_factory'
 require_relative 'rspec_configure'
@@ -94,6 +95,7 @@ module Solargraph
           root_namespace_pin: root_example_group_namespace_pin
         )
         pins += rspec_configure.pins
+        pins += factory_bot_pins
 
         # TODO: Include gem requires conditionally based on Gemfile definition
         requires = Solargraph::Rspec::Gems.gem_names + rspec_configure.extra_requires
@@ -157,11 +159,45 @@ module Solargraph
         EMPTY_ENVIRON
       end
 
+      # The factory methods are provided per object rather than globally: methods a convention provides for a
+      # namespace come before the store's, so they win over the factory_bot gem's own `create`/`build` pins.
+      #
+      # @param _api_map [ApiMap]
+      # @param rooted_tag [String]
+      # @param scope [Symbol]
+      # @param _visibility [Array<Symbol>]
+      # @param _deep [Boolean]
+      # @param _skip [Set<String>]
+      # @param _no_core [Boolean]
+      # @return [Environ]
+      def object(_api_map, rooted_tag, scope, _visibility, _deep, _skip, _no_core)
+        return EMPTY_ENVIRON unless @factory_bot && scope == :instance
+
+        pins = @factory_bot.method_pins(rooted_tag.delete_prefix('::'))
+        pins.empty? ? EMPTY_ENVIRON : Environ.new(pins: pins)
+      rescue StandardError => e
+        raise e if ENV['SOLARGRAPH_DEBUG']
+
+        Solargraph.logger.warn("[RSpec] Error processing factory pins for #{rooted_tag}: #{e.message}")
+        EMPTY_ENVIRON
+      end
+
       private
 
       # @return [Config]
       def config
         self.class.config
+      end
+
+      # @return [Array<Pin::Base>]
+      def factory_bot_pins
+        @factory_bot = FactoryBot.new
+        @factory_bot.namespace_pins + @factory_bot.factory_parameter_pins
+      rescue StandardError => e
+        raise e if ENV['SOLARGRAPH_DEBUG']
+
+        Solargraph.logger.warn("[RSpec] Error processing factory pins: #{e.message}")
+        []
       end
 
       # @return [Pin::Namespace]
