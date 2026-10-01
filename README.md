@@ -21,6 +21,7 @@ This gem aims to provide better support for RSpec in Solargraph and it supports 
     - [rspec-sidekiq](https://github.com/wspurgin/rspec-sidekiq)
     - [airborne](https://github.com/brooklynDev/airborne)
   - Custom DSL extensions support (see [Configuration](#configuration) section)
+  - "▶ Run RSpec" code lenses for the whole file and every `describe`/`context`/example block (requires a Solargraph version with code lens support)
   - and more to come... ⏲️
 
 ![solargraph-rspec-with-types](./doc/images/vim_demo.gif)
@@ -95,6 +96,51 @@ rspec:
   config_helper_files:
     - spec/spec_helper.rb
     - spec/rails_helper.rb
+
+  # Run code lens commands through Bundler, i.e. `bundle exec rspec ...` (default: false)
+  use_bundler: true
+  # Bundler executable used when `use_bundler` is enabled (default: bundle)
+  bundler_path: bin/bundle
+```
+
+### Code lenses
+
+The plugin adds "Run" code lenses on the first line of a spec file (the whole file) and above every `describe`/`context`/example block. They need a Solargraph version with code lens support and an editor that implements the `solargraph.runRspec` client command:
+
+- **VS Code**: the [vscode-solargraph](https://github.com/castwide/vscode-solargraph) extension runs lenses in a terminal or in the Testing view.
+- **Neovim** (built-in LSP): show the lenses and implement the command yourself, e.g.:
+
+```lua
+-- Start the project's Solargraph when solargraph-rspec is in its bundle
+vim.lsp.config("solargraph", {
+  cmd = { "bundle", "exec", "solargraph", "stdio" },
+  filetypes = { "ruby" },
+  root_markers = { "Gemfile", ".git" },
+})
+vim.lsp.enable("solargraph")
+
+-- Show Solargraph's code lenses
+vim.api.nvim_create_autocmd("LspAttach", {
+  callback = function(args)
+    local client = vim.lsp.get_client_by_id(args.data.client_id)
+    if client and client.name == "solargraph" then
+      vim.lsp.codelens.enable(true, { client_id = client.id }) -- Neovim 0.12+
+      -- Neovim 0.10/0.11: refresh them yourself instead
+      -- vim.api.nvim_create_autocmd({ "BufEnter", "InsertLeave", "TextChanged" }, {
+      --   buffer = args.buf,
+      --   callback = function() vim.lsp.codelens.refresh({ bufnr = args.buf }) end,
+      -- })
+    end
+  end,
+})
+
+-- Run a lens: its first argument holds the rspec command line, e.g. "bundle exec rspec spec/foo_spec.rb:12"
+vim.lsp.commands["solargraph.runRspec"] = function(command)
+  vim.cmd("botright split | terminal " .. command.arguments[1].command)
+  -- or, with vim-dispatch: vim.cmd("Dispatch " .. command.arguments[1].command)
+end
+
+vim.keymap.set("n", "<leader>cr", vim.lsp.codelens.run, { desc = "Run code lens" })
 ```
 
 

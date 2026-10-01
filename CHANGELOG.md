@@ -7,6 +7,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+- "▶ Run RSpec" code lenses for spec files and their example groups/examples, with `use_bundler` and `bundler_path` options (requires a Solargraph version with code lens support)
+
 ## [0.6.0] - 2026-08-12
 
 ### Added

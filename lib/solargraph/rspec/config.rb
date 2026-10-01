@@ -33,6 +33,16 @@ module Solargraph
         DEFAULT_CONFIG_HELPER_FILES + additional_config_helper_files
       end
 
+      # @return [Boolean]
+      def use_bundler
+        rspec_raw_data.fetch('use_bundler', false)
+      end
+
+      # @return [String]
+      def bundler_path
+        rspec_raw_data.fetch('bundler_path', 'bundle')
+      end
+
       private
 
       DEFAULT_CONFIG_HELPER_FILES = [

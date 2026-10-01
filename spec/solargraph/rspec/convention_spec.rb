@@ -654,6 +654,37 @@ RSpec.describe Solargraph::Rspec::Convention do
     end
   end
 
+  describe 'code lenses' do
+    let(:code) do
+      <<~RUBY
+        RSpec.describe SomeNamespace::Transaction, type: :model do
+          describe 'nested' do
+            it 'works' do
+              desc
+            end
+          end
+        end
+      RUBY
+    end
+
+    it 'adds code lenses to the source map' do
+      skip 'solargraph does not support code lenses' unless Solargraph::Rspec::Convention.code_lenses_supported?
+
+      load_string filename, code
+
+      expect(api_map.source_map(filename).convention_code_lenses.map { |lens| lens.range.start.line }).to eq([0, 1, 2])
+    end
+
+    it 'skips code lenses when solargraph does not support them' do
+      allow(Solargraph::Rspec::Convention).to receive(:code_lenses_supported?).and_return(false)
+      expect(Solargraph::Rspec::Generators::CodeLensGenerator).not_to receive(:new)
+
+      load_string filename, code
+
+      expect(completion_at(filename, [3, 10])).to include('described_class')
+    end
+  end
+
   describe 'configurations' do
     describe 'let_methods' do
       before(:each) do
